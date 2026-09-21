@@ -1,0 +1,161 @@
+.royal-invitation {
+  --maroon-deep: #4a0e1c;
+  --maroon: #7b1d2e;
+  --maroon-soft: #9b3446;
+  --gold: #b9893e;
+  --gold-light: #e7d3a4;
+  --gold-pale: #f3e8cd;
+  --cream: #fdf9f2;
+  --night: #1a060c;
+  --night-deep: #0a0507;
+  --glow-a: rgba(123, 29, 46, 0.35);
+  --glow-b: rgba(185, 137, 62, 0.12);
+  background: var(--night);
+  color: var(--gold-pale);
+  min-height: 100svh;
+  overflow-x: clip;
+}
+
+.royal-invitation.palette-emerald {
+  --maroon-deep: #05382b;
+  --maroon: #0b6b4d;
+  --maroon-soft: #1a8f68;
+  --night: #04140f;
+  --night-deep: #020a07;
+  --glow-a: rgba(11, 107, 77, 0.42);
+  --glow-b: rgba(185, 137, 62, 0.16);
+}
+
+html:has(.royal-invitation),
+body:has(.royal-invitation) {
+  height: auto;
+  min-height: 100%;
+  overflow: auto;
+  background: #1a060c;
+}
+
+html:has(.palette-emerald),
+body:has(.palette-emerald) {
+  background: #04140f;
+}
+
+.royal-invitation .invite-hero {
+  background:
+    radial-gradient(ellipse at 25% 60%, var(--glow-a), transparent 50%),
+    radial-gradient(ellipse at 80% 30%, var(--glow-b), transparent 45%),
+    linear-gradient(195deg, var(--night-deep) 0%, var(--night) 55%, var(--night) 100%);
+}
+
+.royal-invitation .invite-footer {
+  background: radial-gradient(ellipse at 50% 100%, var(--glow-b), transparent 48%), var(--night);
+}
+
+.royal-invitation .invite-share {
+  background: linear-gradient(to bottom right, var(--maroon), var(--maroon-deep));
+  box-shadow: 0 10px 28px color-mix(in srgb, var(--maroon-deep) 45%, transparent);
+}
+
+.royal-invitation .font-names {
+  font-family: var(--font-allura), cursive;
+}
+
+.royal-invitation .font-script {
+  font-family: var(--font-great-vibes), cursive;
+}
+
+.royal-invitation .font-caps {
+  font-family: var(--font-cinzel), serif;
+}
+
+.royal-invitation .font-arabic {
+  font-family: var(--font-amiri), serif;
+}
+
+.royal-invitation .font-invite-serif {
+  font-family: var(--font-cormorant), serif;
+}
+
+.royal-invitation .font-invite-sans {
+  font-family: var(--font-jost), sans-serif;
+}
+
+.royal-invitation .text-shimmer {
+  -webkit-text-fill-color: transparent;
+  background: linear-gradient(100deg, #f3e8cd 35%, #b9893e 50%, #f3e8cd 65%) 0 0 / 220%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: royal-shimmer 5.5s ease-in-out infinite;
+}
+
+.royal-invitation .text-shimmer-slow {
+  -webkit-text-fill-color: transparent;
+  background: linear-gradient(100deg, #f3e8cd 35%, #b9893e 50%, #f3e8cd 65%) 0 0 / 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: royal-shimmer 6s ease-in-out infinite;
+}
+
+.royal-invitation .petal {
+  animation: royal-petal linear infinite;
+}
+
+.royal-invitation .sparkle {
+  animation: royal-sparkle ease-in-out infinite;
+}
+
+.royal-invitation .editable-field {
+  cursor: text;
+  border-radius: 4px;
+  outline: 1px dashed transparent;
+  outline-offset: 3px;
+}
+
+.royal-invitation .editable-field:hover,
+.royal-invitation .editable-field:focus {
+  outline-color: rgba(231, 211, 164, 0.55);
+  background: rgba(253, 249, 242, 0.06);
+}
+
+.royal-invitation .editable-field:focus.text-shimmer,
+.royal-invitation .editable-field:focus.text-shimmer-slow {
+  -webkit-text-fill-color: #e7d3a4;
+  background: none;
+  animation: none;
+}
+
+@keyframes royal-shimmer {
+  0%,
+  55% {
+    background-position: -180%;
+  }
+  100% {
+    background-position: 180%;
+  }
+}
+
+@keyframes royal-petal {
+  0% {
+    opacity: 0;
+    transform: translateY(-8vh) rotate(0);
+  }
+  8% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate3d(var(--sway, 40px), 108vh, 0) rotate(var(--spin, 320deg));
+    opacity: 0.15;
+  }
+}
+
+@keyframes royal-sparkle {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  40%,
+  60% {
+    opacity: 0.95;
+    transform: scale(1);
+  }
+}
