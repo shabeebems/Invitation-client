@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import Link from "next/link";
-import { API_URL, type InvitationTemplate, type InvitationTheme, type TemplateContent, imageUrl, withImageUrl } from "@/lib/api";
+import { invitationApiBase, invitationDoneHref, type InvitationTemplate, type InvitationTheme, type TemplateContent, imageUrl, withImageUrl } from "@/lib/api";
 import EditableField from "@/components/templates/EditableField";
 import ThemePicker from "@/components/templates/ThemePicker";
 
@@ -134,7 +134,7 @@ export default function RoyalReceptionInvitation({
     }
 
     try {
-      const response = await fetch(`${API_URL}/api/templates/${draft.slug}`, {
+      const response = await fetch(invitationApiBase(draft), {
         method: "PUT",
         body,
       });
@@ -196,7 +196,7 @@ export default function RoyalReceptionInvitation({
         <div className="fixed top-[max(10px,env(safe-area-inset-top,0px))] left-[max(12px,env(safe-area-inset-left,0px))] z-[1200] flex max-w-[min(92vw,360px)] flex-col gap-1 rounded-2xl border border-[#e7d3a459] bg-[#1a060ce8] px-3 py-2.5 text-[#f3e8cd] shadow-[0_10px_28px_rgba(10,5,7,0.45)] backdrop-blur-sm">
           <div className="flex items-center gap-3">
             <Link
-              href="/templates"
+              href={invitationDoneHref(draft)}
               className="font-caps rounded-full border border-[#e7d3a473] px-3 py-1 text-[10px] tracking-[1.4px] text-[#e7d3a4] uppercase no-underline hover:border-[#e7d3a4] hover:text-[#f3e8cd]"
             >
               Done
@@ -210,6 +210,7 @@ export default function RoyalReceptionInvitation({
             slug={draft.slug}
             selectedThemeId={draft.selectedThemeId}
             themes={draft.themes || []}
+            source={draft.source}
             variant="invite"
             onChange={(selectedThemeId, themes: InvitationTheme[]) => {
               setDraft((prev) => ({

@@ -1,6 +1,6 @@
 import { Allura, Amiri, Cinzel, Cormorant_Garamond, Great_Vibes, Jost, Outfit } from "next/font/google";
-import "./royal-reception.css";
-import "./house-warming.css";
+import "@/app/preview/[slug]/royal-reception.css";
+import "@/app/preview/[slug]/house-warming.css";
 
 const allura = Allura({
   weight: "400",
@@ -45,7 +45,7 @@ const outfit = Outfit({
   variable: "--font-outfit",
 });
 
-export default function PreviewLayout({ children }: { children: React.ReactNode }) {
+export default function InvitationChrome({ children }: { children: React.ReactNode }) {
   return (
     <div
       className={`${allura.variable} ${amiri.variable} ${cinzel.variable} ${cormorant.variable} ${greatVibes.variable} ${jost.variable} ${outfit.variable}`}

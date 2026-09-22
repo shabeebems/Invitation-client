@@ -8,12 +8,14 @@ import {
   DashboardIcon,
   TemplatesIcon,
   UsersIcon,
+  WorksIcon,
 } from "./icons";
 
 const menus = [
   { href: "/dashboard", label: "Dashboard", icon: DashboardIcon },
   { href: "/categories", label: "Categories", icon: CategoriesIcon },
   { href: "/templates", label: "Templates", icon: TemplatesIcon },
+  { href: "/works", label: "Works", icon: WorksIcon },
   { href: "/users", label: "Users", icon: UsersIcon },
 ];
 

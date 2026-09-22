@@ -3,7 +3,11 @@ import RoyalReceptionInvitation from "@/components/templates/RoyalReceptionInvit
 import HouseWarmingInvitation from "@/components/templates/HouseWarmingInvitation";
 
 export function isHouseWarmingTemplate(template: InvitationTemplate) {
-  return template.slug === "parambil-house" || /house\s*warm/i.test(template.categoryName || "");
+  return (
+    template.slug === "parambil-house" ||
+    template.templateSlug === "parambil-house" ||
+    /house\s*warm/i.test(template.categoryName || "")
+  );
 }
 
 export default function InvitationView({

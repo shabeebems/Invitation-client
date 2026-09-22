@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
-import { API_URL, type GalleryItem, type InvitationTemplate, type InvitationTheme, type ProgramItem, type TemplateContent, imageUrl, withImageUrl } from "@/lib/api";
+import { invitationApiBase, invitationDoneHref, type GalleryItem, type InvitationTemplate, type InvitationTheme, type ProgramItem, type TemplateContent, imageUrl, withImageUrl } from "@/lib/api";
 import EditableField from "@/components/templates/EditableField";
 import ThemePicker from "@/components/templates/ThemePicker";
 
@@ -111,7 +111,7 @@ export default function HouseWarmingInvitation({
     }
 
     try {
-      const response = await fetch(`${API_URL}/api/templates/${draft.slug}`, {
+      const response = await fetch(invitationApiBase(draft), {
         method: "PUT",
         body,
       });
@@ -325,7 +325,7 @@ export default function HouseWarmingInvitation({
         <div className="fixed top-[max(10px,env(safe-area-inset-top,0px))] left-[max(12px,env(safe-area-inset-left,0px))] z-[1200] flex max-w-[min(92vw,360px)] flex-col gap-1 rounded-2xl border border-[var(--color-linen-border)] bg-[var(--color-linen-nav)] px-3 py-2.5 text-[#221c18] shadow-[0_10px_28px_rgba(34,28,24,0.12)] backdrop-blur-sm">
           <div className="flex items-center gap-3">
             <Link
-              href="/templates"
+              href={invitationDoneHref(draft)}
               className="rounded-full border border-[#ab4f3166] px-3 py-1 text-[10px] font-semibold tracking-[1.4px] text-[#87361b] uppercase no-underline hover:bg-[#ab4f31] hover:text-white"
             >
               Done
@@ -339,6 +339,7 @@ export default function HouseWarmingInvitation({
             slug={draft.slug}
             selectedThemeId={draft.selectedThemeId}
             themes={draft.themes || []}
+            source={draft.source}
             variant="house"
             onChange={(selectedThemeId, themes: InvitationTheme[]) => {
               setDraft((prev) => ({

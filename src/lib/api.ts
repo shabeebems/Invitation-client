@@ -135,17 +135,63 @@ export function withImageUrl(
   return next;
 }
 
+export type InvitationSource = "template" | "work";
+
 export type InvitationTemplate = {
   id: string;
   slug: string;
   name: string;
   description: string;
   isActive: boolean;
+  source?: InvitationSource;
   images: TemplateImage[];
   categoryId: string;
   categoryName: string;
+  templateId?: string;
+  templateName?: string;
+  templateSlug?: string;
   selectedThemeId: string;
   selectedThemeTitle: string;
   themes: InvitationTheme[];
   content: TemplateContent;
 };
+
+export function invitationApiBase(template: Pick<InvitationTemplate, "slug" | "source">) {
+  const kind = template.source === "work" ? "works" : "templates";
+  return `${API_URL}/api/${kind}/${template.slug}`;
+}
+
+export function invitationDoneHref(template: Pick<InvitationTemplate, "source">) {
+  return template.source === "work" ? "/works" : "/templates";
+}
+
+export function invitationPreviewHref(template: Pick<InvitationTemplate, "slug" | "source">) {
+  return template.source === "work" ? `/preview/work/${template.slug}` : `/preview/${template.slug}`;
+}
+
+export function invitationLiveHref(template: Pick<InvitationTemplate, "slug">) {
+  return `/${template.slug}`;
+}
+
+export async function fetchWork(slug: string): Promise<InvitationTemplate | null> {
+  try {
+    const response = await fetch(`${API_URL}/api/works/${slug}`, {
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const data = (await response.json()) as {
+      success?: boolean;
+      template?: InvitationTemplate;
+      work?: InvitationTemplate;
+    };
+
+    const invitation = data.template || data.work;
+    return data.success && invitation ? invitation : null;
+  } catch {
+    return null;
+  }
+}

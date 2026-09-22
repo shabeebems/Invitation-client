@@ -2,18 +2,20 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { API_URL, type InvitationTheme } from "@/lib/api";
+import { invitationApiBase, type InvitationSource, type InvitationTheme } from "@/lib/api";
 
 export default function ThemePicker({
   slug,
   selectedThemeId,
   themes,
+  source = "template",
   variant = "admin",
   onChange,
 }: {
   slug: string;
   selectedThemeId: string;
   themes: InvitationTheme[];
+  source?: InvitationSource;
   variant?: "admin" | "invite" | "house";
   onChange?: (selectedThemeId: string, themes: InvitationTheme[]) => void;
 }) {
@@ -35,7 +37,7 @@ export default function ThemePicker({
     setError("");
 
     try {
-      const response = await fetch(`${API_URL}/api/templates/${slug}/theme`, {
+      const response = await fetch(`${invitationApiBase({ slug, source })}/theme`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ selectedThemeId: themeId }),
