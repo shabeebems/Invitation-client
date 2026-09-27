@@ -113,6 +113,7 @@ export default function HouseWarmingInvitation({
     try {
       const response = await fetch(invitationApiBase(draft), {
         method: "PUT",
+        credentials: "include",
         body,
       });
       const data = (await response.json()) as {

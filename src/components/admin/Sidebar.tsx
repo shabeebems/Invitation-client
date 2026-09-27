@@ -1,22 +1,25 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { API_URL } from "@/lib/api";
 import { useAdmin } from "./AdminContext";
 import {
   CategoriesIcon,
   DashboardIcon,
+  LogoutIcon,
   TemplatesIcon,
   UsersIcon,
   WorksIcon,
 } from "./icons";
 
 const menus = [
-  { href: "/dashboard", label: "Dashboard", icon: DashboardIcon },
-  { href: "/categories", label: "Categories", icon: CategoriesIcon },
-  { href: "/templates", label: "Templates", icon: TemplatesIcon },
-  { href: "/works", label: "Works", icon: WorksIcon },
-  { href: "/users", label: "Users", icon: UsersIcon },
+  { href: "/admin/dashboard", label: "Dashboard", icon: DashboardIcon },
+  { href: "/admin/categories", label: "Categories", icon: CategoriesIcon },
+  { href: "/admin/templates", label: "Templates", icon: TemplatesIcon },
+  { href: "/admin/works", label: "Works", icon: WorksIcon },
+  { href: "/admin/users", label: "Users", icon: UsersIcon },
 ];
 
 function initials(name: string) {
@@ -30,8 +33,32 @@ function initials(name: string) {
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const { user, loading } = useAdmin();
+  const [loggingOut, setLoggingOut] = useState(false);
+  const [logoutError, setLogoutError] = useState("");
   const name = user?.name || (loading ? "" : "Admin");
+
+  async function logout() {
+    setLoggingOut(true);
+    setLogoutError("");
+
+    try {
+      const response = await fetch(`${API_URL}/api/auth/logout`, {
+        method: "POST",
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        throw new Error("Could not log out");
+      }
+
+      router.replace("/login");
+    } catch {
+      setLogoutError("Could not log out");
+      setLoggingOut(false);
+    }
+  }
 
   return (
     <aside className="flex h-full w-64 shrink-0 flex-col bg-sidebar px-5 py-6 text-white">
@@ -73,6 +100,19 @@ export default function Sidebar() {
           );
         })}
       </nav>
+
+      <div className="mt-auto pt-6">
+        {logoutError ? <p className="mb-2 px-4 text-xs text-[#ffb4d2]">{logoutError}</p> : null}
+        <button
+          type="button"
+          onClick={() => void logout()}
+          disabled={loggingOut}
+          className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-[15px] font-semibold text-white/80 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-60"
+        >
+          <LogoutIcon className="h-5 w-5" />
+          {loggingOut ? "Logging out…" : "Logout"}
+        </button>
+      </div>
     </aside>
   );
 }
