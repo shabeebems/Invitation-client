@@ -22,7 +22,7 @@ export default function CategoriesPage() {
 
   async function loadCategories() {
     try {
-      const response = await fetch(`${API_URL}/api/categories`);
+      const response = await fetch(`${API_URL}/api/categories`, { credentials: "include" });
       const data = (await response.json()) as {
         success?: boolean;
         categories?: Category[];
@@ -70,6 +70,7 @@ export default function CategoriesPage() {
         isEdit ? `${API_URL}/api/categories/${editing.id}` : `${API_URL}/api/categories`,
         {
           method: isEdit ? "PUT" : "POST",
+          credentials: "include",
           body: formData,
         }
       );

@@ -31,7 +31,7 @@ export default function WorksPage() {
   );
 
   async function loadWorks() {
-    const response = await fetch(`${API_URL}/api/works`);
+    const response = await fetch(`${API_URL}/api/works`, { credentials: "include" });
     const data = (await response.json()) as {
       success?: boolean;
       works?: InvitationTemplate[];
@@ -47,7 +47,7 @@ export default function WorksPage() {
 
   async function loadLookups() {
     const [categoryRes, templateRes] = await Promise.all([
-      fetch(`${API_URL}/api/categories`),
+      fetch(`${API_URL}/api/categories`, { credentials: "include" }),
       fetch(`${API_URL}/api/templates`),
     ]);
     const categoryData = (await categoryRes.json()) as {
@@ -100,6 +100,7 @@ export default function WorksPage() {
     try {
       const response = await fetch(`${API_URL}/api/works`, {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           categoryId,

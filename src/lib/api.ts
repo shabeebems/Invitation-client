@@ -4,7 +4,10 @@ export type AdminUser = {
   name: string;
   email: string;
   phone: string;
+  role: "customer" | "admin";
   isAdmin: boolean;
+  emailVerified?: boolean;
+  hasPassword?: boolean;
 };
 
 export type Category = {
@@ -162,7 +165,7 @@ export function invitationApiBase(template: Pick<InvitationTemplate, "slug" | "s
 }
 
 export function invitationDoneHref(template: Pick<InvitationTemplate, "source">) {
-  return template.source === "work" ? "/works" : "/templates";
+  return template.source === "work" ? "/admin/works" : "/admin/templates";
 }
 
 export function invitationPreviewHref(template: Pick<InvitationTemplate, "slug" | "source">) {
