@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { API_URL, type InvitationTemplate } from "@/lib/api";
+import UseTemplateBar from "@/components/landing/UseTemplateBar";
 import InvitationView from "@/components/templates/InvitationView";
 
 async function getTemplate(slug: string): Promise<InvitationTemplate | null> {
@@ -59,5 +60,10 @@ export default async function TemplatePreviewPage({
     notFound();
   }
 
-  return <InvitationView template={template} />;
+  return (
+    <>
+      <UseTemplateBar slug={template.slug} name={template.name} />
+      <InvitationView template={template} />
+    </>
+  );
 }

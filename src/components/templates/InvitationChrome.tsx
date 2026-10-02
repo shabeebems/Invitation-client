@@ -1,6 +1,17 @@
-import { Allura, Amiri, Cinzel, Cormorant_Garamond, Great_Vibes, Jost, Outfit } from "next/font/google";
+import {
+  Allura,
+  Amiri,
+  Cinzel,
+  Cormorant_Garamond,
+  Fraunces,
+  Great_Vibes,
+  Jost,
+  Manrope,
+  Outfit,
+} from "next/font/google";
 import "@/app/preview/[slug]/royal-reception.css";
 import "@/app/preview/[slug]/house-warming.css";
+import "@/app/preview/[slug]/midnight-birthday.css";
 
 const allura = Allura({
   weight: "400",
@@ -45,10 +56,22 @@ const outfit = Outfit({
   variable: "--font-outfit",
 });
 
+const fraunces = Fraunces({
+  weight: ["400", "500", "600", "700"],
+  subsets: ["latin"],
+  variable: "--font-fraunces",
+});
+
+const manrope = Manrope({
+  weight: ["400", "500", "600", "700"],
+  subsets: ["latin"],
+  variable: "--font-manrope",
+});
+
 export default function InvitationChrome({ children }: { children: React.ReactNode }) {
   return (
     <div
-      className={`${allura.variable} ${amiri.variable} ${cinzel.variable} ${cormorant.variable} ${greatVibes.variable} ${jost.variable} ${outfit.variable}`}
+      className={`${allura.variable} ${amiri.variable} ${cinzel.variable} ${cormorant.variable} ${greatVibes.variable} ${jost.variable} ${outfit.variable} ${fraunces.variable} ${manrope.variable}`}
     >
       {children}
     </div>

@@ -94,16 +94,17 @@ export default function AccountSecurity() {
   }
 
   return (
-    <section className="mt-6 rounded-[28px] bg-white px-8 py-10 shadow-sm">
-      <h2 className="text-xl font-extrabold">Security</h2>
-      <form onSubmit={changePassword} className="mt-4 flex flex-col gap-3">
+    <section className="rounded-[32px] border border-[#e8dfd0] bg-[#faf6ee] px-6 py-8 shadow-[0_16px_40px_rgba(20,48,39,0.06)] sm:px-8">
+      <p className="text-[11px] font-semibold tracking-[0.2em] text-[#8a7048] uppercase">Security</p>
+      <h2 className="mt-2 text-2xl font-bold tracking-tight text-zinc-900">Password & sessions</h2>
+      <form onSubmit={changePassword} className="mt-5 flex flex-col gap-3">
         {hasPassword ? (
           <input
             type="password"
             placeholder="Current password"
             value={currentPassword}
             onChange={(event) => setCurrentPassword(event.target.value)}
-            className="rounded-2xl border border-zinc-200 px-4 py-3 text-sm"
+            className="rounded-2xl border border-[#e0d5c6] bg-white/70 px-4 py-3 text-sm outline-none focus:border-[#c4a574]"
           />
         ) : null}
         <input
@@ -111,24 +112,38 @@ export default function AccountSecurity() {
           placeholder={hasPassword ? "New password" : "Password"}
           value={password}
           onChange={(event) => setPassword(event.target.value)}
-          className="rounded-2xl border border-zinc-200 px-4 py-3 text-sm"
+          className="rounded-2xl border border-[#e0d5c6] bg-white/70 px-4 py-3 text-sm outline-none focus:border-[#c4a574]"
         />
-        <button type="submit" className="rounded-full bg-accent py-3 text-sm font-semibold text-white">
+        <button
+          type="submit"
+          className="rounded-full bg-[#143027] py-3 text-sm font-semibold text-[#f3ead8] hover:bg-[#1c4034]"
+        >
           {hasPassword ? "Change password" : "Add password"}
         </button>
       </form>
-      {message ? <p className="mt-3 text-sm text-accent">{message}</p> : null}
-      <ul className="mt-8 flex flex-col gap-3">
+      {message ? <p className="mt-3 text-sm font-medium text-[#143027]">{message}</p> : null}
+      <ul className="mt-8 flex flex-col gap-2">
         {sessions.map((session) => (
-          <li key={session.id} className="flex items-center justify-between gap-3 text-sm">
-            <span>{deviceLabel(session)}</span>
-            <button type="button" onClick={() => void revoke(session.id)} className="font-semibold text-accent">
+          <li
+            key={session.id}
+            className="flex items-center justify-between gap-3 rounded-2xl border border-[#ebe3d6] bg-white/60 px-4 py-3 text-sm"
+          >
+            <span className="font-medium text-zinc-800">{deviceLabel(session)}</span>
+            <button
+              type="button"
+              onClick={() => void revoke(session.id)}
+              className="font-semibold text-[#87361b] hover:underline"
+            >
               Revoke
             </button>
           </li>
         ))}
       </ul>
-      <button type="button" onClick={() => void revokeAll()} className="mt-4 text-sm font-semibold text-zinc-700">
+      <button
+        type="button"
+        onClick={() => void revokeAll()}
+        className="mt-4 text-sm font-semibold text-zinc-600 hover:text-zinc-900"
+      >
         Sign out of all devices
       </button>
     </section>

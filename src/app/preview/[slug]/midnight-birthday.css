@@ -1,0 +1,522 @@
+.birthday-invitation {
+  --ink: #090807;
+  --ink-lift: #12100e;
+  --champagne: #d7c094;
+  --champagne-bright: #f6ead0;
+  --champagne-soft: rgba(246, 234, 208, 0.78);
+  --champagne-dim: rgba(215, 192, 148, 0.58);
+  --line: rgba(215, 192, 148, 0.3);
+  --glow: rgba(215, 192, 148, 0.16);
+  --veil: rgba(9, 8, 7, 0.35);
+  --veil-strong: rgba(9, 8, 7, 0.88);
+  color: var(--champagne-bright);
+  background: var(--ink);
+  min-height: 100svh;
+  overflow-x: clip;
+}
+
+.birthday-invitation.palette-ember {
+  --ink: #120b0a;
+  --ink-lift: #1a110f;
+  --champagne: #e6b296;
+  --champagne-bright: #ffe2d2;
+  --champagne-soft: rgba(255, 226, 210, 0.8);
+  --champagne-dim: rgba(230, 178, 150, 0.6);
+  --line: rgba(230, 178, 150, 0.32);
+  --glow: rgba(230, 178, 150, 0.18);
+  --veil: rgba(18, 11, 10, 0.35);
+  --veil-strong: rgba(18, 11, 10, 0.88);
+}
+
+html:has(.birthday-invitation),
+body:has(.birthday-invitation) {
+  height: auto;
+  min-height: 100%;
+  overflow: auto;
+  background: #090807;
+}
+
+html:has(.birthday-invitation.palette-ember),
+body:has(.birthday-invitation.palette-ember) {
+  background: #120b0a;
+}
+
+.birthday-invitation .bd-display {
+  font-family: var(--font-fraunces), "Times New Roman", serif;
+  font-optical-sizing: auto;
+}
+
+.birthday-invitation .bd-script {
+  font-family: var(--font-great-vibes), cursive;
+}
+
+.birthday-invitation .bd-sans {
+  font-family: var(--font-manrope), system-ui, sans-serif;
+}
+
+.birthday-invitation .bd-caps {
+  font-family: var(--font-manrope), system-ui, sans-serif;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+.birthday-invitation .bd-hero {
+  position: relative;
+  isolation: isolate;
+  min-height: max(100svh, 760px);
+  display: grid;
+  align-items: center;
+  overflow: hidden;
+}
+
+.birthday-invitation .bd-hero-media {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.birthday-invitation .bd-hero-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 28%;
+  transform: scale(1.05);
+  filter: brightness(0.7) contrast(1.08) saturate(0.8);
+  animation: bd-kenburns 22s ease-in-out infinite alternate;
+}
+
+.birthday-invitation .bd-hero-media::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    radial-gradient(ellipse at 50% 42%, rgba(9, 8, 7, 0.18), transparent 55%),
+    radial-gradient(ellipse at 50% 18%, rgba(215, 192, 148, 0.14), transparent 42%),
+    linear-gradient(180deg, rgba(9, 8, 7, 0.58) 0%, rgba(9, 8, 7, 0.22) 34%, rgba(9, 8, 7, 0.45) 62%, rgba(9, 8, 7, 0.92) 100%);
+}
+
+.birthday-invitation .bd-hero-media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  opacity: 0.16;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+}
+
+.birthday-invitation .bd-hero-fallback {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 30% 20%, var(--glow), transparent 45%),
+    radial-gradient(ellipse at 70% 40%, rgba(120, 90, 50, 0.18), transparent 40%),
+    linear-gradient(165deg, #1a1512, #090807 55%, #120f0d);
+}
+
+.birthday-invitation .bd-frame {
+  position: absolute;
+  inset: clamp(14px, 2.5vw, 28px);
+  z-index: 2;
+  border: 1px solid rgba(215, 192, 148, 0.28);
+  pointer-events: none;
+}
+
+.birthday-invitation .bd-frame::before,
+.birthday-invitation .bd-frame::after {
+  content: "";
+  position: absolute;
+  width: clamp(28px, 5vw, 48px);
+  height: clamp(28px, 5vw, 48px);
+  border: 1.5px solid rgba(215, 192, 148, 0.7);
+}
+
+.birthday-invitation .bd-frame::before {
+  top: -1px;
+  left: -1px;
+  border-right: 0;
+  border-bottom: 0;
+}
+
+.birthday-invitation .bd-frame::after {
+  right: -1px;
+  bottom: -1px;
+  border-left: 0;
+  border-top: 0;
+}
+
+.birthday-invitation .bd-frame-corners {
+  position: absolute;
+  inset: clamp(14px, 2.5vw, 28px);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.birthday-invitation .bd-frame-corners span {
+  position: absolute;
+  width: clamp(28px, 5vw, 48px);
+  height: clamp(28px, 5vw, 48px);
+  border: 1.5px solid rgba(215, 192, 148, 0.7);
+}
+
+.birthday-invitation .bd-frame-corners span:nth-child(1) {
+  top: -1px;
+  right: -1px;
+  border-left: 0;
+  border-bottom: 0;
+}
+
+.birthday-invitation .bd-frame-corners span:nth-child(2) {
+  left: -1px;
+  bottom: -1px;
+  border-right: 0;
+  border-top: 0;
+}
+
+.birthday-invitation .bd-monogram {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  left: 50%;
+  translate: -50% -58%;
+  font-family: var(--font-great-vibes), cursive;
+  font-size: clamp(180px, 38vw, 420px);
+  line-height: 1;
+  color: rgba(246, 234, 208, 0.06);
+  pointer-events: none;
+  user-select: none;
+}
+
+.birthday-invitation .bd-hero-copy {
+  position: relative;
+  z-index: 3;
+  width: min(900px, 100%);
+  margin: 0 auto;
+  padding: clamp(28px, 6vh, 56px) clamp(28px, 6vw, 56px) clamp(48px, 8vh, 84px);
+  text-align: center;
+}
+
+.birthday-invitation .bd-title-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.birthday-invitation .bd-title-row::before,
+.birthday-invitation .bd-title-row::after {
+  content: "◆";
+  font-size: 0.55rem;
+  color: var(--champagne);
+  opacity: 0.8;
+}
+
+.birthday-invitation .bd-shimmer {
+  color: var(--champagne-bright);
+  text-shadow:
+    0 1px 0 rgba(255, 248, 234, 0.35),
+    0 10px 34px rgba(0, 0, 0, 0.45);
+}
+
+.birthday-invitation .bd-age-line {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.95rem;
+  margin-top: 1rem;
+}
+
+.birthday-invitation .bd-age-line::before,
+.birthday-invitation .bd-age-line::after {
+  content: "";
+  width: clamp(36px, 9vw, 72px);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--champagne), transparent);
+}
+
+.birthday-invitation .bd-sparkle-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.birthday-invitation .bd-sparkle {
+  position: absolute;
+  border-radius: 9999px;
+  background: radial-gradient(circle, #fff8ea 0%, var(--champagne) 45%, transparent 70%);
+  box-shadow: 0 0 10px rgba(246, 234, 208, 0.45);
+  animation: bd-twinkle ease-in-out infinite;
+}
+
+.birthday-invitation .bd-confetti {
+  position: absolute;
+  width: 6px;
+  height: 11px;
+  border-radius: 1px;
+  opacity: 0.45;
+  animation: bd-fall linear infinite;
+}
+
+.birthday-invitation .bd-scroll-hint {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  bottom: 18px;
+  translate: -50% 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--champagne-dim);
+  animation: bd-float 2.8s ease-in-out infinite;
+}
+
+.birthday-invitation .bd-scroll-hint span {
+  width: 1px;
+  height: 28px;
+  background: linear-gradient(180deg, var(--champagne), transparent);
+}
+
+.birthday-invitation .bd-section {
+  position: relative;
+  z-index: 2;
+  padding: clamp(56px, 10vh, 110px) clamp(20px, 5vw, 40px);
+}
+
+.birthday-invitation .bd-section-soft {
+  background:
+    radial-gradient(ellipse at 50% 0%, var(--glow), transparent 46%),
+    linear-gradient(180deg, var(--ink) 0%, var(--ink-lift) 100%);
+}
+
+.birthday-invitation .bd-meta {
+  display: grid;
+  gap: clamp(32px, 5vw, 28px);
+  width: min(1040px, 100%);
+  margin: 0 auto;
+  text-align: center;
+}
+
+.birthday-invitation .bd-meta-item {
+  position: relative;
+  padding: 0.5rem 1rem;
+}
+
+.birthday-invitation .bd-ornament {
+  display: block;
+  width: min(200px, 58vw);
+  margin: 0 auto 1.75rem;
+  color: var(--champagne);
+  opacity: 0.88;
+}
+
+.birthday-invitation .bd-wish {
+  width: min(740px, 100%);
+  margin: 0 auto;
+  text-align: center;
+}
+
+.birthday-invitation .bd-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.9rem;
+  margin-top: clamp(32px, 5vh, 44px);
+}
+
+.birthday-invitation .bd-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 178px;
+  padding: 1rem 1.7rem;
+  border-radius: 9999px;
+  border: 1px solid var(--line);
+  color: var(--champagne-bright);
+  text-decoration: none;
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    transform 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.birthday-invitation .bd-cta:hover {
+  border-color: var(--champagne);
+  background: rgba(215, 192, 148, 0.08);
+  transform: translateY(-1px);
+}
+
+.birthday-invitation .bd-cta-solid {
+  border-color: transparent;
+  background: linear-gradient(180deg, var(--champagne-bright), var(--champagne));
+  color: var(--ink);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.32);
+}
+
+.birthday-invitation .bd-cta-solid:hover {
+  background: var(--champagne-bright);
+  color: var(--ink);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.38);
+}
+
+.birthday-invitation .bd-footer {
+  border-top: 1px solid var(--line);
+  padding: 2.1rem clamp(20px, 5vw, 40px) 2.6rem;
+  text-align: center;
+  background: var(--ink);
+}
+
+.birthday-invitation .bd-photo-edit {
+  cursor: pointer;
+}
+
+.birthday-invitation .bd-photo-edit-chip {
+  position: absolute;
+  z-index: 4;
+  left: 50%;
+  bottom: max(18px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  border: 1px solid var(--line);
+  border-radius: 9999px;
+  background: rgba(9, 8, 7, 0.72);
+  backdrop-filter: blur(8px);
+  padding: 0.55rem 0.95rem;
+  color: var(--champagne);
+  pointer-events: none;
+}
+
+.birthday-invitation .editable-field {
+  outline: none;
+  border-radius: 6px;
+  transition:
+    box-shadow 140ms ease,
+    background 140ms ease;
+}
+
+.birthday-invitation .editable-field:hover,
+.birthday-invitation .editable-field:focus {
+  background: rgba(215, 192, 148, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(215, 192, 148, 0.28);
+}
+
+.birthday-invitation .bd-rise {
+  animation: bd-rise 950ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.birthday-invitation .bd-rise-delay {
+  animation-delay: 140ms;
+}
+
+.birthday-invitation .bd-rise-delay-2 {
+  animation-delay: 260ms;
+}
+
+.birthday-invitation .bd-rise-delay-3 {
+  animation-delay: 380ms;
+}
+
+@keyframes bd-kenburns {
+  from {
+    transform: scale(1.06) translate3d(0, 0, 0);
+  }
+  to {
+    transform: scale(1.14) translate3d(0, -1.8%, 0);
+  }
+}
+
+@keyframes bd-shimmer {
+  0% {
+    background-position: 0% center;
+  }
+  100% {
+    background-position: 220% center;
+  }
+}
+
+@keyframes bd-twinkle {
+  0%,
+  100% {
+    opacity: 0.12;
+    transform: scale(0.7);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes bd-fall {
+  0% {
+    transform: translate3d(0, -12vh, 0) rotate(0deg);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.55;
+  }
+  100% {
+    transform: translate3d(18px, 110vh, 0) rotate(220deg);
+    opacity: 0;
+  }
+}
+
+@keyframes bd-rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 22px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes bd-float {
+  0%,
+  100% {
+    transform: translate(-50%, 0);
+    opacity: 0.45;
+  }
+  50% {
+    transform: translate(-50%, 6px);
+    opacity: 0.9;
+  }
+}
+
+@media (min-width: 768px) {
+  .birthday-invitation .bd-meta {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: start;
+  }
+
+  .birthday-invitation .bd-meta-item:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    top: 8%;
+    right: 0;
+    width: 1px;
+    height: 84%;
+    background: linear-gradient(180deg, transparent, var(--line), transparent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .birthday-invitation .bd-hero-media img,
+  .birthday-invitation .bd-shimmer,
+  .birthday-invitation .bd-sparkle,
+  .birthday-invitation .bd-confetti,
+  .birthday-invitation .bd-rise,
+  .birthday-invitation .bd-rise-delay,
+  .birthday-invitation .bd-rise-delay-2,
+  .birthday-invitation .bd-rise-delay-3,
+  .birthday-invitation .bd-scroll-hint {
+    animation: none !important;
+  }
+
+  .birthday-invitation .bd-hero-media img {
+    transform: none;
+  }
+}

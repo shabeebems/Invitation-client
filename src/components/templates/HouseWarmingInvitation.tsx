@@ -1,10 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import Link from "next/link";
-import { invitationApiBase, invitationDoneHref, type GalleryItem, type InvitationTemplate, type InvitationTheme, type ProgramItem, type TemplateContent, imageUrl, withImageUrl } from "@/lib/api";
 import EditableField from "@/components/templates/EditableField";
-import ThemePicker from "@/components/templates/ThemePicker";
+import InvitationEditChrome from "@/components/templates/InvitationEditChrome";
+import { invitationApiBase, invitationDoneHref, rememberPendingImage, type GalleryItem, type InvitationTemplate, type InvitationTheme, type PendingImage, type ProgramItem, type TemplateContent, imageUrl, withImageUrl } from "@/lib/api";
 
 export const TERRACOTTA_THEME_ID = "6ab11eefd26a7018a27ad6e4";
 export const SAGE_THEME_ID = "6ab11eefd26a7018a27ad6e7";
@@ -70,12 +69,19 @@ function HouseIcon({ className = "h-8 w-8" }: { className?: string }) {
 export default function HouseWarmingInvitation({
   template,
   editable = false,
+  onPublish,
 }: {
   template: InvitationTemplate;
   editable?: boolean;
+  onPublish?: (draft: InvitationTemplate, images: PendingImage[]) => Promise<string>;
 }) {
   const [draft, setDraft] = useState(template);
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [publishing, setPublishing] = useState(false);
+  const [previewing, setPreviewing] = useState(false);
+  const [payOpen, setPayOpen] = useState(false);
+  const pendingImages = useRef<PendingImage[]>([]);
+  const editing = editable && !previewing;
   const [opened, setOpened] = useState(editable);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [lightbox, setLightbox] = useState<number | null>(null);
@@ -98,6 +104,17 @@ export default function HouseWarmingInvitation({
     imageSlot: ImageSlot | "gallery" = "hero",
     galleryIndex?: number
   ) {
+    if (onPublish) {
+      if (image) {
+        pendingImages.current = rememberPendingImage(pendingImages.current, {
+          file: image,
+          slot: imageSlot,
+          galleryIndex,
+        });
+      }
+      return;
+    }
+
     setStatus("saving");
     const body = new FormData();
     body.append("content", JSON.stringify(nextContent));
@@ -206,10 +223,27 @@ export default function HouseWarmingInvitation({
     void persist(content, file, "gallery", index);
   }
 
+  async function publish() {
+    if (!onPublish || publishing) {
+      return;
+    }
+
+    setPublishing(true);
+    setStatus("saving");
+
+    try {
+      await onPublish(draft, pendingImages.current);
+    } catch (err) {
+      setStatus("error");
+      setPublishing(false);
+      throw err;
+    }
+  }
+
   const field = (key: ContentTextKey, className = "", multiline = false) => (
     <EditableField
       value={typeof content[key] === "string" ? content[key] : ""}
-      editable={editable}
+      editable={editing}
       className={className}
       multiline={multiline}
       onCommit={(value) => commit(key, value)}
@@ -220,30 +254,30 @@ export default function HouseWarmingInvitation({
     return (
       <>
         <div
-          className={`${className} ${editable ? "cursor-pointer" : ""}`}
-          role={editable ? "button" : undefined}
-          tabIndex={editable ? 0 : undefined}
+          className={`${className} ${editing ? "cursor-pointer" : ""}`}
+          role={editing ? "button" : undefined}
+          tabIndex={editing ? 0 : undefined}
           onClick={() => {
-            if (editable) {
+            if (editing) {
               imageRefs.current[slot]?.click();
             }
           }}
           onKeyDown={(event) => {
-            if (editable && (event.key === "Enter" || event.key === " ")) {
+            if (editing && (event.key === "Enter" || event.key === " ")) {
               event.preventDefault();
               imageRefs.current[slot]?.click();
             }
           }}
-          aria-label={editable ? label : undefined}
+          aria-label={editing ? label : undefined}
         >
           {children}
-          {editable ? (
+          {editing ? (
             <span className="pointer-events-none absolute bottom-4 left-1/2 z-10 -translate-x-1/2 rounded-full border border-[var(--color-linen-border)] bg-[var(--color-linen-card)]/90 px-3 py-1 text-[10px] font-semibold tracking-[1.2px] text-[#87361b] uppercase">
               Change photo
             </span>
           ) : null}
         </div>
-        {editable ? (
+        {editing ? (
           <input
             ref={(node) => {
               imageRefs.current[slot] = node;
@@ -321,40 +355,57 @@ export default function HouseWarmingInvitation({
   ];
 
   return (
+    <>
     <main className={`house-warming relative${themeClass}`}>
-      {editable ? (
-        <div className="fixed top-[max(10px,env(safe-area-inset-top,0px))] left-[max(12px,env(safe-area-inset-left,0px))] z-[1200] flex max-w-[min(92vw,360px)] flex-col gap-1 rounded-2xl border border-[var(--color-linen-border)] bg-[var(--color-linen-nav)] px-3 py-2.5 text-[#221c18] shadow-[0_10px_28px_rgba(34,28,24,0.12)] backdrop-blur-sm">
-          <div className="flex items-center gap-3">
-            <Link
-              href={invitationDoneHref(draft)}
-              className="rounded-full border border-[#ab4f3166] px-3 py-1 text-[10px] font-semibold tracking-[1.4px] text-[#87361b] uppercase no-underline hover:bg-[#ab4f31] hover:text-white"
-            >
-              Done
-            </Link>
-            <span className="text-[9px] tracking-[1.4px] text-[#796e65] uppercase">
-              {status === "saving" ? "Saving…" : status === "saved" ? "Saved" : status === "error" ? "Could not save" : "Editing"}
-            </span>
-          </div>
-          <p className="m-0 text-[11px] text-[#796e65]">Tap any text or photo to edit</p>
-          <ThemePicker
-            slug={draft.slug}
-            selectedThemeId={draft.selectedThemeId}
-            themes={draft.themes || []}
-            source={draft.source}
-            variant="house"
-            onChange={(selectedThemeId, themes: InvitationTheme[]) => {
-              setDraft((prev) => ({
-                ...prev,
-                selectedThemeId,
-                selectedThemeTitle: themes.find((theme) => theme.id === selectedThemeId)?.title || prev.selectedThemeTitle,
-                themes,
-              }));
-              setStatus("saved");
-            }}
-          />
-        </div>
-      ) : null}
-
+      <InvitationEditChrome
+        variant="house"
+        editing={editing}
+        previewing={previewing}
+        status={status}
+        publishing={publishing}
+        canPublish={Boolean(onPublish)}
+        doneHref={invitationDoneHref(draft)}
+        invitationName={draft.name}
+        slug={draft.slug}
+        selectedThemeId={draft.selectedThemeId}
+        themes={draft.themes || []}
+        source={draft.source}
+        payOpen={payOpen}
+        onEnterPreview={() => {
+          setStatus("idle");
+          setPreviewing(true);
+          window.scrollTo({ top: 0 });
+        }}
+        onBackToEdit={() => {
+          setPublishing(false);
+          setStatus("idle");
+          setPreviewing(false);
+          setPayOpen(false);
+          window.scrollTo({ top: 0 });
+        }}
+        onOpenPay={() => {
+          setStatus("idle");
+          setPayOpen(true);
+        }}
+        onClosePay={() => {
+          if (!publishing) {
+            setPayOpen(false);
+          }
+        }}
+        onConfirmPay={async () => {
+          await publish();
+        }}
+        onThemeChange={(selectedThemeId, themes) => {
+          setDraft((prev) => ({
+            ...prev,
+            selectedThemeId,
+            selectedThemeTitle:
+              themes.find((theme) => theme.id === selectedThemeId)?.title || prev.selectedThemeTitle,
+            themes,
+          }));
+          setStatus("saved");
+        }}
+      />
       <div className={`hw-envelope ${opened ? "is-open" : ""}`}>
         <p className="hw-font-arabic mb-1 text-center text-[1.85rem] leading-[1.4] text-[#e4be57] [text-shadow:0_2px_14px_#e6c56859]">
           {content.bismillah}
@@ -494,7 +545,7 @@ export default function HouseWarmingInvitation({
           <button type="button" className="hw-btn-primary inline-flex items-center gap-2.5 px-[30px] py-[15px] text-[0.96rem] font-semibold" onClick={() => setCalendarOpen(true)}>
             {field("addToCalendarLabel")}
           </button>
-          {editable ? (
+          {editing ? (
             <span className="inline-flex items-center gap-2.5 rounded-full border border-[var(--color-linen-border)] bg-[var(--color-linen-card)] px-7 py-[15px] text-[0.96rem] font-semibold shadow-sm">
               {field("getDirectionsLabel")}
             </span>
@@ -509,7 +560,7 @@ export default function HouseWarmingInvitation({
             </a>
           )}
         </div>
-        {editable ? <p className="mt-3 max-w-xl text-[11px] break-all text-[#796e65]">{field("googleMapsUrl", "", true)}</p> : null}
+        {editing ? <p className="mt-3 max-w-xl text-[11px] break-all text-[#796e65]">{field("googleMapsUrl", "", true)}</p> : null}
       </section>
 
       <section id="schedule" className="relative z-[2] mx-auto max-w-[940px] px-6 py-[90px]">
@@ -538,7 +589,7 @@ export default function HouseWarmingInvitation({
                     odd ? "ml-5 md:mr-9 md:ml-0 md:text-right" : "ml-5 md:ml-9"
                   }`}
                 >
-                  {editable ? (
+                  {editing ? (
                     <button
                       type="button"
                       className={`absolute top-3 flex h-8 w-8 items-center justify-center rounded-full border border-[var(--color-linen-border)] bg-[var(--color-linen-card)] text-[#87361b] hover:bg-[#ab4f31] hover:text-white ${
@@ -553,21 +604,21 @@ export default function HouseWarmingInvitation({
                   <p className="mb-2.5 inline-flex rounded-full bg-[var(--color-terracotta-soft)] px-3.5 py-1 text-[0.82rem] font-bold text-[var(--color-terracotta-dark)]">
                     <EditableField
                       value={item.time || ""}
-                      editable={editable}
+                      editable={editing}
                       onCommit={(value) => commitProgram(index, "time", value)}
                     />
                   </p>
                   <h3 className="hw-font-serif mb-1.5 text-[1.4rem] text-[#221c18]">
                     <EditableField
                       value={item.title || ""}
-                      editable={editable}
+                      editable={editing}
                       onCommit={(value) => commitProgram(index, "title", value)}
                     />
                   </h3>
                   <p className="text-[0.93rem] leading-[1.65] text-[#796e65]">
                     <EditableField
                       value={item.description || ""}
-                      editable={editable}
+                      editable={editing}
                       multiline
                       onCommit={(value) => commitProgram(index, "description", value)}
                     />
@@ -576,7 +627,7 @@ export default function HouseWarmingInvitation({
               </article>
             );
           })}
-          {editable ? (
+          {editing ? (
             <div className="relative flex justify-center pt-2">
               <button
                 type="button"
@@ -620,7 +671,7 @@ export default function HouseWarmingInvitation({
                   <span className="flex h-full items-center justify-center bg-[#2b221c] text-white/70">Add photo</span>
                 )}
               </div>
-              {editable ? (
+              {editing ? (
                 <input
                   ref={(node) => {
                     galleryInputRefs.current[index] = node;
@@ -639,10 +690,10 @@ export default function HouseWarmingInvitation({
               ) : null}
               <div
                 className={`hw-gallery-overlay absolute inset-0 z-[2] flex flex-col justify-end p-[26px] text-white ${
-                  editable ? "" : "pointer-events-none"
+                  editing ? "" : "pointer-events-none"
                 }`}
               >
-                {editable ? (
+                {editing ? (
                   <button
                     type="button"
                     className="absolute top-3 right-3 flex h-8 w-8 items-center justify-center rounded-full border border-white/40 bg-[#120e0bb8] text-white hover:bg-[#ab4f31]"
@@ -655,21 +706,21 @@ export default function HouseWarmingInvitation({
                 <p className="mb-1.5 text-[0.76rem] font-semibold tracking-[0.12em] text-[#e4be57] uppercase">
                   <EditableField
                     value={item.eyebrow || ""}
-                    editable={editable}
+                    editable={editing}
                     onCommit={(value) => commitGallery(index, "eyebrow", value)}
                   />
                 </p>
                 <h3 className="hw-font-serif mb-1 text-[1.45rem] font-semibold">
                   <EditableField
                     value={item.title || ""}
-                    editable={editable}
+                    editable={editing}
                     onCommit={(value) => commitGallery(index, "title", value)}
                   />
                 </h3>
                 <p className="mb-3 text-[0.9rem] text-white/82">
                   <EditableField
                     value={item.caption || ""}
-                    editable={editable}
+                    editable={editing}
                     multiline
                     onCommit={(value) => commitGallery(index, "caption", value)}
                   />
@@ -682,7 +733,7 @@ export default function HouseWarmingInvitation({
                   >
                     {content.viewPhotoLabel}
                   </button>
-                  {editable ? (
+                  {editing ? (
                     <button
                       type="button"
                       className="inline-flex rounded-full border border-[var(--color-linen-border)] bg-[var(--color-linen-card)]/90 px-3 py-1 text-[10px] font-semibold tracking-[1.2px] text-[#87361b] uppercase"
@@ -695,7 +746,7 @@ export default function HouseWarmingInvitation({
               </div>
             </article>
           ))}
-          {editable ? (
+          {editing ? (
             <button
               type="button"
               className={`flex min-h-[120px] items-center justify-center rounded-[24px] border-2 border-dashed border-[#e4be57] bg-[var(--color-linen-card)] text-[1.7rem] leading-none text-[var(--color-terracotta)] ${
@@ -734,7 +785,7 @@ export default function HouseWarmingInvitation({
               <button type="button" className="hw-btn-primary px-5 py-3.5 text-sm font-semibold" onClick={() => void copyAddress()}>
                 {field("copyAddressLabel")}
               </button>
-              {editable ? (
+              {editing ? (
                 <>
                   <span className="rounded-2xl border border-[var(--color-linen-border)] bg-[var(--color-linen-surface)] px-5 py-3.5 text-center text-sm font-semibold">
                     {field("openGoogleLabel")}
@@ -771,14 +822,14 @@ export default function HouseWarmingInvitation({
             <iframe
               title="Venue map"
               className="h-full min-h-[330px] w-full border-0"
-              src={mapsEmbed(content.appleMapsUrl || content.googleMapsUrl || content.addressFull)}
+              src={mapsEmbed(content.appleMapsUrl || content.googleMapsUrl || content.addressFull || "")}
               loading="lazy"
             />
           </div>
         </div>
       </section>
 
-      <footer className="relative z-[2] border-t border-[var(--color-linen-border)] bg-[var(--color-linen-surface)] px-6 pt-[70px] pb-[90px] text-center">
+      <footer className={`relative z-[2] border-t border-[var(--color-linen-border)] bg-[var(--color-linen-surface)] px-6 pt-[70px] text-center ${editable ? "pb-40" : "pb-[90px]"}`}>
         <p className="hw-font-arabic mb-2 text-[1.9rem] text-[var(--color-terracotta)]">{field("hamdalah")}</p>
         <p className="hw-font-serif mx-auto mb-3.5 max-w-[620px] text-[1.3rem] leading-[1.6] text-[#221c18] italic">
           “{field("closingBlessing", "", true)}”
@@ -803,11 +854,12 @@ export default function HouseWarmingInvitation({
       </footer>
 
       <a
-        className="hw-wa fixed right-6 bottom-6 z-[9998] inline-flex items-center gap-2.5 rounded-full border border-white/50 px-[22px] py-3 text-[0.92rem] font-semibold text-white no-underline"
+        className={`hw-wa fixed right-6 z-[10060] inline-flex items-center gap-2.5 rounded-full border border-white/50 px-[22px] py-3 text-[0.92rem] font-semibold text-white no-underline ${editable ? "bottom-24" : "bottom-6"} ${previewing || payOpen ? "pointer-events-none invisible" : ""}`}
         href={`https://wa.me/?text=${shareText}`}
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Share invitation via WhatsApp"
+        aria-hidden={previewing || payOpen}
       >
         <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
           <path
@@ -853,5 +905,6 @@ export default function HouseWarmingInvitation({
         </p>
       ) : null}
     </main>
+    </>
   );
 }

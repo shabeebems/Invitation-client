@@ -7,7 +7,7 @@
   --accent: #e51d7a;
   --accent-hover: #cc176c;
   --logo: #ff4f9a;
-  --page: #fbf7fa;
+  --page: #f5efe4;
   --text: #1f1a21;
 }
 
@@ -25,6 +25,15 @@
 html,
 body {
   height: 100%;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
 body {

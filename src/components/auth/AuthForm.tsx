@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { API_URL } from "@/lib/api";
+import { loginHref, safeNextPath, signupHref } from "@/lib/session";
 
 declare global {
   interface Window {
@@ -13,6 +14,7 @@ declare global {
           initialize: (config: {
             client_id: string;
             callback: (response: { credential: string }) => void;
+            use_fedcm_for_prompt?: boolean;
           }) => void;
           renderButton: (
             parent: HTMLElement,
@@ -83,8 +85,20 @@ export default function AuthForm({ mode }: { mode: Mode }) {
   const [errors, setErrors] = useState<Errors>({});
   const [formError, setFormError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const nextPathRef = useRef("");
+  const [nextPath, setNextPath] = useState("");
   const googleButtonRef = useRef<HTMLDivElement>(null);
   const onGoogleCredential = useRef<(credential: string) => void>(() => {});
+
+  useEffect(() => {
+    const path = safeNextPath(new URLSearchParams(window.location.search).get("next"));
+    nextPathRef.current = path;
+    setNextPath(path);
+  }, []);
+
+  function afterAuth(role?: string) {
+    router.push(nextPathRef.current || (role === "admin" ? "/admin/dashboard" : "/account"));
+  }
 
   onGoogleCredential.current = async (credential) => {
     try {
@@ -104,7 +118,7 @@ export default function AuthForm({ mode }: { mode: Mode }) {
         throw new Error(data.message || "Could not continue");
       }
 
-      router.push(data.user?.role === "admin" ? "/admin/dashboard" : "/");
+      afterAuth(data.user?.role);
     } catch (error) {
       setFormError(error instanceof Error ? error.message : "Could not continue");
     }
@@ -133,6 +147,7 @@ export default function AuthForm({ mode }: { mode: Mode }) {
           callback: (response) => {
             void onGoogleCredential.current(response.credential);
           },
+          use_fedcm_for_prompt: true,
         });
         googleInitialized = true;
       }
@@ -239,7 +254,7 @@ export default function AuthForm({ mode }: { mode: Mode }) {
         throw new Error(data.message || "Could not continue");
       }
 
-      router.push(data.user?.role === "admin" ? "/admin/dashboard" : "/");
+      afterAuth(data.user?.role);
     } catch (error) {
       setFormError(error instanceof Error ? error.message : "Could not continue");
     } finally {
@@ -366,7 +381,10 @@ export default function AuthForm({ mode }: { mode: Mode }) {
 
       <p className="mt-6 text-center text-sm text-zinc-500">
         {isSignup ? "Already have an account?" : "Need an account?"}{" "}
-        <Link href={isSignup ? "/login" : "/signup"} className="font-semibold text-accent hover:text-accent-hover">
+        <Link
+          href={isSignup ? loginHref(nextPath) : signupHref(nextPath)}
+          className="font-semibold text-accent hover:text-accent-hover"
+        >
           {isSignup ? "Login" : "Signup"}
         </Link>
       </p>

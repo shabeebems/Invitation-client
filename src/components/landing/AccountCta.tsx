@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { AdminUser } from "@/lib/api";
-import { loadSession } from "@/lib/session";
+import { homeFor, loadSession } from "@/lib/session";
 
 export default function AccountCta() {
   const [user, setUser] = useState<AdminUser | null | undefined>(undefined);
@@ -34,12 +34,19 @@ export default function AccountCta() {
     return (
       <Link
         href="/signup"
-        className="rounded-full border border-zinc-300 bg-white px-5 py-3 text-sm font-semibold text-zinc-800 hover:border-zinc-800"
+        className="rounded-full border border-white/30 bg-white/10 px-5 py-3 text-sm font-semibold text-white hover:border-white"
       >
         Create an account
       </Link>
     );
   }
 
-  return null;
+  return (
+    <Link
+      href={homeFor(user)}
+      className="rounded-full border border-white/30 bg-white/10 px-5 py-3 text-sm font-semibold text-white hover:border-white"
+    >
+      {user.role === "admin" ? "Dashboard" : "My invitations"}
+    </Link>
+  );
 }

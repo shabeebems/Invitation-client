@@ -90,6 +90,11 @@ export type TemplateContent = {
   calendarModalDesc?: string;
   googleCalendarLabel?: string;
   icsCalendarLabel?: string;
+  celebrantName?: string;
+  ageLabel?: string;
+  partyTitle?: string;
+  dressCode?: string;
+  rsvpNote?: string;
 };
 
 export type ProgramItem = {
@@ -138,6 +143,23 @@ export function withImageUrl(
   return next;
 }
 
+export type PendingImage = {
+  file: File;
+  slot: "hero" | "gallery";
+  galleryIndex?: number;
+};
+
+export function rememberPendingImage(current: PendingImage[], next: PendingImage): PendingImage[] {
+  return [
+    ...current.filter((item) =>
+      next.slot === "gallery"
+        ? !(item.slot === "gallery" && item.galleryIndex === next.galleryIndex)
+        : item.slot !== "hero"
+    ),
+    next,
+  ];
+}
+
 export type InvitationSource = "template" | "work";
 
 export type InvitationTemplate = {
@@ -153,6 +175,7 @@ export type InvitationTemplate = {
   templateId?: string;
   templateName?: string;
   templateSlug?: string;
+  userId?: string;
   selectedThemeId: string;
   selectedThemeTitle: string;
   themes: InvitationTheme[];
@@ -165,7 +188,7 @@ export function invitationApiBase(template: Pick<InvitationTemplate, "slug" | "s
 }
 
 export function invitationDoneHref(template: Pick<InvitationTemplate, "source">) {
-  return template.source === "work" ? "/admin/works" : "/admin/templates";
+  return template.source === "work" ? "/account" : "/admin/templates";
 }
 
 export function invitationPreviewHref(template: Pick<InvitationTemplate, "slug" | "source">) {

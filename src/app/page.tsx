@@ -1,8 +1,16 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { Playfair_Display } from "next/font/google";
 import AccountCta from "@/components/landing/AccountCta";
+import HeroPhone from "@/components/landing/HeroPhone";
+import SiteFooter from "@/components/landing/SiteFooter";
 import SiteNav from "@/components/landing/SiteNav";
-import { API_URL, imageUrl, type InvitationTemplate } from "@/lib/api";
+import TemplateGallery from "@/components/landing/TemplateGallery";
+import { API_URL, type Category, type InvitationTemplate } from "@/lib/api";
+
+const display = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+});
 
 export const metadata: Metadata = {
   title: "Inviteo",
@@ -27,122 +35,137 @@ async function getTemplates(): Promise<InvitationTemplate[]> {
   }
 }
 
+async function getCategories(): Promise<Category[]> {
+  try {
+    const response = await fetch(`${API_URL}/api/categories`, { cache: "no-store" });
+    const data = (await response.json()) as {
+      success?: boolean;
+      categories?: Category[];
+    };
+
+    if (!response.ok || !data.success) {
+      return [];
+    }
+
+    return (data.categories || []).filter((category) => category.isActive);
+  } catch {
+    return [];
+  }
+}
+
+const features = [
+  { icon: "edit", title: "Live Editor", text: "Tap text to edit" },
+  { icon: "check", title: "No Watermark", text: "Clean & ready" },
+  { icon: "clock", title: "Live Countdown", text: "Auto-updating" },
+  { icon: "link", title: "One Link", text: "Share with guests" },
+] as const;
+
 export default async function HomePage() {
-  const templates = await getTemplates();
-  const featured = templates[0];
-  const featuredImage = featured ? imageUrl(featured.images, "hero") : "";
+  const [templates, categories] = await Promise.all([getTemplates(), getCategories()]);
 
   return (
     <div className="min-h-full bg-page">
       <SiteNav />
 
       <main>
-        <section className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-16 md:grid-cols-2 md:py-24">
-          <div>
-            <p className="text-sm font-semibold tracking-[0.18em] text-accent uppercase">
-              Digital invitations
-            </p>
-            <h1 className="mt-3 text-4xl font-extrabold tracking-tight text-zinc-900 md:text-5xl">
-              A page your guests will actually open.
-            </h1>
-            <p className="mt-4 max-w-md text-lg text-zinc-600">
-              Inviteo turns a wedding, housewarming, or celebration into one link. Names, dates,
-              maps, and photos stay on the invitation.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <a
-                href="#previews"
-                className="rounded-full bg-sidebar px-5 py-3 text-sm font-semibold text-white hover:bg-sidebar-muted"
+        <section className="w-full bg-[#143027] text-white">
+          <div className="grid w-full items-center gap-12 px-6 py-14 md:grid-cols-[1.15fr_0.85fr] md:px-10 md:py-20">
+            <div>
+              <h1
+                className={`${display.className} text-[2.6rem] leading-[0.95] font-medium tracking-tight text-balance uppercase sm:text-5xl lg:text-[4.15rem]`}
               >
-                See previews
-              </a>
-              <AccountCta />
+                Create elegant
+                <br />
+                digital wedding
+                <br />
+                invitations
+                <br />
+                <span className="text-[#d6c4a2]">that impress every</span>
+                <br />
+                <span className="text-[#d6c4a2]">guest.</span>
+              </h1>
+              <p className="mt-6 max-w-xl text-base leading-7 text-white/75">
+                Create digital wedding invitations online, then share one link with every guest.
+              </p>
+              <div className="mt-8 grid max-w-2xl grid-cols-2 gap-3 lg:grid-cols-4">
+                {features.map((feature) => (
+                  <Feature key={feature.title} icon={feature.icon} title={feature.title} text={feature.text} />
+                ))}
+              </div>
+              <div className="mt-8 flex flex-wrap gap-3">
+                <a
+                  href="#templates"
+                  className="rounded-full bg-[#d6c4a2] px-5 py-3 text-sm font-semibold text-[#143027] hover:bg-[#e6d7bb]"
+                >
+                  Browse templates
+                </a>
+                <AccountCta />
+              </div>
             </div>
+            <HeroPhone />
           </div>
-
-          {featured ? (
-            <Link
-              href={`/preview/${featured.slug}`}
-              className="group overflow-hidden rounded-[28px] bg-white shadow-sm"
-            >
-              <div
-                className={`relative h-72 overflow-hidden ${
-                  /house\s*warm/i.test(featured.categoryName) ? "bg-[#fbf7f2]" : "bg-[#1a060c]"
-                }`}
-              >
-                {featuredImage ? (
-                  <img
-                    src={featuredImage}
-                    alt={featured.name}
-                    className="h-full w-full object-cover object-top transition duration-300 group-hover:scale-[1.02]"
-                  />
-                ) : null}
-              </div>
-              <div className="px-6 py-5">
-                <p className="text-xs font-semibold tracking-wide text-accent uppercase">
-                  {featured.categoryName || "Invitation"}
-                </p>
-                <h2 className="mt-1 text-xl font-bold text-zinc-900">{featured.name}</h2>
-                <p className="mt-1 text-sm text-zinc-500">{featured.description}</p>
-              </div>
-            </Link>
-          ) : null}
         </section>
 
-        <section id="previews" className="mx-auto max-w-6xl px-5 pb-20">
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold text-zinc-900">Invitation previews</h2>
-            <p className="mt-2 text-zinc-500">Open a design and see how it reads for a guest.</p>
-          </div>
-
-          {templates.length === 0 ? (
-            <div className="rounded-[28px] bg-white px-8 py-12 text-center shadow-sm">
-              <p className="text-lg font-semibold text-zinc-800">No previews yet</p>
-              <p className="mt-1 text-zinc-500">Invitation designs will show up here.</p>
-            </div>
-          ) : (
-            <div className="grid gap-5 sm:grid-cols-2">
-              {templates.map((template) => {
-                const hero = imageUrl(template.images, "hero");
-
-                return (
-                  <article
-                    key={template.id}
-                    className="overflow-hidden rounded-[28px] bg-white shadow-sm"
-                  >
-                    <div
-                      className={`relative h-56 overflow-hidden ${
-                        /house\s*warm/i.test(template.categoryName) ? "bg-[#fbf7f2]" : "bg-[#1a060c]"
-                      }`}
-                    >
-                      {hero ? (
-                        <img
-                          src={hero}
-                          alt={template.name}
-                          className="h-full w-full object-cover object-top"
-                        />
-                      ) : null}
-                    </div>
-                    <div className="px-6 py-5">
-                      <p className="text-xs font-semibold tracking-wide text-accent uppercase">
-                        {template.categoryName || "Invitation"}
-                      </p>
-                      <h3 className="mt-1 text-lg font-bold text-zinc-900">{template.name}</h3>
-                      <p className="mt-1 text-sm text-zinc-500">{template.description}</p>
-                      <Link
-                        href={`/preview/${template.slug}`}
-                        className="mt-4 inline-flex rounded-full bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-accent-hover"
-                      >
-                        Preview
-                      </Link>
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
-          )}
-        </section>
+        <TemplateGallery categories={categories} templates={templates} />
       </main>
+
+      <SiteFooter categories={categories} />
     </div>
+  );
+}
+
+function Feature({
+  icon,
+  title,
+  text,
+}: {
+  icon: (typeof features)[number]["icon"];
+  title: string;
+  text: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-white/15 bg-white/5 px-3 py-4">
+      <FeatureIcon name={icon} />
+      <p className="mt-3 text-sm font-semibold">{title}</p>
+      <p className="mt-1 text-xs text-white/65">{text}</p>
+    </div>
+  );
+}
+
+function FeatureIcon({ name }: { name: (typeof features)[number]["icon"] }) {
+  const common = "h-5 w-5 text-[#d6c4a2]";
+
+  if (name === "edit") {
+    return (
+      <svg className={common} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+        <path d="M4 20h4l10-10-4-4L4 16v4Z" />
+        <path d="m12 6 4 4" />
+      </svg>
+    );
+  }
+
+  if (name === "check") {
+    return (
+      <svg className={common} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+        <circle cx="12" cy="12" r="8" />
+        <path d="m8.5 12.2 2.3 2.3 4.7-5" />
+      </svg>
+    );
+  }
+
+  if (name === "clock") {
+    return (
+      <svg className={common} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+        <circle cx="12" cy="12" r="8" />
+        <path d="M12 8v4.5l3 2" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg className={common} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <path d="M10 13a5 5 0 0 0 7.5.5l2-2a5 5 0 0 0-7-7l-1.2 1.2" />
+      <path d="M14 11a5 5 0 0 0-7.5-.5l-2 2a5 5 0 0 0 7 7l1.2-1.2" />
+    </svg>
   );
 }

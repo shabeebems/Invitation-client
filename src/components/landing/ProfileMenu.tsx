@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { API_URL, type AdminUser } from "@/lib/api";
+import { homeFor } from "@/lib/session";
 
 function ProfileIcon() {
   return (
@@ -80,7 +81,15 @@ export default function ProfileMenu({ user }: { user: AdminUser }) {
           className="absolute top-12 right-0 z-30 w-44 overflow-hidden rounded-2xl bg-white py-1.5 shadow-lg ring-1 ring-black/5"
         >
           <Link
-            href="/profile"
+            href={homeFor(user)}
+            role="menuitem"
+            onClick={() => setOpen(false)}
+            className="block px-4 py-2.5 text-sm font-semibold text-zinc-800 hover:bg-zinc-50"
+          >
+            Dashboard
+          </Link>
+          <Link
+            href="/account/profile"
             role="menuitem"
             onClick={() => setOpen(false)}
             className="block px-4 py-2.5 text-sm font-semibold text-zinc-800 hover:bg-zinc-50"

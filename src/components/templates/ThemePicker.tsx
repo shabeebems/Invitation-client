@@ -10,13 +10,17 @@ export default function ThemePicker({
   themes,
   source = "template",
   variant = "admin",
+  localOnly = false,
+  inline = false,
   onChange,
 }: {
   slug: string;
   selectedThemeId: string;
   themes: InvitationTheme[];
   source?: InvitationSource;
-  variant?: "admin" | "invite" | "house";
+  variant?: "admin" | "invite" | "house" | "party";
+  localOnly?: boolean;
+  inline?: boolean;
   onChange?: (selectedThemeId: string, themes: InvitationTheme[]) => void;
 }) {
   const router = useRouter();
@@ -26,6 +30,8 @@ export default function ThemePicker({
   const [error, setError] = useState("");
   const invite = variant === "invite";
   const house = variant === "house";
+  const party = variant === "party";
+  const inlineChrome = invite || house || party;
 
   useEffect(() => {
     setCurrentId(selectedThemeId);
@@ -33,12 +39,19 @@ export default function ThemePicker({
   }, [selectedThemeId, themes]);
 
   async function selectTheme(themeId: string) {
+    if (localOnly) {
+      setCurrentId(themeId);
+      onChange?.(themeId, items);
+      return;
+    }
+
     setSaving(true);
     setError("");
 
     try {
       const response = await fetch(`${invitationApiBase({ slug, source })}/theme`, {
         method: "PUT",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ selectedThemeId: themeId }),
       });
@@ -58,7 +71,7 @@ export default function ThemePicker({
       setItems(nextThemes);
       onChange?.(nextId, nextThemes);
 
-      if (!invite) {
+      if (variant === "admin") {
         router.refresh();
       }
     } catch (err) {
@@ -73,14 +86,24 @@ export default function ThemePicker({
   }
 
   return (
-    <div className={invite || house ? "mt-2" : "mt-4 border-t border-zinc-100 pt-4"}>
+    <div
+      className={
+        inline
+          ? "flex shrink-0 items-center gap-2"
+          : inlineChrome
+            ? "mt-2"
+            : "mt-4 border-t border-zinc-100 pt-4"
+      }
+    >
       <label
         className={
           invite
-            ? "font-caps text-[9px] tracking-[1.4px] text-[#e7d3a4b3] uppercase"
+            ? "font-caps shrink-0 text-[9px] tracking-[1.4px] text-[#e7d3a4b3] uppercase"
             : house
-              ? "text-[9px] font-semibold tracking-[1.4px] text-[#796e65] uppercase"
-              : "text-xs font-semibold tracking-wide text-zinc-400 uppercase"
+              ? "shrink-0 text-[9px] font-semibold tracking-[1.4px] text-[#796e65] uppercase"
+              : party
+                ? "bd-sans shrink-0 text-[9px] font-semibold tracking-[1.4px] text-[#e8d5a8b3] uppercase"
+                : "text-xs font-semibold tracking-wide text-zinc-400 uppercase"
         }
       >
         Theme
@@ -91,10 +114,12 @@ export default function ThemePicker({
         onChange={(event) => void selectTheme(event.target.value)}
         className={
           invite
-            ? "font-caps mt-1.5 w-full rounded-full border border-[#e7d3a473] bg-[#1a060c] px-3 py-1.5 text-[10px] tracking-[1.2px] text-[#e7d3a4] uppercase"
+            ? `font-caps rounded-full border border-[#e7d3a473] bg-[#1a060c] px-3 py-1.5 text-[10px] tracking-[1.2px] text-[#e7d3a4] uppercase ${inline ? "w-auto" : "mt-1.5 w-full"}`
             : house
-              ? "mt-1.5 w-full rounded-full border border-[#e8dccd] bg-white px-3 py-1.5 text-[11px] font-medium tracking-[0.4px] text-[#221c18]"
-              : "mt-1.5 w-full rounded-full border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-800"
+              ? `rounded-full border border-[#e8dccd] bg-white px-3 py-1.5 text-[11px] font-medium tracking-[0.4px] text-[#221c18] ${inline ? "w-auto" : "mt-1.5 w-full"}`
+              : party
+                ? `bd-sans rounded-full border border-[#e8d5a873] bg-[#070b14] px-3 py-1.5 text-[11px] font-medium tracking-[0.4px] text-[#e8d5a8] ${inline ? "w-auto" : "mt-1.5 w-full"}`
+                : "mt-1.5 w-full rounded-full border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-800"
         }
       >
         {items.map((theme) => (

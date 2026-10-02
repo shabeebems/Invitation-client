@@ -3,8 +3,14 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Playfair_Display } from "next/font/google";
 import type { AdminUser } from "@/lib/api";
 import { homeFor, loadSession } from "@/lib/session";
+
+const display = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["500", "600"],
+});
 
 export default function ProfileCard() {
   const router = useRouter();
@@ -36,7 +42,11 @@ export default function ProfileCard() {
   }, [router]);
 
   if (!user) {
-    return <p className="text-sm text-zinc-500">Loading profile…</p>;
+    return (
+      <section className="rounded-[32px] border border-[#e8dfd0] bg-[#faf6ee] px-8 py-10">
+        <p className="text-sm text-zinc-500">Loading profile…</p>
+      </section>
+    );
   }
 
   const rows = [
@@ -46,31 +56,46 @@ export default function ProfileCard() {
     ["Role", user.role === "admin" ? "Admin" : "Customer"],
   ];
 
+  const initials = user.name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("");
+
   return (
-    <section className="rounded-[28px] bg-white px-8 py-10 shadow-sm">
-      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-accent text-white">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-          <circle cx="12" cy="8" r="3.2" />
-          <path d="M5.5 19c1.2-3.2 3.5-4.7 6.5-4.7s5.3 1.5 6.5 4.7" />
-        </svg>
+    <section className="overflow-hidden rounded-[32px] border border-[#e8dfd0] bg-[#faf6ee] shadow-[0_16px_40px_rgba(20,48,39,0.06)]">
+      <div className="bg-[#143027] px-6 py-8 text-white sm:px-8">
+        <p className="text-[11px] font-semibold tracking-[0.2em] text-[#d6c4a2] uppercase">Profile</p>
+        <div className="mt-5 flex items-center gap-4">
+          <span className="flex h-16 w-16 items-center justify-center rounded-full bg-[#d6c4a2] text-lg font-bold text-[#143027]">
+            {initials}
+          </span>
+          <div className="min-w-0">
+            <h1 className={`${display.className} truncate text-3xl font-medium tracking-tight`}>
+              {user.name}
+            </h1>
+            <p className="mt-1 truncate text-sm text-white/60">{user.email}</p>
+          </div>
+        </div>
       </div>
-      <h1 className="mt-6 text-3xl font-extrabold tracking-tight text-zinc-900">{user.name}</h1>
-      <p className="mt-1 text-sm text-zinc-500">{user.email}</p>
-      <dl className="mt-8 divide-y divide-zinc-100">
+      <dl className="divide-y divide-[#ebe3d6] px-6 sm:px-8">
         {rows.map(([label, value]) => (
-          <div key={label} className="flex items-center justify-between gap-4 py-3">
+          <div key={label} className="flex items-center justify-between gap-4 py-4">
             <dt className="text-sm font-semibold text-zinc-500">{label}</dt>
             <dd className="text-sm font-semibold text-zinc-900">{value}</dd>
           </div>
         ))}
       </dl>
       {user.role === "admin" ? (
-        <Link
-          href={homeFor(user)}
-          className="mt-6 inline-flex rounded-full bg-accent px-5 py-3 text-sm font-semibold text-white hover:bg-accent-hover"
-        >
-          Dashboard
-        </Link>
+        <div className="px-6 pb-8 sm:px-8">
+          <Link
+            href={homeFor(user)}
+            className="inline-flex rounded-full bg-[#143027] px-5 py-3 text-sm font-semibold text-[#f3ead8] hover:bg-[#1c4034]"
+          >
+            Admin dashboard
+          </Link>
+        </div>
       ) : null}
     </section>
   );

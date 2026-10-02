@@ -1,10 +1,9 @@
 "use client";
 
 import { useRef, useState } from "react";
-import Link from "next/link";
-import { invitationApiBase, invitationDoneHref, type InvitationTemplate, type InvitationTheme, type TemplateContent, imageUrl, withImageUrl } from "@/lib/api";
 import EditableField from "@/components/templates/EditableField";
-import ThemePicker from "@/components/templates/ThemePicker";
+import InvitationEditChrome from "@/components/templates/InvitationEditChrome";
+import { invitationApiBase, invitationDoneHref, rememberPendingImage, type InvitationTemplate, type InvitationTheme, type PendingImage, type TemplateContent, imageUrl, withImageUrl } from "@/lib/api";
 
 export const RED_VELVET_THEME_ID = "6ab112ec097114d6c4cefdb4";
 export const HULK_THEME_ID = "6ab1131c097114d6c4cefdc3";
@@ -109,12 +108,19 @@ function Sparkles() {
 export default function RoyalReceptionInvitation({
   template,
   editable = false,
+  onPublish,
 }: {
   template: InvitationTemplate;
   editable?: boolean;
+  onPublish?: (draft: InvitationTemplate, images: PendingImage[]) => Promise<string>;
 }) {
   const [draft, setDraft] = useState(template);
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [publishing, setPublishing] = useState(false);
+  const [previewing, setPreviewing] = useState(false);
+  const [payOpen, setPayOpen] = useState(false);
+  const editing = editable && !previewing;
+  const pendingImages = useRef<PendingImage[]>([]);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const { content } = draft;
   const heroImageUrl = imageUrl(draft.images, "hero");
@@ -123,6 +129,13 @@ export default function RoyalReceptionInvitation({
   const shareText = encodeURIComponent(content.shareText || "");
 
   async function persist(nextContent: TemplateContent, image?: File) {
+    if (onPublish) {
+      if (image) {
+        pendingImages.current = rememberPendingImage(pendingImages.current, { file: image, slot: "hero" });
+      }
+      return;
+    }
+
     setStatus("saving");
 
     const body = new FormData();
@@ -173,10 +186,27 @@ export default function RoyalReceptionInvitation({
     void persist(draft.content, file);
   }
 
+  async function publish() {
+    if (!onPublish || publishing) {
+      return;
+    }
+
+    setPublishing(true);
+    setStatus("saving");
+
+    try {
+      await onPublish(draft, pendingImages.current);
+    } catch (err) {
+      setStatus("error");
+      setPublishing(false);
+      throw err;
+    }
+  }
+
   const field = (key: Exclude<keyof TemplateContent, "programItems" | "galleryItems">, className: string, multiline = false) => (
     <EditableField
       value={content[key] || ""}
-      editable={editable}
+      editable={editing}
       className={className}
       multiline={multiline}
       onCommit={(value) => commit(key, value)}
@@ -193,38 +223,55 @@ export default function RoyalReceptionInvitation({
 
   return (
     <main className={`royal-invitation relative${themeClass}`}>
-      {editable ? (
-        <div className="fixed top-[max(10px,env(safe-area-inset-top,0px))] left-[max(12px,env(safe-area-inset-left,0px))] z-[1200] flex max-w-[min(92vw,360px)] flex-col gap-1 rounded-2xl border border-[#e7d3a459] bg-[#1a060ce8] px-3 py-2.5 text-[#f3e8cd] shadow-[0_10px_28px_rgba(10,5,7,0.45)] backdrop-blur-sm">
-          <div className="flex items-center gap-3">
-            <Link
-              href={invitationDoneHref(draft)}
-              className="font-caps rounded-full border border-[#e7d3a473] px-3 py-1 text-[10px] tracking-[1.4px] text-[#e7d3a4] uppercase no-underline hover:border-[#e7d3a4] hover:text-[#f3e8cd]"
-            >
-              Done
-            </Link>
-            <span className="font-caps text-[9px] tracking-[1.4px] text-[#e7d3a4b3] uppercase">
-              {status === "saving" ? "Saving…" : status === "saved" ? "Saved" : status === "error" ? "Could not save" : "Editing"}
-            </span>
-          </div>
-          <p className="font-invite-sans m-0 text-[11px] text-[#f3e8cd99]">Tap any text or the photo to edit</p>
-          <ThemePicker
-            slug={draft.slug}
-            selectedThemeId={draft.selectedThemeId}
-            themes={draft.themes || []}
-            source={draft.source}
-            variant="invite"
-            onChange={(selectedThemeId, themes: InvitationTheme[]) => {
-              setDraft((prev) => ({
-                ...prev,
-                selectedThemeId,
-                selectedThemeTitle: themes.find((theme) => theme.id === selectedThemeId)?.title || prev.selectedThemeTitle,
-                themes,
-              }));
-              setStatus("saved");
-            }}
-          />
-        </div>
-      ) : null}
+      <InvitationEditChrome
+        variant="invite"
+        editing={editing}
+        previewing={previewing}
+        status={status}
+        publishing={publishing}
+        canPublish={Boolean(onPublish)}
+        doneHref={invitationDoneHref(draft)}
+        invitationName={draft.name}
+        slug={draft.slug}
+        selectedThemeId={draft.selectedThemeId}
+        themes={draft.themes || []}
+        source={draft.source}
+        payOpen={payOpen}
+        onEnterPreview={() => {
+          setStatus("idle");
+          setPreviewing(true);
+          window.scrollTo({ top: 0 });
+        }}
+        onBackToEdit={() => {
+          setPublishing(false);
+          setStatus("idle");
+          setPreviewing(false);
+          setPayOpen(false);
+          window.scrollTo({ top: 0 });
+        }}
+        onOpenPay={() => {
+          setStatus("idle");
+          setPayOpen(true);
+        }}
+        onClosePay={() => {
+          if (!publishing) {
+            setPayOpen(false);
+          }
+        }}
+        onConfirmPay={async () => {
+          await publish();
+        }}
+        onThemeChange={(selectedThemeId, themes) => {
+          setDraft((prev) => ({
+            ...prev,
+            selectedThemeId,
+            selectedThemeTitle:
+              themes.find((theme) => theme.id === selectedThemeId)?.title || prev.selectedThemeTitle,
+            themes,
+          }));
+          setStatus("saved");
+        }}
+      />
 
       <header className="pointer-events-none fixed inset-x-0 top-0 z-[1100] px-[clamp(12px,2.5vw,32px)]">
         <div className="flex min-h-16 items-center justify-center">
@@ -250,17 +297,17 @@ export default function RoyalReceptionInvitation({
         <div className="relative z-[4] grid w-[min(1180px,100%)] grid-cols-1 items-end gap-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:gap-x-[clamp(20px,3.5vw,48px)]">
           <div className="relative z-[5] order-2 flex min-h-0 items-end justify-center lg:order-1 lg:col-start-1 lg:row-span-2 lg:min-h-[min(78vh,720px)]">
             <div
-              className={`relative ${editable ? "cursor-pointer" : ""}`}
-              role={editable ? "button" : undefined}
-              tabIndex={editable ? 0 : undefined}
-              onClick={() => editable && imageInputRef.current?.click()}
+              className={`relative ${editing ? "cursor-pointer" : ""}`}
+              role={editing ? "button" : undefined}
+              tabIndex={editing ? 0 : undefined}
+              onClick={() => editing && imageInputRef.current?.click()}
               onKeyDown={(event) => {
-                if (editable && (event.key === "Enter" || event.key === " ")) {
+                if (editing && (event.key === "Enter" || event.key === " ")) {
                   event.preventDefault();
                   imageInputRef.current?.click();
                 }
               }}
-              aria-label={editable ? "Change couple photo" : undefined}
+              aria-label={editing ? "Change couple photo" : undefined}
             >
               {heroImageUrl ? (
                 <img
@@ -273,13 +320,13 @@ export default function RoyalReceptionInvitation({
                   Add photo
                 </span>
               )}
-              {editable ? (
+              {editing ? (
                 <span className="font-caps pointer-events-none absolute bottom-6 left-1/2 -translate-x-1/2 rounded-full border border-[#e7d3a473] bg-[#1a060cc7] px-3 py-1.5 text-[9px] tracking-[1.6px] text-[#e7d3a4] uppercase">
                   Change photo
                 </span>
               ) : null}
             </div>
-            {editable ? (
+            {editing ? (
               <input
                 ref={imageInputRef}
                 type="file"
@@ -365,7 +412,7 @@ export default function RoyalReceptionInvitation({
                 {field("venueCity", "")}
               </p>
               <div className="mt-3 flex w-full max-w-[280px] flex-col items-center justify-center">
-                {editable ? (
+                {editing ? (
                   <>
                     <span className="font-caps inline-flex min-h-11 min-w-[168px] items-center justify-center border border-[#b9893e66] bg-transparent px-5 py-2.5 text-[10px] tracking-[1.6px] text-[#b9893e] uppercase">
                       Open in Maps
@@ -392,7 +439,7 @@ export default function RoyalReceptionInvitation({
         </div>
       </section>
 
-      <footer className="invite-footer relative z-[1] overflow-hidden px-[clamp(16px,3vw,32px)] pt-[clamp(24px,4vh,40px)] pb-6 text-center">
+      <footer className={`invite-footer relative z-[1] overflow-hidden px-[clamp(16px,3vw,32px)] pt-[clamp(24px,4vh,40px)] text-center ${editable ? "pb-40" : "pb-6"}`}>
         <p className="font-names text-shimmer-slow mt-0 text-[clamp(34px,5vw+0.5rem,54px)] leading-[1.15]">
           {field("groomName", "")} <span className="font-invite-serif text-[0.55em] text-[#b9893e] not-italic"> & </span> {field("brideName", "")}
         </p>
@@ -411,7 +458,7 @@ export default function RoyalReceptionInvitation({
       </footer>
 
       <a
-        className="invite-share font-caps fixed right-[max(14px,env(safe-area-inset-right,0px))] bottom-[max(18px,env(safe-area-inset-bottom,0px))] z-[1100] inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-[#f3e8cd73] px-4 py-3 text-[10px] tracking-[2px] text-[#e7d3a4] uppercase no-underline"
+        className={`invite-share font-caps fixed right-[max(14px,env(safe-area-inset-right,0px))] z-[10060] inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-[#f3e8cd73] px-4 py-3 text-[10px] tracking-[2px] text-[#e7d3a4] uppercase no-underline ${editable ? "bottom-[4.75rem]" : "bottom-[max(18px,env(safe-area-inset-bottom,0px))]"}`}
         href={`https://wa.me/?text=${shareText}`}
         target="_blank"
         rel="noopener noreferrer"

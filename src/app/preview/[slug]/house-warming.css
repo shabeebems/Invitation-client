@@ -87,7 +87,8 @@ body:has(.house-warming.palette-sage) {
     radial-gradient(circle, #83967866 1.1px, transparent 1.4px);
 }
 
-.house-warming > * {
+.house-warming > section,
+.house-warming > footer {
   position: relative;
   z-index: 2;
 }

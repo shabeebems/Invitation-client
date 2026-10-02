@@ -49,5 +49,23 @@ export function loadSession(): Promise<AdminUser | null> {
 }
 
 export function homeFor(user: AdminUser): string {
-  return user.role === "admin" ? "/admin/dashboard" : "/";
+  return user.role === "admin" ? "/admin/dashboard" : "/account";
+}
+
+export function safeNextPath(value: string | null | undefined): string {
+  if (!value || !value.startsWith("/") || value.startsWith("//")) {
+    return "";
+  }
+
+  return value;
+}
+
+export function loginHref(next?: string) {
+  const path = safeNextPath(next);
+  return path ? `/login?next=${encodeURIComponent(path)}` : "/login";
+}
+
+export function signupHref(next?: string) {
+  const path = safeNextPath(next);
+  return path ? `/signup?next=${encodeURIComponent(path)}` : "/signup";
 }

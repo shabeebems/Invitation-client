@@ -1,6 +1,7 @@
-import type { InvitationTemplate } from "@/lib/api";
+import type { InvitationTemplate, PendingImage } from "@/lib/api";
 import RoyalReceptionInvitation from "@/components/templates/RoyalReceptionInvitation";
 import HouseWarmingInvitation from "@/components/templates/HouseWarmingInvitation";
+import BirthdayPartyInvitation from "@/components/templates/BirthdayPartyInvitation";
 
 export function isHouseWarmingTemplate(template: InvitationTemplate) {
   return (
@@ -10,16 +11,30 @@ export function isHouseWarmingTemplate(template: InvitationTemplate) {
   );
 }
 
+export function isBirthdayTemplate(template: InvitationTemplate) {
+  return (
+    template.slug === "midnight-birthday" ||
+    template.templateSlug === "midnight-birthday" ||
+    /birthday/i.test(template.categoryName || "")
+  );
+}
+
 export default function InvitationView({
   template,
   editable = false,
+  onPublish,
 }: {
   template: InvitationTemplate;
   editable?: boolean;
+  onPublish?: (draft: InvitationTemplate, images: PendingImage[]) => Promise<string>;
 }) {
   if (isHouseWarmingTemplate(template)) {
-    return <HouseWarmingInvitation template={template} editable={editable} />;
+    return <HouseWarmingInvitation template={template} editable={editable} onPublish={onPublish} />;
   }
 
-  return <RoyalReceptionInvitation template={template} editable={editable} />;
+  if (isBirthdayTemplate(template)) {
+    return <BirthdayPartyInvitation template={template} editable={editable} onPublish={onPublish} />;
+  }
+
+  return <RoyalReceptionInvitation template={template} editable={editable} onPublish={onPublish} />;
 }
