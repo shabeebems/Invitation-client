@@ -99,6 +99,10 @@ export type TemplateContent = {
   receptionTitle?: string;
   ceremonyTitle?: string;
   musicTitle?: string;
+  videoUrl?: string;
+  videoPosterUrl?: string;
+  coverTagline?: string;
+  coverTitle?: string;
 };
 
 export type ProgramItem = {

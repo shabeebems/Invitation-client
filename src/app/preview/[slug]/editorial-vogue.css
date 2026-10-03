@@ -1,0 +1,133 @@
+/* The Editorial Vogue — Haute Couture Wedding Issue CSS */
+
+.editorial-vogue {
+  --ev-bg-paper: #f8f7f4;
+  --ev-bg-secondary: #f0eee9;
+  --ev-bg-dark: #0d0d10;
+  --ev-bg-dark-surface: #141419;
+  --ev-border: rgba(13, 13, 16, 0.2);
+  --ev-border-light: rgba(13, 13, 16, 0.08);
+  --ev-border-dark: rgba(248, 247, 244, 0.2);
+  --ev-bronze: #b38848;
+  --ev-bronze-light: #d6af6d;
+  --ev-bronze-dark: #8c6328;
+  --ev-text-dark: #0d0d10;
+  --ev-text-muted: #575760;
+  --ev-text-faint: #8e8e98;
+  --ev-text-light: #f8f7f4;
+  --ev-text-light-muted: rgba(248, 247, 244, 0.72);
+  --ev-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+  --ev-shadow-dark: 0 25px 70px rgba(0, 0, 0, 0.6);
+
+  color: var(--ev-text-dark);
+  background-color: var(--ev-bg-paper);
+  font-family: var(--font-cinzel), "Bodoni Moda", "Didot", "Playfair Display", serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Milano Terracotta Theme */
+.editorial-vogue.theme-terracotta {
+  --ev-bg-paper: #faeddf;
+  --ev-bg-secondary: #f2decb;
+  --ev-bg-dark: #160e0a;
+  --ev-bg-dark-surface: #221711;
+  --ev-border: rgba(22, 14, 10, 0.22);
+  --ev-border-light: rgba(22, 14, 10, 0.09);
+  --ev-border-dark: rgba(250, 237, 223, 0.22);
+  --ev-bronze: #b4653a;
+  --ev-bronze-light: #d8895e;
+  --ev-bronze-dark: #8c421d;
+  --ev-text-dark: #160e0a;
+  --ev-text-muted: #5e463a;
+  --ev-text-faint: #927566;
+  --ev-text-light: #faeddf;
+  --ev-text-light-muted: rgba(250, 237, 223, 0.72);
+}
+
+/* Parisian Emerald Theme */
+.editorial-vogue.theme-emerald {
+  --ev-bg-paper: #f4f8f5;
+  --ev-bg-secondary: #e5eee7;
+  --ev-bg-dark: #08140e;
+  --ev-bg-dark-surface: #102118;
+  --ev-border: rgba(8, 20, 14, 0.22);
+  --ev-border-light: rgba(8, 20, 14, 0.09);
+  --ev-border-dark: rgba(244, 248, 245, 0.22);
+  --ev-bronze: #84966d;
+  --ev-bronze-light: #a4b88d;
+  --ev-bronze-dark: #5c6e47;
+  --ev-text-dark: #08140e;
+  --ev-text-muted: #415549;
+  --ev-text-faint: #748c7e;
+  --ev-text-light: #f4f8f5;
+  --ev-text-light-muted: rgba(244, 248, 245, 0.72);
+}
+
+/* Monumental Editorial Masthead */
+.ev-masthead-title {
+  font-family: var(--font-cinzel), "Didot", "Playfair Display", serif;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 700;
+  line-height: 0.9;
+}
+
+/* Editorial Drop Cap */
+.ev-drop-cap::first-letter {
+  float: left;
+  font-size: 4.8rem;
+  line-height: 0.8;
+  font-weight: 600;
+  padding-right: 0.75rem;
+  padding-top: 0.35rem;
+  color: var(--ev-bronze);
+  font-family: var(--font-cinzel), "Bodoni Moda", serif;
+}
+
+/* Magazine Border Dividers */
+.ev-border-top {
+  border-top: 2px solid var(--ev-text-dark);
+}
+
+.ev-border-bottom {
+  border-bottom: 2px solid var(--ev-text-dark);
+}
+
+.ev-border-thin {
+  border-color: var(--ev-border-light);
+}
+
+/* Editorial Barcode */
+.ev-barcode {
+  font-family: var(--font-mono, monospace);
+  letter-spacing: 0.2em;
+}
+
+/* Fashion Lookbook Swatches */
+.ev-swatch {
+  width: 48px;
+  height: 48px;
+  border-radius: 9999px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Custom Select Dropdowns */
+.ev-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: none;
+}
+
+.ev-select::-ms-expand {
+  display: none;
+}
+
+.ev-select option {
+  background-color: #f8f7f4;
+  color: #0d0d10;
+  padding: 8px 12px;
+}

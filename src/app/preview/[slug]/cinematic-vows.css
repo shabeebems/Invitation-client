@@ -1,0 +1,171 @@
+/* Cinematic Vows — Universal Modern Video Wedding Invitation Theme */
+
+.cinematic-vows {
+  --cv-bg-primary: #060508;
+  --cv-bg-secondary: #0f0d14;
+  --cv-bg-surface: rgba(14, 12, 18, 0.76);
+  --cv-border: rgba(226, 192, 107, 0.32);
+  --cv-border-light: rgba(226, 192, 107, 0.16);
+  --cv-border-glow: rgba(226, 192, 107, 0.6);
+  --cv-gold: #e2c06b;
+  --cv-gold-light: #fcf4dd;
+  --cv-gold-dark: #a17c2a;
+  --cv-text-main: #fbfaf8;
+  --cv-text-muted: rgba(251, 250, 248, 0.72);
+  --cv-text-faint: rgba(251, 250, 248, 0.45);
+  --cv-accent: #c4973b;
+  --cv-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
+  --cv-glow: 0 0 35px rgba(226, 192, 107, 0.3);
+
+  color: var(--cv-text-main);
+  background-color: var(--cv-bg-primary);
+  font-family: var(--font-cormorant), "Playfair Display", serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Sapphire Theme */
+.cinematic-vows.theme-sapphire {
+  --cv-bg-primary: #040812;
+  --cv-bg-secondary: #0a1324;
+  --cv-bg-surface: rgba(10, 19, 36, 0.78);
+  --cv-border: rgba(186, 215, 255, 0.32);
+  --cv-border-light: rgba(186, 215, 255, 0.16);
+  --cv-border-glow: rgba(186, 215, 255, 0.6);
+  --cv-gold: #bad7ff;
+  --cv-gold-light: #f0f6ff;
+  --cv-gold-dark: #568cd4;
+  --cv-text-main: #f8fafc;
+  --cv-text-muted: rgba(248, 250, 252, 0.75);
+  --cv-text-faint: rgba(248, 250, 252, 0.45);
+  --cv-accent: #2563eb;
+  --cv-shadow: 0 25px 60px rgba(0, 0, 0, 0.85);
+  --cv-glow: 0 0 35px rgba(186, 215, 255, 0.3);
+}
+
+/* Emerald Theme */
+.cinematic-vows.theme-emerald {
+  --cv-bg-primary: #04120c;
+  --cv-bg-secondary: #092118;
+  --cv-bg-surface: rgba(9, 33, 24, 0.78);
+  --cv-border: rgba(193, 235, 206, 0.32);
+  --cv-border-light: rgba(193, 235, 206, 0.16);
+  --cv-border-glow: rgba(193, 235, 206, 0.6);
+  --cv-gold: #c1ebce;
+  --cv-gold-light: #f1fcf5;
+  --cv-gold-dark: #4b9e69;
+  --cv-text-main: #fcfdfd;
+  --cv-text-muted: rgba(252, 253, 253, 0.75);
+  --cv-text-faint: rgba(252, 253, 253, 0.45);
+  --cv-accent: #059669;
+  --cv-shadow: 0 25px 60px rgba(0, 0, 0, 0.85);
+  --cv-glow: 0 0 35px rgba(193, 235, 206, 0.3);
+}
+
+/* Full-bleed Fixed Looping Background Video Layer & Contrast Vignette */
+.cv-video-fixed {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+  z-index: 0;
+  pointer-events: none;
+  transition: opacity 1.2s ease-in-out;
+}
+
+.cv-vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at center,
+    rgba(6, 5, 8, 0.45) 0%,
+    rgba(6, 5, 8, 0.72) 65%,
+    rgba(6, 5, 8, 0.94) 100%
+  );
+}
+
+/* Luxury Modern Top Navigation Bar */
+.cv-navbar {
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 40;
+  background: rgba(6, 5, 8, 0.85);
+  border-bottom: 1px solid var(--cv-border-light);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* Glassmorphism Surface Cards (Universal to any video background) */
+.cv-glass {
+  background: var(--cv-bg-surface);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--cv-border);
+  box-shadow: var(--cv-shadow);
+}
+
+.cv-glass-subtle {
+  background: rgba(14, 12, 18, 0.5);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--cv-border-light);
+}
+
+/* Liquid Gold Gradient Shimmer Animation */
+@keyframes cvGoldShimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.cv-gold-gradient {
+  background: linear-gradient(
+    115deg,
+    var(--cv-gold-dark) 0%,
+    var(--cv-gold-light) 25%,
+    var(--cv-gold) 50%,
+    var(--cv-gold-light) 75%,
+    var(--cv-gold-dark) 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: cvGoldShimmer 8s linear infinite;
+}
+
+/* Custom Select Dropdowns */
+.cv-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: none;
+}
+
+.cv-select::-ms-expand {
+  display: none;
+}
+
+.cv-select option {
+  background-color: #121016;
+  color: #fbfaf8;
+  padding: 8px 12px;
+}
+
+.cinematic-vows.theme-sapphire .cv-select option {
+  background-color: #0a1324;
+  color: #f8fafc;
+}
+
+.cinematic-vows.theme-emerald .cv-select option {
+  background-color: #092118;
+  color: #fcfdfd;
+}
