@@ -94,6 +94,11 @@ export type TemplateContent = {
   ageLabel?: string;
   partyTitle?: string;
   dressCode?: string;
+  storyTitle?: string;
+  storyText?: string;
+  receptionTitle?: string;
+  ceremonyTitle?: string;
+  musicTitle?: string;
 };
 
 export type ProgramItem = {

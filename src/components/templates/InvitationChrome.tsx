@@ -12,6 +12,7 @@ import {
 import "@/app/preview/[slug]/royal-reception.css";
 import "@/app/preview/[slug]/house-warming.css";
 import "@/app/preview/[slug]/midnight-birthday.css";
+import "@/app/preview/[slug]/eternal-union.css";
 
 const allura = Allura({
   weight: "400",
