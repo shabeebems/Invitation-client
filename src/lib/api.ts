@@ -94,7 +94,6 @@ export type TemplateContent = {
   ageLabel?: string;
   partyTitle?: string;
   dressCode?: string;
-  rsvpNote?: string;
 };
 
 export type ProgramItem = {
@@ -199,11 +198,18 @@ export function invitationLiveHref(template: Pick<InvitationTemplate, "slug">) {
   return `/${template.slug}`;
 }
 
-export async function fetchWork(slug: string): Promise<InvitationTemplate | null> {
+export function invitationTitle(template: InvitationTemplate) {
+  return (
+    template.content.hostNames ||
+    template.content.celebrantName ||
+    [template.content.groomName, template.content.brideName].filter(Boolean).join(" & ") ||
+    template.name
+  );
+}
+
+async function readInvitation(url: string, key: "template" | "work"): Promise<InvitationTemplate | null> {
   try {
-    const response = await fetch(`${API_URL}/api/works/${slug}`, {
-      cache: "no-store",
-    });
+    const response = await fetch(url, { cache: "no-store" });
 
     if (!response.ok) {
       return null;
@@ -215,9 +221,37 @@ export async function fetchWork(slug: string): Promise<InvitationTemplate | null
       work?: InvitationTemplate;
     };
 
-    const invitation = data.template || data.work;
+    const invitation = key === "work" ? data.work || data.template : data.template;
     return data.success && invitation ? invitation : null;
   } catch {
     return null;
   }
+}
+
+export function fetchTemplate(slug: string) {
+  return readInvitation(`${API_URL}/api/templates/${slug}`, "template");
+}
+
+export async function fetchTemplates(): Promise<InvitationTemplate[]> {
+  try {
+    const response = await fetch(`${API_URL}/api/templates`, { cache: "no-store" });
+    const data = (await response.json()) as { success?: boolean; templates?: InvitationTemplate[] };
+    return response.ok && data.success ? data.templates || [] : [];
+  } catch {
+    return [];
+  }
+}
+
+export async function fetchCategories(): Promise<Category[]> {
+  try {
+    const response = await fetch(`${API_URL}/api/categories`, { cache: "no-store" });
+    const data = (await response.json()) as { success?: boolean; categories?: Category[] };
+    return response.ok && data.success ? data.categories || [] : [];
+  } catch {
+    return [];
+  }
+}
+
+export function fetchWork(slug: string) {
+  return readInvitation(`${API_URL}/api/works/${slug}`, "work");
 }

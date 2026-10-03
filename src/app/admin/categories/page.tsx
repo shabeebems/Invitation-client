@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { API_URL, type Category } from "@/lib/api";
 import CategoryForm, { type CategoryFormValues } from "@/components/categories/CategoryForm";
+import { EmptyState, PageHeader, Panel, PrimaryButton, StatusNote } from "@/components/admin/ui";
 
 const swatches = ["#fde8ef", "#f8edd2", "#d9f3ef", "#ead8f3", "#e7e7ea"];
 
@@ -93,68 +94,62 @@ export default function CategoriesPage() {
 
   return (
     <section>
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-zinc-900">
-          Categories
-          <span className="ml-2 text-base font-medium text-zinc-400">
-            · {activeCount} active
-          </span>
-        </h1>
-        <button
-          type="button"
-          onClick={() => {
-            setEditing(null);
-            setFormError("");
-            setMode("add");
-          }}
-          className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-accent-hover"
-        >
-          + Add Category
-        </button>
-      </div>
+      <PageHeader
+        eyebrow="Catalog"
+        title="Categories"
+        description="Groups that organize the template gallery and the details form."
+        meta={`${activeCount} active`}
+        action={
+          <PrimaryButton
+            onClick={() => {
+              setEditing(null);
+              setFormError("");
+              setMode("add");
+            }}
+          >
+            Add category
+          </PrimaryButton>
+        }
+      />
 
       {loading ? (
-        <p className="text-zinc-500">Loading categories...</p>
+        <StatusNote tone="muted">Loading categories…</StatusNote>
       ) : error ? (
-        <p className="text-red-600">{error}</p>
+        <StatusNote tone="error">{error}</StatusNote>
       ) : categories.length === 0 ? (
-        <div className="rounded-[28px] bg-white px-8 py-12 text-center shadow-sm">
-          <p className="text-lg font-semibold text-zinc-800">No categories yet</p>
-          <p className="mt-1 text-zinc-500">Add a category to get started.</p>
-        </div>
+        <EmptyState title="No categories yet" body="Add a category before importing templates into it." />
       ) : (
         <div className="flex flex-col gap-3">
           {categories.map((category, index) => (
-            <article
-              key={category.id}
-              className="flex items-center gap-4 rounded-2xl border border-white bg-white px-5 py-4 shadow-sm"
-            >
+            <Panel key={category.id} className="flex items-center gap-4 px-4 py-4 sm:px-5">
               {category.imageUrl ? (
                 <img
                   src={category.imageUrl}
                   alt={category.name}
-                  className="h-12 w-12 shrink-0 rounded-xl object-cover"
+                  className="h-14 w-14 shrink-0 rounded-2xl object-cover"
                 />
               ) : (
                 <span
-                  className="h-12 w-12 shrink-0 rounded-xl"
+                  className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-sm font-semibold text-[#111827]"
                   style={{ backgroundColor: swatches[index % swatches.length] }}
-                />
+                >
+                  {category.name.slice(0, 1)}
+                </span>
               )}
               <div className="min-w-0 flex-1">
-                <p className="truncate text-base font-semibold text-zinc-900">{category.name}</p>
-                <p className="truncate text-sm text-zinc-400">
+                <p className="truncate text-base font-semibold text-[#111827]">{category.name}</p>
+                <p className="truncate text-sm text-zinc-500">
                   {category.description || "No description"}
                 </p>
               </div>
               <span
-                className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                className={`rounded-full px-3 py-1 text-[11px] font-semibold tracking-wide uppercase ${
                   category.isActive
-                    ? "bg-emerald-100 text-emerald-700"
-                    : "bg-zinc-200 text-zinc-500"
+                    ? "bg-[#e7f3ec] text-[#1d6b45]"
+                    : "bg-[#f0f1f3] text-zinc-500"
                 }`}
               >
-                {category.isActive ? "ACTIVE" : "HIDDEN"}
+                {category.isActive ? "Live" : "Hidden"}
               </span>
               <button
                 type="button"
@@ -163,11 +158,11 @@ export default function CategoriesPage() {
                   setFormError("");
                   setMode("edit");
                 }}
-                className="text-sm font-semibold text-zinc-500 hover:text-accent"
+                className="rounded-full border border-[#e6e8ec] px-3 py-1.5 text-sm font-semibold text-[#111827] hover:border-[#111827]"
               >
                 Edit
               </button>
-            </article>
+            </Panel>
           ))}
         </div>
       )}

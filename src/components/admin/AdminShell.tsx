@@ -40,7 +40,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
 
   if (!allowed || !user) {
     return (
-      <div className="flex h-screen items-center justify-center bg-page text-sm">
+      <div className="flex h-screen items-center justify-center bg-[#f4f5f7] text-sm text-[#1c1f24]">
         Checking access…
       </div>
     );
@@ -48,9 +48,11 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
 
   return (
     <AdminContext.Provider value={{ user, loading: false }}>
-      <div className="flex h-screen overflow-hidden bg-page">
+      <div className="flex h-screen overflow-hidden bg-[#f4f5f7]">
         <Sidebar />
-        <main className="min-w-0 flex-1 overflow-auto p-8">{children}</main>
+        <main className="min-w-0 flex-1 overflow-auto px-6 py-8 md:px-10">
+          <div className="mx-auto w-full max-w-6xl">{children}</div>
+        </main>
       </div>
     </AdminContext.Provider>
   );

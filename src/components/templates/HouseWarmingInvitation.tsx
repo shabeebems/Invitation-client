@@ -2,13 +2,9 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import EditableField from "@/components/templates/EditableField";
-import InvitationEditChrome from "@/components/templates/InvitationEditChrome";
-import { invitationApiBase, invitationDoneHref, rememberPendingImage, type GalleryItem, type InvitationTemplate, type InvitationTheme, type PendingImage, type ProgramItem, type TemplateContent, imageUrl, withImageUrl } from "@/lib/api";
+import { useInvitationEditor } from "@/components/templates/useInvitationEditor";
+import { type GalleryItem, type InvitationTemplate, type PendingImage, type ProgramItem, imageUrl, withImageUrl } from "@/lib/api";
 
-export const TERRACOTTA_THEME_ID = "6ab11eefd26a7018a27ad6e4";
-export const SAGE_THEME_ID = "6ab11eefd26a7018a27ad6e7";
-
-type ContentTextKey = Exclude<keyof TemplateContent, "programItems" | "galleryItems">;
 type ImageSlot = "hero";
 
 type Countdown = { days: number; hours: number; minutes: number; seconds: number; live: boolean };
@@ -75,13 +71,13 @@ export default function HouseWarmingInvitation({
   editable?: boolean;
   onPublish?: (draft: InvitationTemplate, images: PendingImage[]) => Promise<string>;
 }) {
-  const [draft, setDraft] = useState(template);
-  const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
-  const [publishing, setPublishing] = useState(false);
-  const [previewing, setPreviewing] = useState(false);
-  const [payOpen, setPayOpen] = useState(false);
-  const pendingImages = useRef<PendingImage[]>([]);
-  const editing = editable && !previewing;
+  const { draft, setDraft, content, editing, previewing, payOpen, persist, field, themeTitle, chrome } =
+    useInvitationEditor({
+      template,
+      editable,
+      onPublish,
+      variant: "house",
+    });
   const [opened, setOpened] = useState(editable);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [lightbox, setLightbox] = useState<number | null>(null);
@@ -90,76 +86,12 @@ export default function HouseWarmingInvitation({
     hero: null,
   });
   const galleryInputRefs = useRef<(HTMLInputElement | null)[]>([]);
-  const { content } = draft;
   const countdown = useCountdown(content.eventDateIso || "");
   const shareText = encodeURIComponent(content.shareText || "");
   const heroSrc = imageUrl(draft.images, "hero");
 
   const program = content.programItems || [];
   const gallery = content.galleryItems || [];
-
-  async function persist(
-    nextContent: TemplateContent,
-    image?: File,
-    imageSlot: ImageSlot | "gallery" = "hero",
-    galleryIndex?: number
-  ) {
-    if (onPublish) {
-      if (image) {
-        pendingImages.current = rememberPendingImage(pendingImages.current, {
-          file: image,
-          slot: imageSlot,
-          galleryIndex,
-        });
-      }
-      return;
-    }
-
-    setStatus("saving");
-    const body = new FormData();
-    body.append("content", JSON.stringify(nextContent));
-
-    if (image) {
-      body.append("image", image);
-      body.append("imageSlot", imageSlot);
-      if (imageSlot === "gallery" && galleryIndex !== undefined) {
-        body.append("galleryIndex", String(galleryIndex));
-      }
-    }
-
-    try {
-      const response = await fetch(invitationApiBase(draft), {
-        method: "PUT",
-        credentials: "include",
-        body,
-      });
-      const data = (await response.json()) as {
-        success?: boolean;
-        template?: InvitationTemplate;
-      };
-
-      if (!response.ok || !data.success || !data.template) {
-        throw new Error("Save failed");
-      }
-
-      setDraft(data.template);
-      setStatus("saved");
-    } catch {
-      setStatus("error");
-    }
-  }
-
-  function commit(key: ContentTextKey, value: string) {
-    setDraft((prev) => {
-      if ((prev.content[key] || "") === value) {
-        return prev;
-      }
-
-      const nextContent = { ...prev.content, [key]: value };
-      void persist(nextContent);
-      return { ...prev, content: nextContent };
-    });
-  }
 
   function persistProgram(items: ProgramItem[]) {
     setDraft((prev) => {
@@ -210,7 +142,7 @@ export default function HouseWarmingInvitation({
   function changeImage(slot: ImageSlot, file: File) {
     const preview = URL.createObjectURL(file);
     setDraft((prev) => ({ ...prev, images: withImageUrl(prev.images, slot, preview) }));
-    void persist(draft.content, file, slot);
+    void persist(draft.content, { file, slot });
   }
 
   function changeGalleryImage(index: number, file: File) {
@@ -220,35 +152,8 @@ export default function HouseWarmingInvitation({
       items[index] = { ...items[index], url: preview };
       return { ...prev, content: { ...prev.content, galleryItems: items } };
     });
-    void persist(content, file, "gallery", index);
+    void persist(content, { file, slot: "gallery", galleryIndex: index });
   }
-
-  async function publish() {
-    if (!onPublish || publishing) {
-      return;
-    }
-
-    setPublishing(true);
-    setStatus("saving");
-
-    try {
-      await onPublish(draft, pendingImages.current);
-    } catch (err) {
-      setStatus("error");
-      setPublishing(false);
-      throw err;
-    }
-  }
-
-  const field = (key: ContentTextKey, className = "", multiline = false) => (
-    <EditableField
-      value={typeof content[key] === "string" ? content[key] : ""}
-      editable={editing}
-      className={className}
-      multiline={multiline}
-      onCommit={(value) => commit(key, value)}
-    />
-  );
 
   function imageButton(slot: ImageSlot, className: string, children: ReactNode, label: string) {
     return (
@@ -340,12 +245,7 @@ export default function HouseWarmingInvitation({
     content.shareText || ""
   )}&location=${encodeURIComponent(content.addressFull || "")}`;
 
-  let themeClass = "";
-  if (draft.selectedThemeId === SAGE_THEME_ID) {
-    themeClass = " palette-sage";
-  } else if (draft.selectedThemeId === TERRACOTTA_THEME_ID) {
-    themeClass = "";
-  }
+  const themeClass = /sage/i.test(themeTitle) ? " palette-sage" : "";
 
   const units = [
     { label: "Days", value: countdown.days },
@@ -357,55 +257,7 @@ export default function HouseWarmingInvitation({
   return (
     <>
     <main className={`house-warming relative${themeClass}`}>
-      <InvitationEditChrome
-        variant="house"
-        editing={editing}
-        previewing={previewing}
-        status={status}
-        publishing={publishing}
-        canPublish={Boolean(onPublish)}
-        doneHref={invitationDoneHref(draft)}
-        invitationName={draft.name}
-        slug={draft.slug}
-        selectedThemeId={draft.selectedThemeId}
-        themes={draft.themes || []}
-        source={draft.source}
-        payOpen={payOpen}
-        onEnterPreview={() => {
-          setStatus("idle");
-          setPreviewing(true);
-          window.scrollTo({ top: 0 });
-        }}
-        onBackToEdit={() => {
-          setPublishing(false);
-          setStatus("idle");
-          setPreviewing(false);
-          setPayOpen(false);
-          window.scrollTo({ top: 0 });
-        }}
-        onOpenPay={() => {
-          setStatus("idle");
-          setPayOpen(true);
-        }}
-        onClosePay={() => {
-          if (!publishing) {
-            setPayOpen(false);
-          }
-        }}
-        onConfirmPay={async () => {
-          await publish();
-        }}
-        onThemeChange={(selectedThemeId, themes) => {
-          setDraft((prev) => ({
-            ...prev,
-            selectedThemeId,
-            selectedThemeTitle:
-              themes.find((theme) => theme.id === selectedThemeId)?.title || prev.selectedThemeTitle,
-            themes,
-          }));
-          setStatus("saved");
-        }}
-      />
+      {chrome}
       <div className={`hw-envelope ${opened ? "is-open" : ""}`}>
         <p className="hw-font-arabic mb-1 text-center text-[1.85rem] leading-[1.4] text-[#e4be57] [text-shadow:0_2px_14px_#e6c56859]">
           {content.bismillah}

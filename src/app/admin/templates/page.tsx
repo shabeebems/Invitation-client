@@ -1,91 +1,65 @@
-import { API_URL, type InvitationTemplate, imageUrl } from "@/lib/api";
+import { fetchTemplates, imageUrl } from "@/lib/api";
 import Link from "next/link";
 import ThemePicker from "@/components/templates/ThemePicker";
-
-async function getTemplates(): Promise<InvitationTemplate[]> {
-  try {
-    const response = await fetch(`${API_URL}/api/templates`, { cache: "no-store" });
-    const data = (await response.json()) as {
-      success?: boolean;
-      templates?: InvitationTemplate[];
-    };
-
-    if (!response.ok || !data.success) {
-      return [];
-    }
-
-    return data.templates || [];
-  } catch {
-    return [];
-  }
-}
+import { EmptyState, PageHeader, Panel } from "@/components/admin/ui";
 
 export default async function TemplatesPage() {
-  const templates = await getTemplates();
+  const templates = await fetchTemplates();
 
   return (
     <section>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-zinc-900">
-          Templates
-          <span className="ml-2 text-base font-medium text-zinc-400">
-            · {templates.length} available
-          </span>
-        </h1>
-      </div>
+      <PageHeader
+        eyebrow="Catalog"
+        title="Templates"
+        description="Every invitation design guests can start from. Preview it, then edit the sample copy."
+        meta={`${templates.length} designs`}
+      />
 
       {templates.length === 0 ? (
-        <div className="rounded-[28px] bg-white px-8 py-12 text-center shadow-sm">
-          <p className="text-lg font-semibold text-zinc-800">No templates yet</p>
-          <p className="mt-1 text-zinc-500">Templates from the database will appear here.</p>
-        </div>
+        <EmptyState title="No templates yet" body="Templates imported into the database will appear here." />
       ) : (
         <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-          {templates.map((template) => (
-            <article
-              key={template.id}
-              className="overflow-hidden rounded-3xl border border-white bg-white shadow-sm"
-            >
-              <div className={`relative h-48 overflow-hidden ${/house\s*warm/i.test(template.categoryName) ? "bg-[#fbf7f2]" : "bg-[#1a060c]"}`}>
-                {imageUrl(template.images, "hero") ? (
-                  <img
-                    src={imageUrl(template.images, "hero")}
-                    alt={template.name}
-                    className="h-full w-full object-cover object-top"
-                  />
-                ) : null}
-              </div>
-              <div className="p-5">
-                <p className="text-xs font-semibold tracking-wide text-accent uppercase">
-                  {template.categoryName || "Uncategorized"}
-                </p>
-                <h2 className="mt-1 text-lg font-bold text-zinc-900">{template.name}</h2>
-                <p className="mt-1 text-sm text-zinc-500">{template.description}</p>
-                <p className="mt-2 text-xs text-zinc-400">
-                  Using {template.selectedThemeTitle || "no theme"}
-                </p>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  <Link
-                    href={`/preview/${template.slug}`}
-                    className="inline-flex rounded-full bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-accent-hover"
-                  >
-                    Preview
-                  </Link>
-                  <Link
-                    href={`/preview/${template.slug}/edit`}
-                    className="inline-flex rounded-full border border-accent px-4 py-2 text-sm font-semibold text-accent hover:bg-accent hover:text-white"
-                  >
-                    Edit
-                  </Link>
+          {templates.map((template) => {
+            const hero = imageUrl(template.images, "hero");
+            return (
+              <Panel key={template.id} className="overflow-hidden">
+                <div className="relative h-48 bg-[#1c1f24]">
+                  {hero ? (
+                    <img src={hero} alt={template.name} className="h-full w-full object-cover object-top" />
+                  ) : null}
+                  <span className="absolute top-3 left-3 rounded-full bg-[#1c1f24]/80 px-3 py-1 text-[10px] font-semibold tracking-[0.16em] text-white uppercase backdrop-blur">
+                    {template.categoryName || "Uncategorized"}
+                  </span>
                 </div>
-                <ThemePicker
-                  slug={template.slug}
-                  selectedThemeId={template.selectedThemeId}
-                  themes={template.themes || []}
-                />
-              </div>
-            </article>
-          ))}
+                <div className="p-5">
+                  <h2 className="text-lg font-semibold text-[#111827]">{template.name}</h2>
+                  <p className="mt-1 line-clamp-2 text-sm leading-6 text-zinc-500">{template.description}</p>
+                  <p className="mt-3 text-xs font-medium text-zinc-500">
+                    Theme · {template.selectedThemeTitle || "None"}
+                  </p>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <Link
+                      href={`/preview/${template.slug}`}
+                      className="inline-flex rounded-full bg-[#111827] px-4 py-2 text-sm font-semibold text-white hover:bg-black"
+                    >
+                      Preview
+                    </Link>
+                    <Link
+                      href={`/preview/${template.slug}/edit`}
+                      className="inline-flex rounded-full border border-[#e6e8ec] px-4 py-2 text-sm font-semibold text-[#111827] hover:border-[#111827]"
+                    >
+                      Edit
+                    </Link>
+                  </div>
+                  <ThemePicker
+                    slug={template.slug}
+                    selectedThemeId={template.selectedThemeId}
+                    themes={template.themes || []}
+                  />
+                </div>
+              </Panel>
+            );
+          })}
         </div>
       )}
     </section>

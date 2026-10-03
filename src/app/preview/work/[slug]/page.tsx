@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { fetchWork } from "@/lib/api";
+import { fetchWork, invitationTitle } from "@/lib/api";
 import InvitationView from "@/components/templates/InvitationView";
 
 export async function generateMetadata({
@@ -15,13 +15,8 @@ export async function generateMetadata({
     return { title: "Work not found" };
   }
 
-  const names =
-    template.content.hostNames ||
-    [template.content.groomName, template.content.brideName].filter(Boolean).join(" & ") ||
-    template.name;
-
   return {
-    title: `${names} — ${template.name}`,
+    title: `${invitationTitle(template)} — ${template.name}`,
     description: template.description,
   };
 }

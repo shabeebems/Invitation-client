@@ -4,13 +4,14 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   API_URL,
+  imageUrl,
   invitationLiveHref,
   invitationPreviewHref,
   type Category,
   type InvitationTemplate,
 } from "@/lib/api";
 import ThemePicker from "@/components/templates/ThemePicker";
-import { imageUrl } from "@/lib/api";
+import { EmptyState, PageHeader, Panel, PrimaryButton, StatusNote } from "@/components/admin/ui";
 
 export default function WorksPage() {
   const [works, setWorks] = useState<InvitationTemplate[]>([]);
@@ -132,114 +133,101 @@ export default function WorksPage() {
 
   return (
     <section>
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-zinc-900">
-          Works
-          <span className="ml-2 text-base font-medium text-zinc-400">
-            · {works.length} created
-          </span>
-        </h1>
-        <button
-          type="button"
-          onClick={() => {
-            setFormError("");
-            setCategoryId("");
-            setTemplateId("");
-            setName("");
-            setAdding(true);
-          }}
-          className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-accent-hover"
-        >
-          + Add Work
-        </button>
-      </div>
+      <PageHeader
+        eyebrow="Studio"
+        title="Works"
+        description="Published invitations. Open one to preview, edit, or view the live link."
+        meta={`${works.length} live`}
+        action={
+          <PrimaryButton
+            onClick={() => {
+              setFormError("");
+              setCategoryId("");
+              setTemplateId("");
+              setName("");
+              setAdding(true);
+            }}
+          >
+            Add work
+          </PrimaryButton>
+        }
+      />
 
       {loading ? (
-        <p className="text-zinc-500">Loading works...</p>
+        <StatusNote tone="muted">Loading works…</StatusNote>
       ) : error ? (
-        <p className="text-red-600">{error}</p>
+        <StatusNote tone="error">{error}</StatusNote>
       ) : works.length === 0 ? (
-        <div className="rounded-[28px] bg-white px-8 py-12 text-center shadow-sm">
-          <p className="text-lg font-semibold text-zinc-800">No works yet</p>
-          <p className="mt-1 text-zinc-500">Add a work from a category and template.</p>
-        </div>
+        <EmptyState title="No works yet" body="Create one from a category and template, or wait for a customer to publish." />
       ) : (
         <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-          {works.map((work) => (
-            <article
-              key={work.id}
-              className="overflow-hidden rounded-3xl border border-white bg-white shadow-sm"
-            >
-              <div
-                className={`relative h-48 overflow-hidden ${/house\s*warm/i.test(work.categoryName) ? "bg-[#fbf7f2]" : "bg-[#1a060c]"}`}
-              >
-                {imageUrl(work.images, "hero") ? (
-                  <img
-                    src={imageUrl(work.images, "hero")}
-                    alt={work.name}
-                    className="h-full w-full object-cover object-top"
-                  />
-                ) : null}
-              </div>
-              <div className="p-5">
-                <p className="text-xs font-semibold tracking-wide text-accent uppercase">
-                  {work.categoryName || "Uncategorized"}
-                </p>
-                <h2 className="mt-1 text-lg font-bold text-zinc-900">{work.name}</h2>
-                <p className="mt-1 text-sm text-zinc-500">
-                  Template: {work.templateName || "Locked"}
-                </p>
-                <p className="mt-2 font-mono text-xs text-zinc-400">{work.slug}</p>
-                <p className="mt-2 text-xs text-zinc-400">
-                  Using {work.selectedThemeTitle || "no theme"}
-                </p>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  <Link
-                    href={invitationPreviewHref(work)}
-                    className="inline-flex rounded-full bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-accent-hover"
-                  >
-                    Preview
-                  </Link>
-                  <Link
-                    href={`${invitationPreviewHref(work)}/edit`}
-                    className="inline-flex rounded-full border border-accent px-4 py-2 text-sm font-semibold text-accent hover:bg-accent hover:text-white"
-                  >
-                    Edit
-                  </Link>
-                  <Link
-                    href={invitationLiveHref(work)}
-                    className="inline-flex rounded-full border border-zinc-300 px-4 py-2 text-sm font-semibold text-zinc-700 hover:border-zinc-800 hover:text-zinc-900"
-                  >
-                    Live
-                  </Link>
+          {works.map((work) => {
+            const hero = imageUrl(work.images, "hero");
+            return (
+              <Panel key={work.id} className="overflow-hidden">
+                <div className="relative h-44 bg-[#1c1f24]">
+                  {hero ? (
+                    <img src={hero} alt={work.name} className="h-full w-full object-cover object-top" />
+                  ) : null}
+                  <span className="absolute top-3 left-3 rounded-full bg-[#111827]/80 px-3 py-1 text-[10px] font-semibold tracking-[0.16em] text-white uppercase backdrop-blur">
+                    {work.categoryName || "Uncategorized"}
+                  </span>
                 </div>
-                <ThemePicker
-                  slug={work.slug}
-                  selectedThemeId={work.selectedThemeId}
-                  themes={work.themes || []}
-                  source="work"
-                />
-              </div>
-            </article>
-          ))}
+                <div className="p-5">
+                  <h2 className="text-lg font-semibold text-[#111827]">{work.name}</h2>
+                  <p className="mt-1 text-sm text-zinc-500">{work.templateName || "Locked template"}</p>
+                  <p className="mt-2 font-mono text-xs text-zinc-400">/{work.slug}</p>
+                  <p className="mt-2 text-xs font-medium text-zinc-500">
+                    Theme · {work.selectedThemeTitle || "None"}
+                  </p>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <Link
+                      href={invitationPreviewHref(work)}
+                      className="inline-flex rounded-full bg-[#111827] px-4 py-2 text-sm font-semibold text-white hover:bg-black"
+                    >
+                      Preview
+                    </Link>
+                    <Link
+                      href={`${invitationPreviewHref(work)}/edit`}
+                      className="inline-flex rounded-full border border-[#e6e8ec] px-4 py-2 text-sm font-semibold text-[#111827] hover:border-[#111827]"
+                    >
+                      Edit
+                    </Link>
+                    <Link
+                      href={invitationLiveHref(work)}
+                      className="inline-flex rounded-full border border-[#e6e8ec] px-4 py-2 text-sm font-semibold text-zinc-600 hover:border-[#111827] hover:text-[#111827]"
+                    >
+                      Live
+                    </Link>
+                  </div>
+                  <ThemePicker
+                    slug={work.slug}
+                    selectedThemeId={work.selectedThemeId}
+                    themes={work.themes || []}
+                    source="work"
+                  />
+                </div>
+              </Panel>
+            );
+          })}
         </div>
       )}
 
       {adding ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-[2px]">
           <form
-            className="w-full max-w-md rounded-3xl bg-white p-6 shadow-xl"
+            className="w-full max-w-md rounded-[28px] border border-[#e6e8ec] bg-white p-6 shadow-xl"
             onSubmit={(event) => {
               event.preventDefault();
               void createWork();
             }}
           >
-            <h2 className="text-xl font-bold text-zinc-900">Add Work</h2>
-            <p className="mt-1 text-sm text-zinc-500">
-              Choose a category, then a template. Those cannot be changed later.
+            <h2 className="text-xl font-semibold text-[#111827]">Add work</h2>
+            <p className="mt-1 text-sm leading-6 text-zinc-500">
+              Choose a category, then a template. Those stay locked after you create it.
             </p>
 
-            <label className="mt-5 block text-sm font-semibold text-zinc-700">
+            <label className="mt-5 block text-sm font-semibold text-[#111827]">
               Category
               <select
                 value={categoryId}
@@ -247,7 +235,7 @@ export default function WorksPage() {
                   setCategoryId(event.target.value);
                   setTemplateId("");
                 }}
-                className="mt-1.5 w-full rounded-2xl border border-zinc-200 px-3 py-2.5 text-sm font-medium text-zinc-800"
+                className="mt-1.5 w-full rounded-2xl border border-[#e6e8ec] bg-white px-3 py-2.5 text-sm font-medium text-[#111827]"
               >
                 <option value="">Select category</option>
                 {categories.map((category) => (
@@ -258,13 +246,13 @@ export default function WorksPage() {
               </select>
             </label>
 
-            <label className="mt-4 block text-sm font-semibold text-zinc-700">
+            <label className="mt-4 block text-sm font-semibold text-[#111827]">
               Template
               <select
                 value={templateId}
                 disabled={!categoryId}
                 onChange={(event) => setTemplateId(event.target.value)}
-                className="mt-1.5 w-full rounded-2xl border border-zinc-200 px-3 py-2.5 text-sm font-medium text-zinc-800 disabled:bg-zinc-100 disabled:text-zinc-400"
+                className="mt-1.5 w-full rounded-2xl border border-[#e6e8ec] bg-white px-3 py-2.5 text-sm font-medium text-[#111827] disabled:bg-[#f4f5f7] disabled:text-zinc-400"
               >
                 <option value="">
                   {categoryId ? "Select template" : "Select a category first"}
@@ -277,31 +265,31 @@ export default function WorksPage() {
               </select>
             </label>
 
-            <label className="mt-4 block text-sm font-semibold text-zinc-700">
+            <label className="mt-4 block text-sm font-semibold text-[#111827]">
               Name
               <input
                 value={name}
                 required
                 onChange={(event) => setName(event.target.value)}
                 placeholder="Used as the live URL"
-                className="mt-1.5 w-full rounded-2xl border border-zinc-200 px-3 py-2.5 text-sm text-zinc-800"
+                className="mt-1.5 w-full rounded-2xl border border-[#e6e8ec] bg-white px-3 py-2.5 text-sm text-[#111827] outline-none focus:border-[#111827]"
               />
             </label>
 
-            {formError ? <p className="mt-3 text-sm text-red-600">{formError}</p> : null}
+            {formError ? <p className="mt-3 text-sm font-medium text-red-700">{formError}</p> : null}
 
             <div className="mt-6 flex justify-end gap-2">
               <button
                 type="button"
                 onClick={() => setAdding(false)}
-                className="rounded-full px-4 py-2 text-sm font-semibold text-zinc-500 hover:text-zinc-800"
+                className="rounded-full px-4 py-2 text-sm font-semibold text-zinc-500 hover:text-[#111827]"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={saving}
-                className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-accent-hover disabled:opacity-60"
+                className="rounded-full bg-[#111827] px-4 py-2 text-sm font-semibold text-white hover:bg-black disabled:opacity-60"
               >
                 {saving ? "Creating…" : "Create work"}
               </button>

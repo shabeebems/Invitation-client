@@ -57,9 +57,9 @@ export default function CategoryForm({
   }, [image]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-[2px]">
       <form
-        className="w-full max-w-md rounded-3xl bg-white p-6 shadow-xl"
+        className="w-full max-w-md rounded-[28px] border border-[#e6e8ec] bg-white p-6 shadow-xl"
         onSubmit={(event) => {
           event.preventDefault();
           onSubmit({
@@ -70,12 +70,12 @@ export default function CategoryForm({
           });
         }}
       >
-        <h2 className="text-xl font-bold text-zinc-900">{title}</h2>
+        <h2 className="text-xl font-semibold text-[#111827]">{title}</h2>
 
-        <label className="mt-5 block text-sm font-medium text-zinc-600">
+        <label className="mt-5 block text-sm font-semibold text-[#111827]">
           Name
           <input
-            className="mt-1.5 w-full rounded-xl border border-zinc-200 px-3 py-2.5 text-zinc-900 outline-none focus:border-accent"
+            className="mt-1.5 w-full rounded-2xl border border-[#e6e8ec] bg-white px-3 py-2.5 text-[#111827] outline-none focus:border-[#111827]"
             value={name}
             onChange={(event) => setName(event.target.value)}
             placeholder="Wedding"
@@ -83,22 +83,22 @@ export default function CategoryForm({
           />
         </label>
 
-        <label className="mt-4 block text-sm font-medium text-zinc-600">
+        <label className="mt-4 block text-sm font-semibold text-[#111827]">
           Description
           <textarea
-            className="mt-1.5 min-h-24 w-full resize-none rounded-xl border border-zinc-200 px-3 py-2.5 text-zinc-900 outline-none focus:border-accent"
+            className="mt-1.5 min-h-24 w-full resize-none rounded-2xl border border-[#e6e8ec] bg-white px-3 py-2.5 text-[#111827] outline-none focus:border-[#111827]"
             value={description}
             onChange={(event) => setDescription(event.target.value)}
             placeholder="Short description"
           />
         </label>
 
-        <label className="mt-4 block text-sm font-medium text-zinc-600">
+        <label className="mt-4 block text-sm font-semibold text-[#111827]">
           Image
           <input
             type="file"
             accept="image/*"
-            className="mt-1.5 w-full text-sm text-zinc-600 file:mr-3 file:rounded-full file:border-0 file:bg-accent file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white"
+            className="mt-1.5 w-full text-sm text-zinc-600 file:mr-3 file:rounded-full file:border-0 file:bg-[#111827] file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white"
             onChange={(event) => setImage(event.target.files?.[0] || null)}
           />
         </label>
@@ -111,7 +111,7 @@ export default function CategoryForm({
           />
         ) : null}
 
-        <label className="mt-4 flex items-center gap-2 text-sm font-medium text-zinc-700">
+        <label className="mt-4 flex items-center gap-2 text-sm font-semibold text-[#111827]">
           <input
             type="checkbox"
             checked={isActive}
@@ -127,14 +127,14 @@ export default function CategoryForm({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full px-4 py-2 text-sm font-semibold text-zinc-600 hover:bg-zinc-100"
+            className="rounded-full px-4 py-2 text-sm font-semibold text-zinc-500 hover:text-[#111827]"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={saving}
-            className="rounded-full bg-accent px-5 py-2 text-sm font-semibold text-white hover:bg-accent-hover disabled:opacity-60"
+            className="rounded-full bg-[#111827] px-5 py-2 text-sm font-semibold text-white hover:bg-black disabled:opacity-60"
           >
             {saving ? "Saving..." : "Save"}
           </button>

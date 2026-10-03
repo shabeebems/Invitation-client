@@ -21,7 +21,7 @@ type DetailField = {
   hint?: string;
 };
 
-export function detailFieldsFor(categoryName: string): DetailField[] {
+function detailFieldsFor(categoryName: string): DetailField[] {
   if (/house\s*warm/i.test(categoryName)) {
     return [
       { key: "hostNames", label: "Host names", required: true },

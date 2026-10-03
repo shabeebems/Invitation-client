@@ -5,7 +5,7 @@ import HeroPhone from "@/components/landing/HeroPhone";
 import SiteFooter from "@/components/landing/SiteFooter";
 import SiteNav from "@/components/landing/SiteNav";
 import TemplateGallery from "@/components/landing/TemplateGallery";
-import { API_URL, type Category, type InvitationTemplate } from "@/lib/api";
+import { fetchCategories, fetchTemplates } from "@/lib/api";
 
 const display = Playfair_Display({
   subsets: ["latin"],
@@ -17,42 +17,6 @@ export const metadata: Metadata = {
   description: "Digital invitations for weddings, housewarmings, and celebrations.",
 };
 
-async function getTemplates(): Promise<InvitationTemplate[]> {
-  try {
-    const response = await fetch(`${API_URL}/api/templates`, { cache: "no-store" });
-    const data = (await response.json()) as {
-      success?: boolean;
-      templates?: InvitationTemplate[];
-    };
-
-    if (!response.ok || !data.success) {
-      return [];
-    }
-
-    return (data.templates || []).filter((template) => template.isActive);
-  } catch {
-    return [];
-  }
-}
-
-async function getCategories(): Promise<Category[]> {
-  try {
-    const response = await fetch(`${API_URL}/api/categories`, { cache: "no-store" });
-    const data = (await response.json()) as {
-      success?: boolean;
-      categories?: Category[];
-    };
-
-    if (!response.ok || !data.success) {
-      return [];
-    }
-
-    return (data.categories || []).filter((category) => category.isActive);
-  } catch {
-    return [];
-  }
-}
-
 const features = [
   { icon: "edit", title: "Live Editor", text: "Tap text to edit" },
   { icon: "check", title: "No Watermark", text: "Clean & ready" },
@@ -61,7 +25,10 @@ const features = [
 ] as const;
 
 export default async function HomePage() {
-  const [templates, categories] = await Promise.all([getTemplates(), getCategories()]);
+  const [templates, categories] = await Promise.all([
+    fetchTemplates().then((items) => items.filter((template) => template.isActive)),
+    fetchCategories().then((items) => items.filter((category) => category.isActive)),
+  ]);
 
   return (
     <div className="min-h-full bg-page">

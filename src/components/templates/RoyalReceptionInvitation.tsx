@@ -1,12 +1,8 @@
 "use client";
 
-import { useRef, useState } from "react";
-import EditableField from "@/components/templates/EditableField";
-import InvitationEditChrome from "@/components/templates/InvitationEditChrome";
-import { invitationApiBase, invitationDoneHref, rememberPendingImage, type InvitationTemplate, type InvitationTheme, type PendingImage, type TemplateContent, imageUrl, withImageUrl } from "@/lib/api";
-
-export const RED_VELVET_THEME_ID = "6ab112ec097114d6c4cefdb4";
-export const HULK_THEME_ID = "6ab1131c097114d6c4cefdc3";
+import { useRef } from "react";
+import { useInvitationEditor } from "@/components/templates/useInvitationEditor";
+import { type InvitationTemplate, type PendingImage, imageUrl, withImageUrl } from "@/lib/api";
 
 const petals = [
   { left: "2%", width: 13, delay: "1.2s", duration: "17s", sway: "-50px", spin: "534deg", fill: "var(--maroon)" },
@@ -114,164 +110,28 @@ export default function RoyalReceptionInvitation({
   editable?: boolean;
   onPublish?: (draft: InvitationTemplate, images: PendingImage[]) => Promise<string>;
 }) {
-  const [draft, setDraft] = useState(template);
-  const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
-  const [publishing, setPublishing] = useState(false);
-  const [previewing, setPreviewing] = useState(false);
-  const [payOpen, setPayOpen] = useState(false);
-  const editing = editable && !previewing;
-  const pendingImages = useRef<PendingImage[]>([]);
   const imageInputRef = useRef<HTMLInputElement>(null);
-  const { content } = draft;
+  const { draft, setDraft, content, editing, persist, field, themeTitle, chrome } = useInvitationEditor({
+    template,
+    editable,
+    onPublish,
+    variant: "invite",
+  });
   const heroImageUrl = imageUrl(draft.images, "hero");
   const groomsInitial = (content.groomName || "").trim().charAt(0) || "I";
   const bridesInitial = (content.brideName || "").trim().charAt(0) || "A";
   const shareText = encodeURIComponent(content.shareText || "");
-
-  async function persist(nextContent: TemplateContent, image?: File) {
-    if (onPublish) {
-      if (image) {
-        pendingImages.current = rememberPendingImage(pendingImages.current, { file: image, slot: "hero" });
-      }
-      return;
-    }
-
-    setStatus("saving");
-
-    const body = new FormData();
-    body.append("content", JSON.stringify(nextContent));
-
-    if (image) {
-      body.append("image", image);
-      body.append("imageSlot", "hero");
-    }
-
-    try {
-      const response = await fetch(invitationApiBase(draft), {
-        method: "PUT",
-        credentials: "include",
-        body,
-      });
-      const data = (await response.json()) as {
-        success?: boolean;
-        template?: InvitationTemplate;
-      };
-
-      if (!response.ok || !data.success || !data.template) {
-        throw new Error("Save failed");
-      }
-
-      setDraft(data.template);
-      setStatus("saved");
-    } catch {
-      setStatus("error");
-    }
-  }
-
-  function commit(key: Exclude<keyof TemplateContent, "programItems" | "galleryItems">, value: string) {
-    setDraft((prev) => {
-      if (prev.content[key] === value) {
-        return prev;
-      }
-
-      const nextContent = { ...prev.content, [key]: value };
-      void persist(nextContent);
-      return { ...prev, content: nextContent };
-    });
-  }
+  const themeClass = /hulk|emerald/i.test(themeTitle) ? " palette-emerald" : "";
 
   function changeImage(file: File) {
     const preview = URL.createObjectURL(file);
     setDraft((prev) => ({ ...prev, images: withImageUrl(prev.images, "hero", preview) }));
-    void persist(draft.content, file);
-  }
-
-  async function publish() {
-    if (!onPublish || publishing) {
-      return;
-    }
-
-    setPublishing(true);
-    setStatus("saving");
-
-    try {
-      await onPublish(draft, pendingImages.current);
-    } catch (err) {
-      setStatus("error");
-      setPublishing(false);
-      throw err;
-    }
-  }
-
-  const field = (key: Exclude<keyof TemplateContent, "programItems" | "galleryItems">, className: string, multiline = false) => (
-    <EditableField
-      value={content[key] || ""}
-      editable={editing}
-      className={className}
-      multiline={multiline}
-      onCommit={(value) => commit(key, value)}
-    />
-  );
-
-  let themeClass = "";
-
-  if (draft.selectedThemeId === HULK_THEME_ID) {
-    themeClass = " palette-emerald";
-  } else if (draft.selectedThemeId === RED_VELVET_THEME_ID) {
-    themeClass = "";
+    void persist(draft.content, { file });
   }
 
   return (
     <main className={`royal-invitation relative${themeClass}`}>
-      <InvitationEditChrome
-        variant="invite"
-        editing={editing}
-        previewing={previewing}
-        status={status}
-        publishing={publishing}
-        canPublish={Boolean(onPublish)}
-        doneHref={invitationDoneHref(draft)}
-        invitationName={draft.name}
-        slug={draft.slug}
-        selectedThemeId={draft.selectedThemeId}
-        themes={draft.themes || []}
-        source={draft.source}
-        payOpen={payOpen}
-        onEnterPreview={() => {
-          setStatus("idle");
-          setPreviewing(true);
-          window.scrollTo({ top: 0 });
-        }}
-        onBackToEdit={() => {
-          setPublishing(false);
-          setStatus("idle");
-          setPreviewing(false);
-          setPayOpen(false);
-          window.scrollTo({ top: 0 });
-        }}
-        onOpenPay={() => {
-          setStatus("idle");
-          setPayOpen(true);
-        }}
-        onClosePay={() => {
-          if (!publishing) {
-            setPayOpen(false);
-          }
-        }}
-        onConfirmPay={async () => {
-          await publish();
-        }}
-        onThemeChange={(selectedThemeId, themes) => {
-          setDraft((prev) => ({
-            ...prev,
-            selectedThemeId,
-            selectedThemeTitle:
-              themes.find((theme) => theme.id === selectedThemeId)?.title || prev.selectedThemeTitle,
-            themes,
-          }));
-          setStatus("saved");
-        }}
-      />
+      {chrome}
 
       <header className="pointer-events-none fixed inset-x-0 top-0 z-[1100] px-[clamp(12px,2.5vw,32px)]">
         <div className="flex min-h-16 items-center justify-center">

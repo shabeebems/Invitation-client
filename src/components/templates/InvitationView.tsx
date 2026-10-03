@@ -3,7 +3,7 @@ import RoyalReceptionInvitation from "@/components/templates/RoyalReceptionInvit
 import HouseWarmingInvitation from "@/components/templates/HouseWarmingInvitation";
 import BirthdayPartyInvitation from "@/components/templates/BirthdayPartyInvitation";
 
-export function isHouseWarmingTemplate(template: InvitationTemplate) {
+function isHouseWarmingTemplate(template: InvitationTemplate) {
   return (
     template.slug === "parambil-house" ||
     template.templateSlug === "parambil-house" ||
@@ -11,7 +11,7 @@ export function isHouseWarmingTemplate(template: InvitationTemplate) {
   );
 }
 
-export function isBirthdayTemplate(template: InvitationTemplate) {
+function isBirthdayTemplate(template: InvitationTemplate) {
   return (
     template.slug === "midnight-birthday" ||
     template.templateSlug === "midnight-birthday" ||

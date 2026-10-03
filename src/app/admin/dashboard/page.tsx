@@ -1,5 +1,5 @@
-import PlaceholderPage from "@/components/admin/PlaceholderPage";
+import AdminDashboard from "@/components/admin/AdminDashboard";
 
 export default function DashboardPage() {
-  return <PlaceholderPage />;
+  return <AdminDashboard />;
 }
