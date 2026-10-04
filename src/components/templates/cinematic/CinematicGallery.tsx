@@ -88,47 +88,74 @@ export default function CinematicGallery({
         {field("galleryIntro", "text-center text-sm font-light text-[var(--cv-text-muted)]")}
       </p>
 
-      {/* Gallery Grid */}
+      {/* 35mm Film Still Contact Sheet */}
       <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {displayItems.map((item, index) => (
           <div
             key={index}
             onClick={() => handleSlotClick(index)}
-            className="group relative aspect-[3/4] cursor-pointer overflow-hidden rounded-3xl border border-[var(--cv-border)] bg-black/40 shadow-xl backdrop-blur-sm transition-all duration-500 hover:scale-[1.03] hover:border-[var(--cv-gold)]"
+            className="group relative cursor-pointer overflow-hidden rounded-xl border border-[var(--cv-gold)]/40 bg-black shadow-[0_8px_25px_rgba(0,0,0,0.8)] transition-all duration-500 hover:scale-[1.03] hover:border-[var(--cv-gold)] hover:shadow-[0_0_30px_rgba(212,175,55,0.3)]"
           >
-            {item.url ? (
-              <img
-                src={item.url}
-                alt={item.title}
-                className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
-              />
-            ) : (
-              <div className="flex h-full w-full flex-col items-center justify-center bg-black/60 p-4 text-xs text-[var(--cv-text-muted)]">
-                <span className="text-3xl">📷</span>
-                <p className="mt-2 font-medium">Add Photo</p>
+            {/* Top Film Sprocket Strip */}
+            <div className="flex items-center justify-between border-b border-[var(--cv-gold)]/20 bg-[#0d0b11] px-3 py-1 font-mono text-[8px] text-[var(--cv-gold)]/50 tracking-widest">
+              <span>KODAK 500T</span>
+              <div className="flex gap-1.5 text-[7px] text-[var(--cv-gold)]/40">
+                <span>■</span>
+                <span>■</span>
+                <span>■</span>
+                <span>■</span>
               </div>
-            )}
-
-            {/* Hover overlay with caption */}
-            <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/90 via-black/40 to-transparent p-6 text-left opacity-90 transition-opacity group-hover:opacity-100">
-              <span className="text-[10px] font-semibold tracking-widest text-[var(--cv-gold)] uppercase">
-                {item.eyebrow}
-              </span>
-              <h4 className="font-serif text-xl font-medium text-white">
-                {item.title}
-              </h4>
-              <p className="mt-1 text-xs text-white/80">
-                {item.caption}
-              </p>
+              <span>FRAME {index + 1}A</span>
             </div>
 
-            {editable && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition group-hover:opacity-100">
-                <span className="rounded-full bg-[var(--cv-gold)] px-4 py-2 text-xs font-bold text-[#121016] shadow-lg">
-                  Change Photo
+            {/* Photo Container */}
+            <div className="relative aspect-[3/4] w-full overflow-hidden bg-black/60">
+              {item.url ? (
+                <img
+                  src={item.url}
+                  alt={item.title}
+                  className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                />
+              ) : (
+                <div className="flex h-full w-full flex-col items-center justify-center bg-black/60 p-4 text-xs text-[var(--cv-text-muted)]">
+                  <span className="text-3xl">🎬</span>
+                  <p className="mt-2 font-mono text-[10px]">ADD PRODUCTION STILL</p>
+                </div>
+              )}
+
+              {/* Film Grade Lower-Third Caption */}
+              <div className="absolute inset-x-0 bottom-0 flex flex-col justify-end bg-gradient-to-t from-black/95 via-black/50 to-transparent p-4 text-left">
+                <span className="font-mono text-[9px] font-semibold tracking-widest text-[var(--cv-gold)] uppercase">
+                  {item.eyebrow}
                 </span>
+                <h4 className="font-serif text-lg font-light text-white">
+                  {item.title}
+                </h4>
+                <p className="font-mono text-[10px] text-[var(--cv-text-muted)] truncate">
+                  {item.caption}
+                </p>
               </div>
-            )}
+
+              {editable && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 transition group-hover:opacity-100">
+                  <span className="rounded-full bg-[var(--cv-gold)] px-4 py-2 font-mono text-[10px] font-bold text-[#121016] uppercase shadow-lg">
+                    Swap Production Still
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Bottom Film Sprocket Strip */}
+            <div className="flex items-center justify-between border-t border-[var(--cv-gold)]/20 bg-[#0d0b11] px-3 py-1 font-mono text-[8px] text-[var(--cv-gold)]/50 tracking-widest">
+              <span>SAFETY FILM</span>
+              <div className="flex gap-1.5 text-[7px] text-[var(--cv-gold)]/40">
+                <span>■</span>
+                <span>■</span>
+                <span>■</span>
+                <span>■</span>
+              </div>
+              <span>24 FPS</span>
+            </div>
           </div>
         ))}
       </div>

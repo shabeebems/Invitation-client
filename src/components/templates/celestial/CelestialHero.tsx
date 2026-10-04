@@ -79,53 +79,28 @@ export default function CelestialHero({
           </p>
         </div>
 
-        {/* Astrolabe Beveled Celestial Instrument Dial */}
-        <div className="cs-instrument-card mx-auto max-w-2xl rounded-3xl p-6 shadow-2xl backdrop-blur-xl sm:p-8">
+        {/* Astronomical Astrolabe Horizon Dial Lockup (NOT a 3-pillar grid) */}
+        <div className="cs-instrument-card mx-auto max-w-xl rounded-2xl border border-[var(--cs-border)] bg-black/60 p-6 text-center shadow-2xl backdrop-blur-2xl">
           <span className="cs-corner-pin tl" />
           <span className="cs-corner-pin tr" />
           <span className="cs-corner-pin bl" />
           <span className="cs-corner-pin br" />
 
-          <div className="grid grid-cols-1 divide-y divide-[var(--cs-border-light)] sm:grid-cols-3 sm:divide-x sm:divide-y-0">
-            {/* The Auspicious Date */}
-            <div className="space-y-1 py-3 sm:py-0 sm:px-4">
-              <span className="text-[10px] font-semibold tracking-widest text-[var(--cs-starlight)] uppercase">
-                The Auspicious Date
-              </span>
-              <p className="font-serif text-lg font-medium text-[var(--cs-text-main)] sm:text-xl">
-                {field("weekday", "font-medium text-[var(--cs-text-main)]")}
-              </p>
-              <p className="text-xs font-light text-[var(--cs-text-muted)]">
-                {field("day", "text-xs font-light text-[var(--cs-text-muted)]")} {field("monthYear", "text-xs font-light text-[var(--cs-text-muted)]")}
-              </p>
-            </div>
-
-            {/* Twilight Hour */}
-            <div className="space-y-1 py-3 sm:py-0 sm:px-4">
-              <span className="text-[10px] font-semibold tracking-widest text-[var(--cs-starlight)] uppercase">
-                Twilight Alignment
-              </span>
-              <p className="font-serif text-lg font-medium text-[var(--cs-text-main)] sm:text-xl">
-                {field("time", "font-medium text-[var(--cs-text-main)]")}
-              </p>
-              <p className="text-xs font-light text-[var(--cs-text-muted)]">
-                Nikah & Starlit Feast
-              </p>
-            </div>
-
-            {/* Earthly Coordinates */}
-            <div className="space-y-1 py-3 sm:py-0 sm:px-4">
-              <span className="text-[10px] font-semibold tracking-widest text-[var(--cs-starlight)] uppercase">
-                Coordinates
-              </span>
-              <p className="font-serif text-lg font-medium text-[var(--cs-text-main)] sm:text-xl">
-                {field("venueCity", "font-medium text-[var(--cs-text-main)]")}
-              </p>
-              <p className="text-xs font-light text-[var(--cs-text-muted)] line-clamp-1">
-                {field("venueName", "text-xs font-light text-[var(--cs-text-muted)]")}
-              </p>
-            </div>
+          <div className="font-mono text-[9px] font-bold tracking-[0.3em] text-[var(--cs-starlight-dim)] uppercase">
+            CELESTIAL HORIZON · RA: 18h 36m · DEC: +24° 18&apos;
           </div>
+
+          <div className="my-3 flex flex-wrap items-center justify-center gap-2 font-serif text-lg font-medium text-[var(--cs-text-main)] sm:text-xl">
+            <span>{field("weekday", "font-medium text-[var(--cs-text-main)]")}</span>
+            <span className="text-[var(--cs-starlight)]">✦</span>
+            <span>{field("day", "text-[var(--cs-text-main)]")} {field("monthYear", "text-[var(--cs-text-main)]")}</span>
+            <span className="text-[var(--cs-starlight)]">✦</span>
+            <span>{field("time", "text-[var(--cs-starlight)]")}</span>
+          </div>
+
+          <p className="font-serif text-xs tracking-widest text-[var(--cs-starlight)] uppercase">
+            {field("venueName", "text-xs tracking-widest text-[var(--cs-starlight)] uppercase")} · {field("venueCity", "text-xs tracking-widest uppercase")}
+          </p>
         </div>
 
         {/* Action Suite */}

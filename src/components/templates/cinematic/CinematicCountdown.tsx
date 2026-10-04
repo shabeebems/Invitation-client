@@ -47,58 +47,95 @@ export default function CinematicCountdown({
   }
 
   return (
-    <section className="relative z-10 mx-auto my-16 w-full max-w-4xl px-4 py-6">
-      <div className="cv-glass rounded-3xl p-8 text-center sm:p-14">
-        {/* Decorative Divider */}
-        <div className="mx-auto flex items-center justify-center gap-3 text-[var(--cv-gold)] opacity-80">
-          <span className="h-px w-12 bg-gradient-to-r from-transparent to-[var(--cv-gold)]" />
-          <span className="text-xs">✦ ⏳ ✦</span>
-          <span className="h-px w-12 bg-gradient-to-l from-transparent to-[var(--cv-gold)]" />
+    <section className="relative z-10 mx-auto my-20 w-full max-w-4xl px-4">
+      {/* Academy Leader / Timecode Console */}
+      <div className="relative overflow-hidden rounded-3xl border border-[var(--cv-gold)]/40 bg-gradient-to-b from-black/95 via-[#131019]/90 to-black/95 p-6 text-center shadow-[0_10px_50px_rgba(0,0,0,0.85)] backdrop-blur-xl sm:p-10">
+        
+        {/* Top SMPTE Header Strip */}
+        <div className="flex items-center justify-between border-b border-[var(--cv-gold)]/20 pb-3 font-mono text-[10px] tracking-[0.25em] text-[var(--cv-gold)] uppercase">
+          <div className="flex items-center gap-2">
+            <span className="inline-block h-2 w-2 rounded-full bg-[var(--cv-gold)] animate-ping" />
+            <span>SMPTE TIME-REEL MASTER</span>
+          </div>
+          <div className="text-[var(--cv-gold-light)]/80">
+            SYNC CLOCK: 24.00 FPS
+          </div>
         </div>
 
-        <p className="mt-3 text-xs font-semibold tracking-[0.3em] text-[var(--cv-gold)] uppercase">
-          {field("countdownHeading", "text-center text-xs font-semibold tracking-[0.3em] text-[var(--cv-gold)] uppercase")}
+        <p className="mt-5 font-mono text-xs font-semibold tracking-[0.3em] text-[var(--cv-gold)] uppercase">
+          {field("countdownHeading", "text-center font-mono text-xs font-semibold tracking-[0.3em] text-[var(--cv-gold)] uppercase")}
         </p>
 
         {countdown.isLive ? (
           <div className="my-8">
-            <p className="font-serif text-3xl font-medium text-[var(--cv-gold-light)] sm:text-4xl">
+            <p className="font-serif text-3xl font-light text-[var(--cv-gold-light)] sm:text-4xl">
               Alhamdulillah, The Blessed Day Has Arrived!
             </p>
-            <p className="mt-2 text-xs font-light text-[var(--cv-text-muted)]">
-              We look forward to welcoming you into our celebration.
+            <p className="mt-2 text-xs font-mono tracking-widest text-[var(--cv-text-muted)] uppercase">
+              Now Screening • Live Engagement
             </p>
           </div>
         ) : (
-          <div className="my-10 grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-6">
-            {[
-              { val: countdown.days, label: "Days" },
-              { val: countdown.hours, label: "Hours" },
-              { val: countdown.minutes, label: "Minutes" },
-              { val: countdown.seconds, label: "Seconds" },
-            ].map((unit) => (
-              <div
-                key={unit.label}
-                className="group relative flex flex-col items-center justify-center overflow-hidden rounded-2xl border border-[var(--cv-border)] bg-black/40 p-4 shadow-lg backdrop-blur-md transition-transform duration-300 hover:scale-105 hover:border-[var(--cv-gold)] sm:p-6"
-              >
-                <div className="pointer-events-none absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-transparent via-[var(--cv-gold)] to-transparent opacity-60" />
+          <div className="my-8">
+            {/* Master SMPTE Timecode Display Bar */}
+            <div className="mx-auto max-w-2xl rounded-2xl border border-[var(--cv-gold)]/40 bg-black/80 px-4 py-6 shadow-inner sm:px-8">
+              <div className="grid grid-cols-4 items-center divide-x divide-[var(--cv-gold)]/30 text-center font-mono">
+                {/* Days */}
+                <div className="px-2 sm:px-4">
+                  <div className="font-mono text-3xl font-bold tracking-wider text-[var(--cv-gold-light)] drop-shadow-[0_0_15px_rgba(226,192,107,0.4)] sm:text-5xl">
+                    {String(countdown.days).padStart(2, "0")}
+                  </div>
+                  <div className="mt-1 text-[9px] font-semibold tracking-[0.25em] text-[var(--cv-gold)] uppercase sm:text-[10px]">
+                    DAYS
+                  </div>
+                </div>
 
-                <span className="font-serif text-4xl font-bold tracking-tight text-[var(--cv-gold-light)] drop-shadow-[0_2px_10px_rgba(226,192,107,0.3)] sm:text-6xl">
-                  {String(unit.val).padStart(2, "0")}
-                </span>
-                <span className="mt-2 text-[10px] font-semibold tracking-[0.25em] text-[var(--cv-gold)] uppercase sm:text-xs">
-                  {unit.label}
-                </span>
+                {/* Hours */}
+                <div className="px-2 sm:px-4">
+                  <div className="font-mono text-3xl font-bold tracking-wider text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.3)] sm:text-5xl">
+                    {String(countdown.hours).padStart(2, "0")}
+                  </div>
+                  <div className="mt-1 text-[9px] font-semibold tracking-[0.25em] text-[var(--cv-gold)] uppercase sm:text-[10px]">
+                    HOURS
+                  </div>
+                </div>
+
+                {/* Minutes */}
+                <div className="px-2 sm:px-4">
+                  <div className="font-mono text-3xl font-bold tracking-wider text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.3)] sm:text-5xl">
+                    {String(countdown.minutes).padStart(2, "0")}
+                  </div>
+                  <div className="mt-1 text-[9px] font-semibold tracking-[0.25em] text-[var(--cv-gold)] uppercase sm:text-[10px]">
+                    MINUTES
+                  </div>
+                </div>
+
+                {/* Seconds */}
+                <div className="px-2 sm:px-4">
+                  <div className="font-mono text-3xl font-bold tracking-wider text-[var(--cv-gold-light)] drop-shadow-[0_0_15px_rgba(226,192,107,0.4)] sm:text-5xl">
+                    {String(countdown.seconds).padStart(2, "0")}
+                  </div>
+                  <div className="mt-1 text-[9px] font-semibold tracking-[0.25em] text-[var(--cv-gold)] uppercase sm:text-[10px]">
+                    SECONDS
+                  </div>
+                </div>
               </div>
-            ))}
+
+              {/* Timecode Sub-bar */}
+              <div className="mt-4 flex items-center justify-between border-t border-[var(--cv-gold)]/20 pt-2 font-mono text-[9px] text-[var(--cv-gold)]/60">
+                <span>DROP-FRAME: ENABLED</span>
+                <span className="tracking-widest">SMPTE 12M STANDARD</span>
+                <span>STATUS: LOCKED</span>
+              </div>
+            </div>
           </div>
         )}
 
-        <div className="flex flex-wrap items-center justify-center gap-4">
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-4">
           <button
             type="button"
             onClick={() => setModalOpen(true)}
-            className="inline-flex items-center gap-2 rounded-full border border-[var(--cv-gold)] bg-gradient-to-r from-[var(--cv-gold-dark)] via-[var(--cv-gold)] to-[var(--cv-gold-dark)] px-8 py-3.5 text-xs font-bold tracking-wider text-[#121016] uppercase shadow-lg transition hover:brightness-110 active:scale-95 cursor-pointer"
+            className="group inline-flex items-center gap-2 rounded-full border border-[var(--cv-gold)] bg-gradient-to-r from-[#d4af37] via-[#f3e5ab] to-[#aa8010] px-8 py-3 text-xs font-bold tracking-[0.15em] text-[#121016] uppercase shadow-lg transition hover:brightness-110 active:scale-95 cursor-pointer"
           >
             <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
@@ -106,7 +143,7 @@ export default function CinematicCountdown({
               <line x1="8" y1="2" x2="8" y2="6" />
               <line x1="3" y1="10" x2="21" y2="10" />
             </svg>
-            <span>Save The Date (Calendar)</span>
+            <span>REEL SYNC • ADD TO CALENDAR</span>
           </button>
         </div>
       </div>

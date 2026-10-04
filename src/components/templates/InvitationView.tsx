@@ -2,17 +2,40 @@ import type { InvitationTemplate, PendingImage } from "@/lib/api";
 import RoyalReceptionInvitation from "@/components/templates/RoyalReceptionInvitation";
 import HouseWarmingInvitation from "@/components/templates/HouseWarmingInvitation";
 import BirthdayPartyInvitation from "@/components/templates/BirthdayPartyInvitation";
-import GrandWeddingInvitation from "@/components/templates/GrandWeddingInvitation";
 import CinematicWeddingInvitation from "@/components/templates/CinematicWeddingInvitation";
 import CelestialWeddingInvitation from "@/components/templates/CelestialWeddingInvitation";
-import VogueWeddingInvitation from "@/components/templates/VogueWeddingInvitation";
+import BotanicalWeddingInvitation from "@/components/templates/BotanicalWeddingInvitation";
+import BurgundyWeddingInvitation from "@/components/templates/BurgundyWeddingInvitation";
+import CrimsonWeddingInvitation from "@/components/templates/CrimsonWeddingInvitation";
 
-function isVogueWeddingTemplate(template: InvitationTemplate) {
+function isCrimsonWeddingTemplate(template: InvitationTemplate) {
   return (
-    template.slug === "editorial-vogue" ||
-    template.templateSlug === "editorial-vogue" ||
-    /editorial|vogue/i.test(template.slug || "") ||
-    /editorial|vogue/i.test(template.templateSlug || "")
+    template.slug === "crimson-scroll" ||
+    template.templateSlug === "crimson-scroll" ||
+    template.slug === "riza-nizamudheen" ||
+    template.templateSlug === "riza-nizamudheen" ||
+    /crimson|scroll|riza|nizamudheen/i.test(template.slug || "") ||
+    /crimson|scroll|riza|nizamudheen/i.test(template.templateSlug || "")
+  );
+}
+
+function isBurgundyWeddingTemplate(template: InvitationTemplate) {
+  return (
+    template.slug === "burgundy-bloom" ||
+    template.templateSlug === "burgundy-bloom" ||
+    template.slug === "aysha-basim" ||
+    template.templateSlug === "aysha-basim" ||
+    /burgundy|bloom|aysha/i.test(template.slug || "") ||
+    /burgundy|bloom|aysha/i.test(template.templateSlug || "")
+  );
+}
+
+function isBotanicalWeddingTemplate(template: InvitationTemplate) {
+  return (
+    template.slug === "botanical-orangery" ||
+    template.templateSlug === "botanical-orangery" ||
+    /botanical|orangery/i.test(template.slug || "") ||
+    /botanical|orangery/i.test(template.templateSlug || "")
   );
 }
 
@@ -41,15 +64,6 @@ function isBirthdayTemplate(template: InvitationTemplate) {
   );
 }
 
-function isGrandWeddingTemplate(template: InvitationTemplate) {
-  return (
-    template.slug === "eternal-union" ||
-    template.templateSlug === "eternal-union" ||
-    /eternal|union/i.test(template.slug || "") ||
-    /eternal|union/i.test(template.templateSlug || "")
-  );
-}
-
 function isCinematicWeddingTemplate(template: InvitationTemplate) {
   return (
     template.slug === "cinematic-vows" ||
@@ -68,8 +82,16 @@ export default function InvitationView({
   editable?: boolean;
   onPublish?: (draft: InvitationTemplate, images: PendingImage[]) => Promise<string>;
 }) {
-  if (isVogueWeddingTemplate(template)) {
-    return <VogueWeddingInvitation template={template} editable={editable} onPublish={onPublish} />;
+  if (isCrimsonWeddingTemplate(template)) {
+    return <CrimsonWeddingInvitation template={template} editable={editable} onPublish={onPublish} />;
+  }
+
+  if (isBurgundyWeddingTemplate(template)) {
+    return <BurgundyWeddingInvitation template={template} editable={editable} onPublish={onPublish} />;
+  }
+
+  if (isBotanicalWeddingTemplate(template)) {
+    return <BotanicalWeddingInvitation template={template} editable={editable} onPublish={onPublish} />;
   }
 
   if (isCelestialWeddingTemplate(template)) {
@@ -78,10 +100,6 @@ export default function InvitationView({
 
   if (isCinematicWeddingTemplate(template)) {
     return <CinematicWeddingInvitation template={template} editable={editable} onPublish={onPublish} />;
-  }
-
-  if (isGrandWeddingTemplate(template)) {
-    return <GrandWeddingInvitation template={template} editable={editable} onPublish={onPublish} />;
   }
 
   if (isHouseWarmingTemplate(template)) {

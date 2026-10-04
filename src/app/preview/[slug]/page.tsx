@@ -10,7 +10,13 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const template = await fetchTemplate(slug);
+  const lookupSlug =
+    slug === "aysha-basim"
+      ? "burgundy-bloom"
+      : slug === "riza-nizamudheen"
+      ? "crimson-scroll"
+      : slug;
+  const template = await fetchTemplate(lookupSlug);
 
   if (!template) {
     return { title: "Template not found" };
@@ -28,7 +34,13 @@ export default async function TemplatePreviewPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const template = await fetchTemplate(slug);
+  const lookupSlug =
+    slug === "aysha-basim"
+      ? "burgundy-bloom"
+      : slug === "riza-nizamudheen"
+      ? "crimson-scroll"
+      : slug;
+  const template = await fetchTemplate(lookupSlug);
 
   if (!template) {
     notFound();

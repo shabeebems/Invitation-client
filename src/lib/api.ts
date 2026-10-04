@@ -19,6 +19,7 @@ export type Category = {
 };
 
 export type TemplateContent = {
+  [key: string]: any;
   bismillah?: string;
   hostLabel?: string;
   hostNames?: string;

@@ -12,10 +12,11 @@ import {
 import "@/app/preview/[slug]/royal-reception.css";
 import "@/app/preview/[slug]/house-warming.css";
 import "@/app/preview/[slug]/midnight-birthday.css";
-import "@/app/preview/[slug]/eternal-union.css";
 import "@/app/preview/[slug]/cinematic-vows.css";
 import "@/app/preview/[slug]/celestial-starlight.css";
-import "@/app/preview/[slug]/editorial-vogue.css";
+import "@/app/preview/[slug]/botanical-orangery.css";
+import "@/app/preview/[slug]/burgundy-bloom.css";
+import "@/app/preview/[slug]/crimson-scroll.css";
 
 const allura = Allura({
   weight: "400",

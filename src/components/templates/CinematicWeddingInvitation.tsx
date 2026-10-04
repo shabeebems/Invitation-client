@@ -11,11 +11,7 @@ import {
 import CinematicVideoBackground from "@/components/templates/cinematic/CinematicVideoBackground";
 import CinematicNavbar from "@/components/templates/cinematic/CinematicNavbar";
 import CinematicHero from "@/components/templates/cinematic/CinematicHero";
-import CinematicCountdown from "@/components/templates/cinematic/CinematicCountdown";
-import CinematicStory from "@/components/templates/cinematic/CinematicStory";
 import CinematicSchedule from "@/components/templates/cinematic/CinematicSchedule";
-import CinematicGallery from "@/components/templates/cinematic/CinematicGallery";
-import CinematicLocation from "@/components/templates/cinematic/CinematicLocation";
 import CinematicRsvp from "@/components/templates/cinematic/CinematicRsvp";
 
 export default function CinematicWeddingInvitation({
@@ -93,25 +89,12 @@ export default function CinematicWeddingInvitation({
         onToggleAudio={() => setAudioPlaying((prev) => !prev)}
       />
 
-      {/* Main Overlaid Luxury Experience */}
+      {/* Main Overlaid Luxury Experience — Focused Cinema Premiere Layout */}
       <div className="relative z-10">
-        {/* 1. Grand Editorial Hero */}
+        {/* 1. Grand 70mm Panavision Premiere Billboard */}
         <CinematicHero field={field} />
 
-        {/* 2. Glassmorphic Countdown Timer with Live Days/Hours and Calendar Sync */}
-        <CinematicCountdown
-          eventDateIso={content.eventDateIso}
-          eventEndIso={content.eventEndIso}
-          title={`${content.groomName || "Zayd"} & ${content.brideName || "Layla"}`}
-          venueName={content.venueName}
-          venueCity={content.venueCity}
-          field={field}
-        />
-
-        {/* 3. Love Story / Our Journey */}
-        <CinematicStory field={field} />
-
-        {/* 4. Glass Itinerary / Schedule */}
+        {/* 2. Director's Call Sheet & 35mm Film Strip Scene Breakdown */}
         <CinematicSchedule
           items={content.programItems}
           editable={editing}
@@ -119,25 +102,7 @@ export default function CinematicWeddingInvitation({
           onCommitItem={handleCommitProgramItem}
         />
 
-        {/* 5. Cherished Moments Gallery with Lightbox */}
-        <CinematicGallery
-          items={content.galleryItems}
-          editable={editing}
-          field={field}
-          onImageChange={handleGalleryImageChange}
-        />
-
-        {/* 6. Destination & Venue Location with Google Maps */}
-        <CinematicLocation
-          mapsUrl={content.mapsUrl || content.googleMapsUrl}
-          addressFull={content.addressFull}
-          venueName={content.venueName}
-          venueHall={content.venueHall}
-          venueCity={content.venueCity}
-          field={field}
-        />
-
-        {/* 7. RSVP & Well Wishes */}
+        {/* 3. Hollywood Will-Call Box Office Pass & Guest Registration */}
         <CinematicRsvp field={field} />
 
         {/* Ultra-Luxury Glass Footer */}

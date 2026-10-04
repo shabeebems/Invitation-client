@@ -244,3 +244,121 @@
   color: #f8fafc;
   padding: 8px 12px;
 }
+
+/* ========================================================
+   OBSERVATORY DOME ENTRANCE GATE (CONCEPT 1)
+   ======================================================== */
+
+.cs-entrance-overlay {
+  background-color: #02040c;
+  z-index: 9999;
+}
+
+/* Twin Observatory Dome Shutters */
+.cs-dome-shutter {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50.5%;
+  background: radial-gradient(circle at center, #070c24 0%, #02040c 100%);
+  z-index: 10;
+  pointer-events: none;
+  transition: transform 1.25s cubic-bezier(0.77, 0, 0.175, 1);
+  box-shadow: 0 0 100px rgba(0, 0, 0, 0.95);
+}
+
+.cs-dome-left {
+  left: 0;
+  border-right: 1.5px solid var(--cs-starlight-dim);
+  box-shadow: 20px 0 60px rgba(0, 0, 0, 0.9);
+}
+
+.cs-dome-right {
+  right: 0;
+  border-left: 1.5px solid var(--cs-starlight-dim);
+  box-shadow: -20px 0 60px rgba(0, 0, 0, 0.9);
+}
+
+/* Parting the Observatory Dome to Reveal the Cosmos */
+.cs-dome-open-left {
+  transform: translateX(-105%) rotate(-3deg);
+}
+
+.cs-dome-open-right {
+  transform: translateX(105%) rotate(3deg);
+}
+
+/* Supernova Shockwave Flare */
+@keyframes csSupernovaPulse {
+  0% {
+    width: 20px;
+    height: 20px;
+    opacity: 0.95;
+    box-shadow: 0 0 40px 20px rgba(255, 255, 255, 1),
+      0 0 120px 80px rgba(243, 227, 182, 0.9),
+      0 0 250px 150px rgba(125, 211, 252, 0.6);
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    width: 2200px;
+    height: 2200px;
+    opacity: 0;
+    box-shadow: 0 0 100px 50px rgba(255, 255, 255, 0),
+      0 0 300px 200px rgba(243, 227, 182, 0),
+      0 0 600px 400px rgba(125, 211, 252, 0);
+  }
+}
+
+.cs-supernova-flare {
+  border-radius: 9999px;
+  background: radial-gradient(circle, #ffffff 0%, #f3e3b6 35%, transparent 70%);
+  animation: csSupernovaPulse 1.2s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
+  z-index: 30;
+}
+
+/* Fast Astrolabe Spin Upon Activation */
+.cs-astrolabe-spin-fast {
+  animation: csArmillarySpinCW 1.2s cubic-bezier(0.5, 0, 0.2, 1) infinite !important;
+}
+
+.cs-astrolabe-spin-fast-ccw {
+  animation: csArmillarySpinCCW 1.2s cubic-bezier(0.5, 0, 0.2, 1) infinite !important;
+}
+
+/* Starlight Background Dust Grid */
+.cs-starlight-dust {
+  background-image: radial-gradient(rgba(243, 227, 182, 0.35) 1px, transparent 1px),
+    radial-gradient(rgba(125, 211, 252, 0.25) 1px, transparent 1px);
+  background-size: 60px 60px, 90px 90px;
+  background-position: 0 0, 30px 30px;
+}
+
+/* Button Shimmer Beam */
+@keyframes csBtnBeam {
+  0% {
+    transform: translateX(-150%);
+  }
+  100% {
+    transform: translateX(150%);
+  }
+}
+
+.cs-btn-shimmer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 50%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(243, 227, 182, 0.35),
+    transparent
+  );
+  transform: skewX(-25deg);
+  animation: csBtnBeam 3.5s ease-in-out infinite;
+  pointer-events: none;
+}
+

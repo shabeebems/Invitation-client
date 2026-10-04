@@ -12,10 +12,8 @@ import CelestialNavbar from "@/components/templates/celestial/CelestialNavbar";
 import CelestialHero from "@/components/templates/celestial/CelestialHero";
 import CelestialMoonPhase from "@/components/templates/celestial/CelestialMoonPhase";
 import CelestialStory from "@/components/templates/celestial/CelestialStory";
-import CelestialOrbitSchedule from "@/components/templates/celestial/CelestialOrbitSchedule";
-import CelestialGallery from "@/components/templates/celestial/CelestialGallery";
-import CelestialObservatory from "@/components/templates/celestial/CelestialObservatory";
 import CelestialRsvp from "@/components/templates/celestial/CelestialRsvp";
+import CelestialEntranceGate from "@/components/templates/celestial/CelestialEntranceGate";
 
 export default function CelestialWeddingInvitation({
   template,
@@ -70,6 +68,15 @@ export default function CelestialWeddingInvitation({
     <main className={`celestial-starlight${themeClass} min-h-screen relative`}>
       {chrome}
 
+      {/* Dramatic Astrolabe Observatory Dome Entrance Gate */}
+      <CelestialEntranceGate
+        groomName={content.groomName || "Zayd"}
+        brideName={content.brideName || "Layla"}
+        groomInitial={groomInitial}
+        brideInitial={brideInitial}
+        editable={editable}
+      />
+
       {/* Living Interactive Constellation & Star Canvas */}
       <CelestialStarCanvas />
 
@@ -100,33 +107,7 @@ export default function CelestialWeddingInvitation({
         {/* 3. Written in the Stars Love Story */}
         <CelestialStory field={field} />
 
-        {/* 4. Planetary Orbit Trajectory Schedule */}
-        <CelestialOrbitSchedule
-          items={content.programItems}
-          editable={editing}
-          field={field}
-          onCommitItem={handleCommitProgramItem}
-        />
-
-        {/* 5. Constellation Memories Photo Gallery */}
-        <CelestialGallery
-          items={content.galleryItems}
-          editable={editing}
-          field={field}
-          onImageChange={handleGalleryImageChange}
-        />
-
-        {/* 6. Earthly Observatory Venue & Coordinates */}
-        <CelestialObservatory
-          mapsUrl={content.mapsUrl || content.googleMapsUrl}
-          addressFull={content.addressFull}
-          venueName={content.venueName}
-          venueHall={content.venueHall}
-          venueCity={content.venueCity}
-          field={field}
-        />
-
-        {/* 7. Wish Upon a Star RSVP */}
+        {/* 4. Wish Upon a Star RSVP */}
         <CelestialRsvp field={field} />
 
         {/* Astrolabe Starlit Footer */}

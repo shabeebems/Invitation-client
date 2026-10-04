@@ -1,0 +1,144 @@
+/* The Botanical Orangery — Tuscan Villa & Floral Meadow Wedding Theme */
+
+.botanical-orangery {
+  --bo-bg-cream: #faf7f2;
+  --bo-bg-secondary: #f3ede2;
+  --bo-bg-stone: rgba(255, 252, 247, 0.88);
+  --bo-bg-dark: #1a1614;
+  --bo-border: rgba(125, 140, 88, 0.35);
+  --bo-border-light: rgba(125, 140, 88, 0.18);
+  --bo-olive: #687944;
+  --bo-olive-dark: #4b5830;
+  --bo-terracotta: #ba724d;
+  --bo-terracotta-light: #d8895e;
+  --bo-gold: #c5a059;
+  --bo-gold-light: #fdf5e2;
+  --bo-text-main: #1f1b18;
+  --bo-text-muted: #5e5751;
+  --bo-text-faint: #968c83;
+  --bo-shadow: 0 30px 80px rgba(45, 35, 25, 0.08);
+
+  color: var(--bo-text-main);
+  background-color: var(--bo-bg-cream);
+  font-family: var(--font-cormorant), "Cinzel", "Playfair Display", serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Riviera Jasmine Theme */
+.botanical-orangery.theme-jasmine {
+  --bo-bg-cream: #f6f8f5;
+  --bo-bg-secondary: #ebf0e9;
+  --bo-bg-stone: rgba(255, 255, 255, 0.9);
+  --bo-bg-dark: #0f1a14;
+  --bo-border: rgba(88, 117, 99, 0.35);
+  --bo-border-light: rgba(88, 117, 99, 0.18);
+  --bo-olive: #496853;
+  --bo-olive-dark: #32493a;
+  --bo-terracotta: #8a704c;
+  --bo-terracotta-light: #b09168;
+  --bo-gold: #bfa15f;
+  --bo-gold-light: #f7f9f6;
+  --bo-text-main: #141d17;
+  --bo-text-muted: #4e5f53;
+  --bo-text-faint: #819587;
+}
+
+/* Amalfi Lemon Grove Theme */
+.botanical-orangery.theme-amalfi {
+  --bo-bg-cream: #fdfaf2;
+  --bo-bg-secondary: #f6eedb;
+  --bo-bg-stone: rgba(255, 253, 248, 0.9);
+  --bo-bg-dark: #171b15;
+  --bo-border: rgba(201, 155, 59, 0.35);
+  --bo-border-light: rgba(201, 155, 59, 0.18);
+  --bo-olive: #5d6e4a;
+  --bo-olive-dark: #3f4b32;
+  --bo-terracotta: #c99b3b;
+  --bo-terracotta-light: #e5b95a;
+  --bo-gold: #c99b3b;
+  --bo-gold-light: #fffdf5;
+  --bo-text-main: #1a1e17;
+  --bo-text-muted: #5e6654;
+  --bo-text-faint: #929a88;
+}
+
+/* Travertine Stone Plaque */
+.bo-stone-plaque {
+  background: var(--bo-bg-stone);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1.5px solid var(--bo-border);
+  box-shadow: 0 25px 70px rgba(50, 40, 30, 0.07),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    inset 0 0 35px rgba(200, 180, 150, 0.05);
+  position: relative;
+}
+
+/* Neoclassical Stone Arch Filigree Corners */
+.bo-arch-corner {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  pointer-events: none;
+  opacity: 0.75;
+}
+.bo-arch-corner.tl {
+  top: 12px;
+  left: 12px;
+  border-top: 1.5px solid var(--bo-olive);
+  border-left: 1.5px solid var(--bo-olive);
+}
+.bo-arch-corner.tr {
+  top: 12px;
+  right: 12px;
+  border-top: 1.5px solid var(--bo-olive);
+  border-right: 1.5px solid var(--bo-olive);
+}
+.bo-arch-corner.bl {
+  bottom: 12px;
+  left: 12px;
+  border-bottom: 1.5px solid var(--bo-olive);
+  border-left: 1.5px solid var(--bo-olive);
+}
+.bo-arch-corner.br {
+  bottom: 12px;
+  right: 12px;
+  border-bottom: 1.5px solid var(--bo-olive);
+  border-right: 1.5px solid var(--bo-olive);
+}
+
+/* Golden Hour Sunbeam Typography Sweep */
+@keyframes boSunbeamSweep {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.bo-sunbeam-text {
+  background: linear-gradient(
+    115deg,
+    var(--bo-olive-dark) 0%,
+    var(--bo-terracotta) 35%,
+    var(--bo-gold) 50%,
+    var(--bo-terracotta) 65%,
+    var(--bo-olive-dark) 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: boSunbeamSweep 9s linear infinite;
+}
+
+/* Subtle Organic Linen Texture */
+.bo-linen-pill {
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--bo-border-light);
+  box-shadow: 0 10px 25px rgba(50, 40, 30, 0.04);
+}

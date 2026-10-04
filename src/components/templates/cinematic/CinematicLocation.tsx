@@ -37,79 +37,92 @@ export default function CinematicLocation({
 
   return (
     <section id="location" className="relative z-10 mx-auto my-28 max-w-5xl px-4 text-center">
-      {/* Decorative Divider */}
-      <div className="mx-auto flex items-center justify-center gap-3 text-[var(--cv-gold)] opacity-80">
-        <span className="h-px w-12 bg-gradient-to-r from-transparent to-[var(--cv-gold)]" />
-        <span className="text-xs">✦ DESTINATION & VENUE ✦</span>
-        <span className="h-px w-12 bg-gradient-to-l from-transparent to-[var(--cv-gold)]" />
+      {/* Cinema Marquee Overhead Header */}
+      <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-[var(--cv-gold)]/40 bg-black/80 px-6 py-2 font-mono text-[10px] tracking-[0.3em] text-[var(--cv-gold)] uppercase shadow-lg">
+        <span className="h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
+        <span>PREMIERE PAVILION • RED CARPET LOCATION</span>
       </div>
 
-      <p className="mt-3 text-xs font-semibold tracking-[0.3em] text-[var(--cv-gold)] uppercase">
-        {field("venueEyebrow", "text-center text-xs font-semibold tracking-[0.3em] text-[var(--cv-gold)] uppercase")}
+      <p className="mt-4 font-mono text-xs font-semibold tracking-[0.3em] text-[var(--cv-gold)] uppercase">
+        {field("venueEyebrow", "text-center font-mono text-xs font-semibold tracking-[0.3em] text-[var(--cv-gold)] uppercase")}
       </p>
 
-      <h2 className="mt-2 font-serif text-3xl font-medium tracking-tight text-[var(--cv-gold-light)] sm:text-5xl">
-        {field("venueTitle", "font-serif text-3xl font-medium tracking-tight text-[var(--cv-gold-light)] sm:text-5xl")}
+      <h2 className="mt-2 font-serif text-3xl font-light tracking-tight text-[var(--cv-gold-light)] sm:text-5xl">
+        {field("venueTitle", "font-serif text-3xl font-light tracking-tight text-[var(--cv-gold-light)] sm:text-5xl")}
       </h2>
 
-      <p className="mx-auto mt-3 max-w-xl text-sm font-light text-[var(--cv-text-muted)]">
-        {field("venueIntro", "text-center text-sm font-light text-[var(--cv-text-muted)]")}
+      <p className="mx-auto mt-3 max-w-xl text-xs font-light tracking-widest text-[var(--cv-text-muted)] uppercase sm:text-sm">
+        {field("venueIntro", "text-center text-xs font-light tracking-widest text-[var(--cv-text-muted)] uppercase sm:text-sm")}
       </p>
 
-      {/* Main Glass Venue Card */}
-      <div className="cv-glass mt-12 overflow-hidden rounded-3xl text-left shadow-2xl backdrop-blur-xl">
-        <div className="grid grid-cols-1 lg:grid-cols-12">
-          {/* Venue Info (5 cols) */}
-          <div className="flex flex-col justify-between p-8 sm:p-12 lg:col-span-5">
+      {/* Retro Marquee Box */}
+      <div className="mt-12 overflow-hidden rounded-3xl border border-[var(--cv-gold)]/50 bg-gradient-to-b from-black/95 via-[#14101b]/95 to-black/95 text-left shadow-[0_15px_50px_rgba(0,0,0,0.9)] backdrop-blur-xl">
+        {/* Top Marquee Ribbon */}
+        <div className="flex items-center justify-between border-b border-[var(--cv-gold)]/30 bg-black/80 px-6 py-3 font-mono text-[10px] tracking-[0.25em] text-[var(--cv-gold)] uppercase">
+          <div className="flex items-center gap-2">
+            <span>NOW SHOWING: EXCLUSIVE ENGAGEMENT</span>
+          </div>
+          <div className="text-[var(--cv-gold-light)]">
+            RED CARPET ACCESS
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 divide-y divide-[var(--cv-gold)]/20 lg:divide-y-0 lg:divide-x">
+          {/* Cinema Details (6 cols) */}
+          <div className="flex flex-col justify-between p-8 sm:p-12 lg:col-span-6">
             <div className="space-y-6">
-              <div className="inline-flex items-center gap-2 rounded-full border border-[var(--cv-gold)]/40 bg-[var(--cv-gold)]/10 px-4 py-1.5 text-[11px] font-semibold tracking-widest text-[var(--cv-gold)] uppercase">
-                <span>📍</span>
-                <span>Celebration Ground</span>
-              </div>
-
-              <div className="space-y-2">
-                <h3 className="font-serif text-2xl font-medium tracking-wide text-white sm:text-3xl">
-                  {field("venueName", "font-serif text-2xl font-medium text-white sm:text-3xl")}
-                </h3>
-                <p className="font-serif text-base text-[var(--cv-gold-light)]">
-                  {field("venueHall", "font-serif text-base text-[var(--cv-gold-light)]")}
-                </p>
-                <p className="text-xs font-medium tracking-widest text-[var(--cv-gold)] uppercase">
-                  {field("venueCity", "text-xs font-medium tracking-widest text-[var(--cv-gold)] uppercase")}
-                </p>
-              </div>
-
-              <div className="border-t border-[var(--cv-border-light)] pt-5">
-                <span className="text-[10px] font-semibold tracking-widest text-[var(--cv-text-muted)] uppercase">
-                  Address
+              <div>
+                <span className="font-mono text-[9px] font-bold tracking-[0.25em] text-[var(--cv-gold)] uppercase">
+                  ✦ PREMIERE THEATRE &amp; ESTATE
                 </span>
-                <p className="mt-1 text-sm font-light leading-relaxed text-[var(--cv-text-main)]">
-                  {field("addressFull", "text-sm font-light leading-relaxed text-[var(--cv-text-main)]")}
+                <h3 className="mt-1 font-serif text-3xl font-light tracking-wide text-white sm:text-4xl">
+                  {field("venueName", "font-serif text-3xl font-light text-white sm:text-4xl")}
+                </h3>
+                <p className="mt-1 font-serif text-lg text-[var(--cv-gold-light)]">
+                  {field("venueHall", "font-serif text-lg text-[var(--cv-gold-light)]")}
                 </p>
               </div>
 
-              {/* Parking and Access note */}
-              <div className="rounded-2xl border border-[var(--cv-border-light)] bg-white/5 p-4 text-xs font-light text-[var(--cv-text-muted)]">
-                <div className="flex items-center gap-2 font-medium text-[var(--cv-gold-light)]">
-                  <span>🚗</span>
-                  <span>Valet & Guest Parking Available</span>
-                </div>
-                <p className="mt-1 text-[11px] leading-relaxed">
-                  Complimentary valet parking is provided at the main palace entrance.
+              <div className="space-y-1 rounded-2xl border border-[var(--cv-gold)]/20 bg-black/50 p-4 font-mono text-xs">
+                <span className="text-[9px] font-bold tracking-widest text-[var(--cv-gold)] uppercase">
+                  LOCATION ADDRESS:
+                </span>
+                <p className="font-light text-[var(--cv-text-muted)] leading-relaxed">
+                  {field("addressFull", "font-light text-[var(--cv-text-muted)] leading-relaxed")}
                 </p>
+              </div>
+
+              {/* Cinema Amenities */}
+              <div className="grid grid-cols-2 gap-3 pt-2 font-mono text-[11px] text-[var(--cv-text-muted)]">
+                <div className="flex items-center gap-2">
+                  <span className="text-[var(--cv-gold)]">✓</span>
+                  <span>Valet &amp; Limousine Service</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[var(--cv-gold)]">✓</span>
+                  <span>Red Carpet Media Wall</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[var(--cv-gold)]">✓</span>
+                  <span>Climate Controlled Pavilion</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[var(--cv-gold)]">✓</span>
+                  <span>VIP Guest Seating</span>
+                </div>
               </div>
             </div>
 
-            {/* Actions */}
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row lg:flex-col">
+            {/* Action Buttons */}
+            <div className="mt-8 flex flex-wrap items-center gap-4">
               <a
                 href={effectiveMapsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-[var(--cv-gold)] bg-gradient-to-r from-[var(--cv-gold-dark)] via-[var(--cv-gold)] to-[var(--cv-gold-dark)] px-6 py-3.5 text-xs font-bold tracking-wider text-[#121016] uppercase shadow-lg transition hover:brightness-110 active:scale-95"
+                className="inline-flex items-center gap-2 rounded-full border border-[var(--cv-gold)] bg-gradient-to-r from-[#d4af37] via-[#f3e5ab] to-[#aa8010] px-7 py-3 text-xs font-bold tracking-[0.15em] text-[#121016] uppercase shadow-lg transition hover:brightness-110 active:scale-95"
               >
-                <span>Open in Google Maps</span>
-                <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <span>OPEN CINEMA MAP</span>
+                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
                   <polyline points="15 3 21 3 21 9" />
                   <line x1="10" y1="14" x2="21" y2="3" />
@@ -119,23 +132,25 @@ export default function CinematicLocation({
               <button
                 type="button"
                 onClick={handleCopy}
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-[var(--cv-border)] bg-black/40 px-6 py-3.5 text-xs font-semibold tracking-wider text-[var(--cv-gold-light)] uppercase backdrop-blur-md transition hover:border-[var(--cv-gold)] hover:bg-[var(--cv-gold)]/10 cursor-pointer"
+                className="inline-flex items-center gap-2 rounded-full border border-[var(--cv-gold)]/40 bg-black/60 px-6 py-3 font-mono text-xs font-semibold tracking-wider text-[var(--cv-gold-light)] uppercase backdrop-blur-md transition hover:border-[var(--cv-gold)] hover:bg-[var(--cv-gold)]/15 active:scale-95 cursor-pointer"
               >
-                <span>{copied ? "Address Copied! ✓" : "Copy Full Address"}</span>
+                <span>{copied ? "COPIED TO CLIPBOARD ✓" : "COPY DISPATCH DIRECTIVES"}</span>
               </button>
             </div>
           </div>
 
-          {/* Embedded Map Visual (7 cols) */}
-          <div className="relative min-h-[380px] lg:col-span-7">
+          {/* Embedded Map Visual (6 cols) */}
+          <div className="relative min-h-[380px] lg:col-span-6 bg-black">
             <iframe
               title="Venue Location Map"
               src={`https://maps.google.com/maps?q=${mapQuery}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
-              className="h-full min-h-[380px] w-full border-0 filter grayscale contrast-125 invert"
+              className="h-full min-h-[380px] w-full border-0 filter grayscale contrast-125 invert opacity-75 hover:opacity-100 transition-opacity"
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
             />
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
+            <div className="pointer-events-none absolute bottom-3 right-3 rounded-lg border border-[var(--cv-gold)]/40 bg-black/80 px-3 py-1 font-mono text-[9px] tracking-widest text-[var(--cv-gold)] uppercase">
+              SAT-NAV GUIDANCE
+            </div>
           </div>
         </div>
       </div>
