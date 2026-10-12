@@ -49,7 +49,7 @@ export function loadSession(): Promise<AdminUser | null> {
 }
 
 export function homeFor(user: AdminUser): string {
-  return user.role === "admin" ? "/admin/dashboard" : "/account";
+  return user.role === "admin" ? "/admin/dashboard" : "/user/invitations";
 }
 
 export function safeNextPath(value: string | null | undefined): string {

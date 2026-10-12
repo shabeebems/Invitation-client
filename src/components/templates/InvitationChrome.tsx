@@ -4,19 +4,13 @@ import {
   Cinzel,
   Cormorant_Garamond,
   Fraunces,
-  Great_Vibes,
   Jost,
   Manrope,
   Outfit,
 } from "next/font/google";
-import "@/app/preview/[slug]/royal-reception.css";
-import "@/app/preview/[slug]/house-warming.css";
-import "@/app/preview/[slug]/midnight-birthday.css";
-import "@/app/preview/[slug]/cinematic-vows.css";
-import "@/app/preview/[slug]/celestial-starlight.css";
-import "@/app/preview/[slug]/botanical-orangery.css";
-import "@/app/preview/[slug]/burgundy-bloom.css";
-import "@/app/preview/[slug]/crimson-scroll.css";
+import "@/styles/templates/royal-reception.css";
+import "@/styles/templates/house-warming.css";
+import "@/styles/templates/celestial-starlight.css";
 
 const allura = Allura({
   weight: "400",
@@ -41,12 +35,6 @@ const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
   style: ["normal", "italic"],
   variable: "--font-cormorant",
-});
-
-const greatVibes = Great_Vibes({
-  weight: "400",
-  subsets: ["latin"],
-  variable: "--font-great-vibes",
 });
 
 const jost = Jost({
@@ -76,7 +64,7 @@ const manrope = Manrope({
 export default function InvitationChrome({ children }: { children: React.ReactNode }) {
   return (
     <div
-      className={`${allura.variable} ${amiri.variable} ${cinzel.variable} ${cormorant.variable} ${greatVibes.variable} ${jost.variable} ${outfit.variable} ${fraunces.variable} ${manrope.variable}`}
+      className={`${allura.variable} ${amiri.variable} ${cinzel.variable} ${cormorant.variable} ${jost.variable} ${outfit.variable} ${fraunces.variable} ${manrope.variable}`}
     >
       {children}
     </div>

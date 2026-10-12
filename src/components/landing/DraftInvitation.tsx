@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import InvitationView from "@/components/templates/InvitationView";
 import {
-  API_URL,
+  createWork,
+  updateWork,
   type InvitationTemplate,
   type PendingImage,
   type TemplateContent,
@@ -30,7 +31,7 @@ export default function DraftInvitation({ template }: { template: InvitationTemp
     const draft = readUseDraft(template.slug);
 
     if (!draft) {
-      router.replace(`/use/${template.slug}`);
+      router.replace(`/user/use/${template.slug}`);
       return;
     }
 
@@ -43,71 +44,28 @@ export default function DraftInvitation({ template }: { template: InvitationTemp
     let slug = existing;
 
     if (!slug) {
-      const response = await fetch(`${API_URL}/api/works`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: draft.name,
-          categoryId: template.categoryId,
-          templateId: template.id,
-          selectedThemeId: draft.selectedThemeId,
-          details,
-        }),
+      const work = await createWork({
+        name: draft.name,
+        categoryId: template.categoryId,
+        templateId: template.id,
+        selectedThemeId: draft.selectedThemeId,
+        details,
       });
-      const data = (await response.json()) as {
-        success?: boolean;
-        message?: string;
-        work?: { slug?: string };
-      };
 
-      if (!response.ok || !data.success || !data.work?.slug) {
-        throw new Error(data.message || "Could not save invitation");
-      }
-
-      slug = data.work.slug;
+      slug = work.slug;
       createdSlug.current = slug;
     }
 
     if (images.length) {
       for (const image of images) {
-        const body = new FormData();
-        body.append("content", JSON.stringify(details));
-        body.append("image", image.file);
-        body.append("imageSlot", image.slot);
-
-        if (image.galleryIndex !== undefined) {
-          body.append("galleryIndex", String(image.galleryIndex));
-        }
-
-        const response = await fetch(`${API_URL}/api/works/${slug}`, {
-          method: "PUT",
-          credentials: "include",
-          body,
-        });
-
-        if (!response.ok) {
-          const data = (await response.json()) as { message?: string };
-          throw new Error(data.message || "Could not save a photo");
-        }
+        await updateWork(slug, details, image);
       }
     } else if (existing) {
-      const body = new FormData();
-      body.append("content", JSON.stringify(details));
-      const response = await fetch(`${API_URL}/api/works/${slug}`, {
-        method: "PUT",
-        credentials: "include",
-        body,
-      });
-
-      if (!response.ok) {
-        const data = (await response.json()) as { message?: string };
-        throw new Error(data.message || "Could not save invitation");
-      }
+      await updateWork(slug, details);
     }
 
     clearUseDraft(template.slug);
-    router.push(`/published/${slug}`);
+    router.push(`/user/published/${slug}`);
     return slug;
   }
 

@@ -1,14 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import type { AdminUser } from "@/lib/api";
-import { loadSession } from "@/lib/session";
+import { homeFor, loadSession, loginHref } from "@/lib/session";
 import { AdminContext } from "./AdminContext";
 import Sidebar from "./Sidebar";
 
 export default function AdminShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [user, setUser] = useState<AdminUser | null>(null);
   const [allowed, setAllowed] = useState(false);
 
@@ -16,18 +17,23 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
     let cancelled = false;
 
     async function gate() {
-      const user = await loadSession();
+      const session = await loadSession();
 
       if (cancelled) {
         return;
       }
 
-      if (!user || user.role !== "admin") {
-        router.replace("/login");
+      if (!session) {
+        router.replace(loginHref(`${pathname}${window.location.search}`));
         return;
       }
 
-      setUser(user);
+      if (session.role !== "admin") {
+        router.replace(homeFor(session));
+        return;
+      }
+
+      setUser(session);
       setAllowed(true);
     }
 
@@ -36,7 +42,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
     return () => {
       cancelled = true;
     };
-  }, [router]);
+  }, [pathname, router]);
 
   if (!allowed || !user) {
     return (

@@ -114,7 +114,7 @@ export default function ThemePicker({
         onChange={(event) => void selectTheme(event.target.value)}
         className={
           invite
-            ? `font-caps rounded-full border border-[#e7d3a473] bg-[#1a060c] px-3 py-1.5 text-[10px] tracking-[1.2px] text-[#e7d3a4] uppercase ${inline ? "w-auto" : "mt-1.5 w-full"}`
+            ? `rr-edit-chrome-select font-caps rounded-full border px-3 py-1.5 text-[10px] tracking-[1.2px] uppercase ${inline ? "w-auto" : "mt-1.5 w-full"}`
             : house
               ? `rounded-full border border-[#e8dccd] bg-white px-3 py-1.5 text-[11px] font-medium tracking-[0.4px] text-[#221c18] ${inline ? "w-auto" : "mt-1.5 w-full"}`
               : party

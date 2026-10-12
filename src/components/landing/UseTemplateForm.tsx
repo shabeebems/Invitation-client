@@ -5,6 +5,13 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Playfair_Display } from "next/font/google";
 import { type InvitationTemplate, type TemplateContent } from "@/lib/api";
+import {
+  EVENT_DATE_TOO_SOON_MESSAGE,
+  isEventDateAllowed,
+  minDatetimeLocal,
+  partsFromEventDate,
+  toDatetimeLocal,
+} from "@/lib/event-date";
 import { saveUseDraft } from "@/lib/use-draft";
 
 const display = Playfair_Display({
@@ -33,18 +40,6 @@ function detailFieldsFor(categoryName: string): DetailField[] {
     ];
   }
 
-  if (/birthday/i.test(categoryName)) {
-    return [
-      { key: "celebrantName", label: "Birthday person", required: true },
-      { key: "ageLabel", label: "Age label", required: true },
-      { key: "hostNames", label: "Host names", required: true },
-      { key: "eventDateIso", label: "Event date and time", type: "datetime-local", required: true },
-      { key: "weekday", label: "Weekday", readOnly: true, hint: "Filled from the date" },
-      { key: "venueName", label: "Venue" },
-      { key: "venueCity", label: "City" },
-    ];
-  }
-
   if (/wedding|nikah|engag/i.test(categoryName)) {
     return [
       { key: "groomName", label: "Groom name", required: true },
@@ -63,51 +58,6 @@ function detailFieldsFor(categoryName: string): DetailField[] {
     { key: "venueName", label: "Venue" },
     { key: "venueCity", label: "City" },
   ];
-}
-
-function toDatetimeLocal(iso?: string) {
-  if (!iso) {
-    return "";
-  }
-
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) {
-    return iso;
-  }
-
-  const pad = (value: number) => String(value).padStart(2, "0");
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
-}
-
-function formatClock(date: Date) {
-  const hours = date.getHours();
-  const minutes = date.getMinutes();
-  const h12 = hours % 12 || 12;
-  const ampm = hours >= 12 ? "PM" : "AM";
-  return `${String(h12).padStart(2, "0")}:${String(minutes).padStart(2, "0")} ${ampm}`;
-}
-
-function partsFromEventDate(value: string, categoryName: string) {
-  if (!value) {
-    return { weekday: "", day: "", monthYear: "", time: "" };
-  }
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return { weekday: "", day: "", monthYear: "", time: "" };
-  }
-
-  const clock = formatClock(date);
-  const house = /house\s*warm/i.test(categoryName);
-  const wedding = /wedding|nikah|engag/i.test(categoryName);
-  const birthday = /birthday/i.test(categoryName);
-
-  return {
-    weekday: date.toLocaleDateString("en-US", { weekday: "long" }),
-    day: String(date.getDate()),
-    monthYear: date.toLocaleDateString("en-US", { month: "long", year: "numeric" }),
-    time: house ? `${clock} onwards` : wedding || birthday ? `At ${clock}` : clock,
-  };
 }
 
 const inputClass =
@@ -141,6 +91,12 @@ export default function UseTemplateForm({ template }: { template: InvitationTemp
   }, [categoryName, fields, template.content]);
 
   function setEventDate(value: string) {
+    if (value && !isEventDateAllowed(value)) {
+      setError(EVENT_DATE_TOO_SOON_MESSAGE);
+      return;
+    }
+
+    setError("");
     const derived = partsFromEventDate(value, categoryName);
     setDetails((current) => ({
       ...current,
@@ -162,6 +118,11 @@ export default function UseTemplateForm({ template }: { template: InvitationTemp
         setError(`${field.label} is required`);
         return;
       }
+    }
+
+    if (details.eventDateIso && !isEventDateAllowed(details.eventDateIso)) {
+      setError(EVENT_DATE_TOO_SOON_MESSAGE);
+      return;
     }
 
     setError("");
@@ -196,7 +157,7 @@ export default function UseTemplateForm({ template }: { template: InvitationTemp
       name: name.trim(),
       content: payload as Partial<TemplateContent>,
     });
-    router.push(`/use/${template.slug}/edit`);
+    router.push(`/user/use/${template.slug}/edit`);
   }
 
   return (
@@ -269,6 +230,7 @@ export default function UseTemplateForm({ template }: { template: InvitationTemp
                 required={field.required}
                 readOnly={field.readOnly}
                 type={field.type || "text"}
+                min={field.type === "datetime-local" ? minDatetimeLocal() : undefined}
                 value={details[field.key] || ""}
                 onChange={(event) => {
                   if (field.key === "eventDateIso") {

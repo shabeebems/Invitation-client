@@ -6,7 +6,6 @@ import { Playfair_Display } from "next/font/google";
 import { useEffect, useRef, useState } from "react";
 import { API_URL, type AdminUser } from "@/lib/api";
 import { loadSession } from "@/lib/session";
-import { RequireUser } from "@/components/auth/GuestOnly";
 
 const display = Playfair_Display({
   subsets: ["latin"],
@@ -52,18 +51,17 @@ export default function AccountShell({ children }: { children: React.ReactNode }
   }
 
   const tabs = [
-    { href: "/account", label: "My invitations" },
-    { href: "/account/profile", label: "Profile" },
+    { href: "/user/invitations", label: "My invitations" },
+    { href: "/user/profile", label: "Profile" },
   ];
 
   return (
-    <RequireUser>
-      <div className="min-h-full bg-[#f7f6f3]">
+      <div className="min-h-full bg-[#f9f8f3]">
         <header className="sticky top-0 z-30 border-b border-[#e8e4dc] bg-white/90 backdrop-blur">
           <div className="mx-auto flex h-[68px] w-full max-w-6xl items-center justify-between gap-4 px-5 md:px-8">
             <div className="flex items-center gap-6">
               <Link href="/" className="flex items-center gap-2.5">
-                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#143027] text-sm font-bold text-[#f3ead8]">
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#143027] text-sm font-bold text-[#f3ead8]">
                   In
                 </span>
                 <span className={`${display.className} text-lg font-semibold tracking-[0.04em] text-[#143027] uppercase`}>
@@ -72,7 +70,9 @@ export default function AccountShell({ children }: { children: React.ReactNode }
               </Link>
               <nav className="hidden items-center gap-1 md:flex">
                 {tabs.map((tab) => {
-                  const active = pathname === tab.href;
+                  const active =
+                    pathname === tab.href ||
+                    (tab.href === "/user/invitations" && pathname.startsWith("/user/invitations"));
                   return (
                     <Link
                       key={tab.href}
@@ -122,14 +122,14 @@ export default function AccountShell({ children }: { children: React.ReactNode }
                       <p className="truncate text-xs text-zinc-500">{user?.email || ""}</p>
                     </div>
                     <Link
-                      href="/account"
+                      href="/user/invitations"
                       className="block px-4 py-2.5 text-sm font-medium text-zinc-700 hover:bg-[#f7f6f3] md:hidden"
                       onClick={() => setMenuOpen(false)}
                     >
                       My invitations
                     </Link>
                     <Link
-                      href="/account/profile"
+                      href="/user/profile"
                       className="block px-4 py-2.5 text-sm font-medium text-zinc-700 hover:bg-[#f7f6f3]"
                       onClick={() => setMenuOpen(false)}
                     >
@@ -153,6 +153,5 @@ export default function AccountShell({ children }: { children: React.ReactNode }
 
         <main className="mx-auto w-full max-w-6xl px-5 py-8 md:px-8 md:py-10">{children}</main>
       </div>
-    </RequireUser>
   );
 }

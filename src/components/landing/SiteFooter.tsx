@@ -97,7 +97,7 @@ export default function SiteFooter({ categories = [] }: { categories?: Category[
                 </Link>
               </li>
               <li>
-                <Link href="/account" className="hover:text-white">
+                <Link href="/user/invitations" className="hover:text-white">
                   My invitations
                 </Link>
               </li>

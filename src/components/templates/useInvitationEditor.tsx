@@ -1,24 +1,126 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import EditableField from "@/components/templates/EditableField";
 import InvitationEditChrome, { type EditChromeVariant } from "@/components/templates/InvitationEditChrome";
 import {
   invitationApiBase,
   invitationDoneHref,
   rememberPendingImage,
+  withImageUrl,
+  type AdminUser,
+  type GalleryItem,
+  type ImageSlot,
   type InvitationTemplate,
+  type LocationItem,
+  type LoveStoryItem,
   type PendingImage,
+  type ProgramItem,
   type TemplateContent,
 } from "@/lib/api";
+import {
+  GALLERY_ITEM_MAX,
+  LOCATION_ITEM_MAX,
+  LOVE_STORY_ITEM_MAX,
+  MAX_GALLERY_ITEMS,
+  MAX_LOCATION_ITEMS,
+  MAX_LOVE_STORY_ITEMS,
+  MAX_PROGRAM_ITEMS,
+  PROGRAM_ITEM_MAX,
+  clampText,
+  maxForContentField,
+} from "@/lib/content-limits";
+import { isEventDateAllowed, partsFromEventDate, toEventDateIso } from "@/lib/event-date";
+import { loadSession } from "@/lib/session";
 
-type ContentTextKey = Exclude<keyof TemplateContent, "programItems" | "galleryItems">;
+function clampContent(content: TemplateContent): TemplateContent {
+  const next: TemplateContent = { ...content };
+
+  (Object.keys(next) as (keyof TemplateContent)[]).forEach((key) => {
+    if (
+      key === "programItems" ||
+      key === "galleryItems" ||
+      key === "loveStoryItems" ||
+      key === "locationItems"
+    ) {
+      return;
+    }
+    const value = next[key];
+    if (typeof value === "string") {
+      next[key] = clampText(value, maxForContentField(key));
+    }
+  });
+
+  if (Array.isArray(next.programItems)) {
+    next.programItems = next.programItems.slice(0, MAX_PROGRAM_ITEMS).map((item) => ({
+      time: clampText(item.time || "", PROGRAM_ITEM_MAX.time),
+      title: clampText(item.title || "", PROGRAM_ITEM_MAX.title),
+      description: clampText(item.description || "", PROGRAM_ITEM_MAX.description),
+    }));
+  }
+
+  if (Array.isArray(next.galleryItems)) {
+    next.galleryItems = next.galleryItems.slice(0, MAX_GALLERY_ITEMS).map((item) => ({
+      eyebrow: clampText(item.eyebrow || "", GALLERY_ITEM_MAX.eyebrow),
+      title: clampText(item.title || "", GALLERY_ITEM_MAX.title),
+      caption: clampText(item.caption || "", GALLERY_ITEM_MAX.caption),
+      url: item.url || "",
+      publicId: item.publicId || "",
+    }));
+  }
+
+  if (Array.isArray(next.loveStoryItems)) {
+    next.loveStoryItems = next.loveStoryItems.slice(0, MAX_LOVE_STORY_ITEMS).map((item) => ({
+      icon: item.icon || "",
+      date: clampText(item.date || "", LOVE_STORY_ITEM_MAX.date),
+      place: clampText(item.place || "", LOVE_STORY_ITEM_MAX.place),
+      title: clampText(item.title || "", LOVE_STORY_ITEM_MAX.title),
+      url: item.url || "",
+      publicId: item.publicId || "",
+    }));
+  }
+
+  if (Array.isArray(next.locationItems)) {
+    next.locationItems = next.locationItems.slice(0, MAX_LOCATION_ITEMS).map((item) => ({
+      label: clampText(item.label || "", LOCATION_ITEM_MAX.label),
+      title: clampText(item.title || "", LOCATION_ITEM_MAX.title),
+      address: clampText(item.address || "", LOCATION_ITEM_MAX.address),
+      mapsUrl: clampText(item.mapsUrl || "", LOCATION_ITEM_MAX.mapsUrl),
+      appleMapsUrl: clampText(item.appleMapsUrl || "", LOCATION_ITEM_MAX.appleMapsUrl),
+    }));
+  }
+
+  return next;
+}
+
+type ContentTextKey = Exclude<
+  keyof TemplateContent,
+  "programItems" | "galleryItems" | "loveStoryItems" | "locationItems"
+>;
+
+const emptyGalleryItem = (): GalleryItem => ({
+  eyebrow: "Moment",
+  title: "New photo",
+  caption: "Add a short caption",
+  url: "",
+  publicId: "",
+});
 
 type SaveImage = {
   file: File;
-  slot?: "hero" | "gallery";
+  slot?: ImageSlot;
   galleryIndex?: number;
+  loveStoryIndex?: number;
 };
+
+const emptyLoveStoryItem = (): LoveStoryItem => ({
+  icon: "",
+  date: "Date",
+  place: "Place",
+  title: "New chapter",
+  url: "",
+  publicId: "",
+});
 
 export function useInvitationEditor({
   template,
@@ -36,16 +138,34 @@ export function useInvitationEditor({
   const [publishing, setPublishing] = useState(false);
   const [previewing, setPreviewing] = useState(false);
   const [payOpen, setPayOpen] = useState(false);
+  const [role, setRole] = useState<AdminUser["role"] | undefined>();
   const pendingImages = useRef<PendingImage[]>([]);
   const editing = editable && !previewing;
 
+  useEffect(() => {
+    let cancelled = false;
+
+    void loadSession().then((user) => {
+      if (!cancelled) {
+        setRole(user?.role);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   async function persist(nextContent: TemplateContent, image?: SaveImage) {
+    const safeContent = clampContent(nextContent);
+
     if (onPublish) {
       if (image) {
         pendingImages.current = rememberPendingImage(pendingImages.current, {
           file: image.file,
           slot: image.slot || "hero",
           galleryIndex: image.galleryIndex,
+          loveStoryIndex: image.loveStoryIndex,
         });
       }
       return;
@@ -54,13 +174,16 @@ export function useInvitationEditor({
     setStatus("saving");
 
     const body = new FormData();
-    body.append("content", JSON.stringify(nextContent));
+    body.append("content", JSON.stringify(safeContent));
 
     if (image) {
       body.append("image", image.file);
       body.append("imageSlot", image.slot || "hero");
       if (image.slot === "gallery" && image.galleryIndex !== undefined) {
         body.append("galleryIndex", String(image.galleryIndex));
+      }
+      if (image.slot === "loveStory" && image.loveStoryIndex !== undefined) {
+        body.append("loveStoryIndex", String(image.loveStoryIndex));
       }
     }
 
@@ -87,13 +210,262 @@ export function useInvitationEditor({
   }
 
   function commit(key: ContentTextKey, value: string) {
+    const safeValue = clampText(value, maxForContentField(key));
     setDraft((prev) => {
-      if ((prev.content[key] || "") === value) {
+      if ((prev.content[key] || "") === safeValue) {
         return prev;
       }
 
-      const nextContent = { ...prev.content, [key]: value };
+      const nextContent = { ...prev.content, [key]: safeValue };
       void persist(nextContent);
+      return { ...prev, content: nextContent };
+    });
+  }
+
+  function commitEventDate(value: string, categoryName = "wedding"): boolean {
+    if (!value) {
+      return false;
+    }
+
+    if (!isEventDateAllowed(value)) {
+      setStatus("error");
+      return false;
+    }
+
+    const iso = toEventDateIso(value);
+    if (!iso) {
+      return false;
+    }
+
+    const parts = partsFromEventDate(value, categoryName);
+    setDraft((prev) => {
+      const nextContent = {
+        ...prev.content,
+        eventDateIso: clampText(iso, maxForContentField("eventDateIso")),
+        weekday: clampText(parts.weekday, maxForContentField("weekday")),
+        day: clampText(parts.day, maxForContentField("day")),
+        monthYear: clampText(parts.monthYear, maxForContentField("monthYear")),
+        time: clampText(parts.time, maxForContentField("time")),
+      };
+      void persist(nextContent);
+      return { ...prev, content: nextContent };
+    });
+    return true;
+  }
+
+  function changeImage(file: File, slot: ImageSlot = "hero") {
+    const preview = URL.createObjectURL(file);
+    setDraft((prev) => ({ ...prev, images: withImageUrl(prev.images, slot, preview) }));
+    void persist(draft.content, { file, slot });
+  }
+
+  function persistGallery(items: GalleryItem[]) {
+    setDraft((prev) => {
+      const nextContent = { ...prev.content, galleryItems: items };
+      void persist(nextContent);
+      return { ...prev, content: nextContent };
+    });
+  }
+
+  function changeGalleryImage(index: number, file: File) {
+    const preview = URL.createObjectURL(file);
+    setDraft((prev) => {
+      const items = [...(prev.content.galleryItems || [])];
+      const item = items[index] || emptyGalleryItem();
+      items[index] = { ...item, url: preview };
+      const nextContent = { ...prev.content, galleryItems: items };
+      void persist(nextContent, { file, slot: "gallery", galleryIndex: index });
+      return { ...prev, content: nextContent };
+    });
+  }
+
+  function commitGalleryItem(index: number, key: keyof Pick<GalleryItem, "eyebrow" | "title" | "caption">, value: string) {
+    const current = [...(draft.content.galleryItems || [])];
+    if (!current[index]) {
+      current[index] = emptyGalleryItem();
+    }
+    current[index] = { ...current[index], [key]: clampText(value, GALLERY_ITEM_MAX[key]) };
+    persistGallery(current);
+  }
+
+  function addGalleryItem() {
+    const current = draft.content.galleryItems || [];
+    if (current.length >= MAX_GALLERY_ITEMS) {
+      return;
+    }
+    persistGallery([...current, emptyGalleryItem()]);
+  }
+
+  function removeGalleryItem(index: number) {
+    persistGallery((draft.content.galleryItems || []).filter((_, itemIndex) => itemIndex !== index));
+  }
+
+  function setGalleryLayout(layout: string) {
+    setDraft((prev) => {
+      const nextContent = { ...prev.content, galleryLayout: layout };
+      void persist(nextContent);
+      return { ...prev, content: nextContent };
+    });
+  }
+
+  function setCountdownLayout(layout: string) {
+    setDraft((prev) => {
+      const nextContent = { ...prev.content, countdownLayout: layout };
+      void persist(nextContent);
+      return { ...prev, content: nextContent };
+    });
+  }
+
+  function setAmbianceEffect(effect: string) {
+    setDraft((prev) => {
+      const nextContent = { ...prev.content, ambianceEffect: effect };
+      void persist(nextContent);
+      return { ...prev, content: nextContent };
+    });
+  }
+
+  function setMeetCoupleLayout(layout: string) {
+    setDraft((prev) => {
+      const nextContent = { ...prev.content, meetCoupleLayout: layout };
+      void persist(nextContent);
+      return { ...prev, content: nextContent };
+    });
+  }
+
+  function setLoveStoryLayout(layout: string) {
+    setDraft((prev) => {
+      const nextContent = { ...prev.content, loveStoryLayout: layout };
+      void persist(nextContent);
+      return { ...prev, content: nextContent };
+    });
+  }
+
+  function setLocationLayout(layout: string) {
+    setDraft((prev) => {
+      const nextContent = { ...prev.content, locationLayout: layout };
+      void persist(nextContent);
+      return { ...prev, content: nextContent };
+    });
+  }
+
+  function persistLocations(items: LocationItem[]) {
+    setDraft((prev) => {
+      const nextContent = { ...prev.content, locationItems: items };
+      void persist(nextContent);
+      return { ...prev, content: nextContent };
+    });
+  }
+
+  function commitLocationItem(index: number, key: keyof LocationItem, value: string) {
+    const current = [...(draft.content.locationItems || [])];
+    if (!current[index]) {
+      current[index] = { label: "Venue", title: "", address: "", mapsUrl: "", appleMapsUrl: "" };
+    }
+    const max = LOCATION_ITEM_MAX[key as keyof typeof LOCATION_ITEM_MAX] ?? maxForContentField(key);
+    current[index] = { ...current[index], [key]: clampText(value, max) };
+    persistLocations(current);
+  }
+
+  function addLocationItem() {
+    const current = draft.content.locationItems || [];
+    if (current.length >= MAX_LOCATION_ITEMS) {
+      return;
+    }
+    persistLocations([
+      ...current,
+      {
+        label: "New venue",
+        title: "Venue name",
+        address: "Full address",
+        mapsUrl: "",
+        appleMapsUrl: "",
+      },
+    ]);
+  }
+
+  function removeLocationItem(index: number) {
+    persistLocations((draft.content.locationItems || []).filter((_, itemIndex) => itemIndex !== index));
+  }
+
+  function commitProgramItem(index: number, key: keyof ProgramItem, value: string) {
+    const safeValue = clampText(value, PROGRAM_ITEM_MAX[key]);
+    setDraft((prev) => {
+      const current = [...(prev.content.programItems || [])].slice(0, MAX_PROGRAM_ITEMS);
+      if (!current[index]) {
+        current[index] = { time: "", title: "", description: "" };
+      }
+      current[index] = { ...current[index], [key]: safeValue };
+      const nextContent = { ...prev.content, programItems: current };
+      void persist(nextContent);
+      return { ...prev, content: nextContent };
+    });
+  }
+
+  function persistLoveStory(items: LoveStoryItem[]) {
+    setDraft((prev) => {
+      const nextContent = { ...prev.content, loveStoryItems: items };
+      void persist(nextContent);
+      return { ...prev, content: nextContent };
+    });
+  }
+
+  function ensureLoveStoryItems(source: LoveStoryItem[] | undefined, minLength: number) {
+    const current = [...(source || [])];
+    while (current.length < minLength) {
+      current.push(emptyLoveStoryItem());
+    }
+    return current;
+  }
+
+  function commitLoveStoryItem(index: number, key: keyof LoveStoryItem, value: string) {
+    const max =
+      key in LOVE_STORY_ITEM_MAX
+        ? LOVE_STORY_ITEM_MAX[key as keyof typeof LOVE_STORY_ITEM_MAX]
+        : maxForContentField(key);
+    const safeValue = clampText(value, max);
+    setDraft((prev) => {
+      const current = ensureLoveStoryItems(prev.content.loveStoryItems, index + 1).slice(
+        0,
+        MAX_LOVE_STORY_ITEMS
+      );
+      current[index] = { ...current[index], [key]: safeValue };
+      const nextContent = { ...prev.content, loveStoryItems: current };
+      void persist(nextContent);
+      return { ...prev, content: nextContent };
+    });
+  }
+
+  function addLoveStoryItem() {
+    const current = draft.content.loveStoryItems?.length
+      ? [...draft.content.loveStoryItems]
+      : [
+          { icon: "", date: "", place: "", title: "How we met", url: "", publicId: "" },
+          { icon: "", date: "", place: "", title: "First conversation", url: "", publicId: "" },
+          { icon: "", date: "", place: "", title: "First date", url: "", publicId: "" },
+          { icon: "", date: "", place: "", title: "The proposal", url: "", publicId: "" },
+          { icon: "", date: "", place: "", title: "Engagement day", url: "", publicId: "" },
+          { icon: "", date: "", place: "", title: "Wedding announcement", url: "", publicId: "" },
+        ];
+    if (current.length >= MAX_LOVE_STORY_ITEMS) {
+      return;
+    }
+    persistLoveStory([...current, emptyLoveStoryItem()]);
+  }
+
+  function removeLoveStoryItem(index: number) {
+    const current = draft.content.loveStoryItems?.length
+      ? draft.content.loveStoryItems
+      : [];
+    persistLoveStory(current.filter((_, itemIndex) => itemIndex !== index));
+  }
+
+  function changeLoveStoryImage(index: number, file: File) {
+    const preview = URL.createObjectURL(file);
+    setDraft((prev) => {
+      const items = ensureLoveStoryItems(prev.content.loveStoryItems, index + 1);
+      items[index] = { ...items[index], url: preview };
+      const nextContent = { ...prev.content, loveStoryItems: items };
+      void persist(nextContent, { file, slot: "loveStory", loveStoryIndex: index });
       return { ...prev, content: nextContent };
     });
   }
@@ -107,7 +479,10 @@ export function useInvitationEditor({
     setStatus("saving");
 
     try {
-      await onPublish(draft, pendingImages.current);
+      await onPublish(
+        { ...draft, content: clampContent(draft.content) },
+        pendingImages.current
+      );
     } catch (err) {
       setStatus("error");
       setPublishing(false);
@@ -123,6 +498,7 @@ export function useInvitationEditor({
         editable={editing}
         className={className}
         multiline={multiline}
+        maxLength={maxForContentField(key)}
         onCommit={(next) => commit(key, next)}
       />
     );
@@ -141,7 +517,7 @@ export function useInvitationEditor({
       status={status}
       publishing={publishing}
       canPublish={Boolean(onPublish)}
-      doneHref={invitationDoneHref(draft)}
+      doneHref={invitationDoneHref(draft, role)}
       invitationName={draft.name}
       slug={draft.slug}
       selectedThemeId={draft.selectedThemeId}
@@ -170,6 +546,8 @@ export function useInvitationEditor({
         }
       }}
       onConfirmPay={publish}
+      ambianceEffect={draft.content.ambianceEffect}
+      onAmbianceEffectChange={variant === "invite" ? setAmbianceEffect : undefined}
       onThemeChange={(selectedThemeId, themes) => {
         setDraft((prev) => ({
           ...prev,
@@ -191,6 +569,26 @@ export function useInvitationEditor({
     payOpen,
     persist,
     field,
+    commitEventDate,
+    changeImage,
+    changeGalleryImage,
+    commitGalleryItem,
+    addGalleryItem,
+    removeGalleryItem,
+    setGalleryLayout,
+    setCountdownLayout,
+    setAmbianceEffect,
+    setMeetCoupleLayout,
+    setLoveStoryLayout,
+    setLocationLayout,
+    commitLocationItem,
+    addLocationItem,
+    removeLocationItem,
+    commitProgramItem,
+    commitLoveStoryItem,
+    addLoveStoryItem,
+    removeLoveStoryItem,
+    changeLoveStoryImage,
     themeTitle,
     chrome,
   };

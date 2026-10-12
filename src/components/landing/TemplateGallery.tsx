@@ -183,7 +183,7 @@ export default function TemplateGallery({
                       Preview
                     </Link>
                     <Link
-                      href={`/use/${template.slug}`}
+                      href={`/user/use/${template.slug}`}
                       className="inline-flex text-sm font-semibold text-[#143027] hover:text-[#8a7048]"
                     >
                       Use →

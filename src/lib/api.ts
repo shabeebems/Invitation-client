@@ -33,7 +33,6 @@ export type TemplateContent = {
   day?: string;
   monthYear?: string;
   time?: string;
-  dayNote?: string;
   venueLabel?: string;
   venueName?: string;
   venueHall?: string;
@@ -56,6 +55,10 @@ export type TemplateContent = {
   eventEndIso?: string;
   countdownHeading?: string;
   countdownLiveLabel?: string;
+  /** classic | ornate | rings | ribbon | minimal */
+  countdownLayout?: string;
+  /** petals | stars | butterflies | sparkles | hearts | none */
+  ambianceEffect?: string;
   programEyebrow?: string;
   programTitle?: string;
   programIntro?: string;
@@ -63,11 +66,15 @@ export type TemplateContent = {
   galleryEyebrow?: string;
   galleryTitle?: string;
   galleryIntro?: string;
+  /** grid | masonry | polaroid | carousel | scrapbook */
+  galleryLayout?: string;
   galleryItems?: GalleryItem[];
   viewPhotoLabel?: string;
   locationEyebrow?: string;
   locationTitle?: string;
   locationIntro?: string;
+  /** split | palace | folio | cards | compact */
+  locationLayout?: string;
   destinationLabel?: string;
   addressFull?: string;
   addressShort?: string;
@@ -91,19 +98,25 @@ export type TemplateContent = {
   calendarModalDesc?: string;
   googleCalendarLabel?: string;
   icsCalendarLabel?: string;
-  celebrantName?: string;
-  ageLabel?: string;
-  partyTitle?: string;
   dressCode?: string;
+  rsvpNote?: string;
   storyTitle?: string;
   storyText?: string;
-  receptionTitle?: string;
-  ceremonyTitle?: string;
-  musicTitle?: string;
-  videoUrl?: string;
-  videoPosterUrl?: string;
-  coverTagline?: string;
-  coverTitle?: string;
+  meetCoupleTitle?: string;
+  meetCoupleIntro?: string;
+  /** classic | oval | framed | stacked | cards */
+  meetCoupleLayout?: string;
+  groomLabel?: string;
+  groomBio?: string;
+  groomDetail?: string;
+  brideLabel?: string;
+  brideBio?: string;
+  brideDetail?: string;
+  loveStoryTitle?: string;
+  /** journey | magazine | cards | path | album */
+  loveStoryLayout?: string;
+  loveStoryItems?: LoveStoryItem[];
+  locationItems?: LocationItem[];
 };
 
 export type ProgramItem = {
@@ -120,6 +133,23 @@ export type GalleryItem = {
   publicId?: string;
 };
 
+export type LoveStoryItem = {
+  icon: string;
+  date: string;
+  place: string;
+  title: string;
+  url?: string;
+  publicId?: string;
+};
+
+export type LocationItem = {
+  label: string;
+  title: string;
+  address: string;
+  mapsUrl: string;
+  appleMapsUrl?: string;
+};
+
 export type InvitationTheme = {
   id: string;
   title: string;
@@ -129,6 +159,7 @@ export type InvitationTheme = {
 export type TemplateImage = {
   slot: string;
   url: string;
+  publicId?: string;
 };
 
 export function imageUrl(images: TemplateImage[] | undefined, slot: string) {
@@ -152,19 +183,26 @@ export function withImageUrl(
   return next;
 }
 
+export type ImageSlot = "hero" | "gallery" | "groom" | "bride" | "loveStory";
+
 export type PendingImage = {
   file: File;
-  slot: "hero" | "gallery";
+  slot: ImageSlot;
   galleryIndex?: number;
+  loveStoryIndex?: number;
 };
 
 export function rememberPendingImage(current: PendingImage[], next: PendingImage): PendingImage[] {
   return [
-    ...current.filter((item) =>
-      next.slot === "gallery"
-        ? !(item.slot === "gallery" && item.galleryIndex === next.galleryIndex)
-        : item.slot !== "hero"
-    ),
+    ...current.filter((item) => {
+      if (next.slot === "gallery") {
+        return !(item.slot === "gallery" && item.galleryIndex === next.galleryIndex);
+      }
+      if (next.slot === "loveStory") {
+        return !(item.slot === "loveStory" && item.loveStoryIndex === next.loveStoryIndex);
+      }
+      return item.slot !== next.slot;
+    }),
     next,
   ];
 }
@@ -196,12 +234,43 @@ export function invitationApiBase(template: Pick<InvitationTemplate, "slug" | "s
   return `${API_URL}/api/${kind}/${template.slug}`;
 }
 
-export function invitationDoneHref(template: Pick<InvitationTemplate, "source">) {
-  return template.source === "work" ? "/account" : "/admin/templates";
+export function invitationDoneHref(
+  template: Pick<InvitationTemplate, "source">,
+  role?: AdminUser["role"]
+) {
+  if (template.source === "work") {
+    return role === "admin" ? "/admin/works" : "/user/invitations";
+  }
+
+  return "/admin/templates";
 }
 
-export function invitationPreviewHref(template: Pick<InvitationTemplate, "slug" | "source">) {
-  return template.source === "work" ? `/preview/work/${template.slug}` : `/preview/${template.slug}`;
+export function invitationPreviewHref(
+  template: Pick<InvitationTemplate, "slug" | "source">,
+  role?: AdminUser["role"]
+) {
+  if (role === "admin") {
+    return template.source === "work"
+      ? `/admin/works/${template.slug}`
+      : `/admin/templates/${template.slug}`;
+  }
+
+  if (template.source === "work") {
+    return role === "customer" ? `/user/works/${template.slug}` : `/preview/work/${template.slug}`;
+  }
+
+  return `/preview/${template.slug}`;
+}
+
+export function invitationEditHref(
+  template: Pick<InvitationTemplate, "slug" | "source">,
+  role?: AdminUser["role"]
+) {
+  if (role === "customer" && template.source === "work") {
+    return `/user/works/${template.slug}/edit`;
+  }
+
+  return `${invitationPreviewHref(template, role)}/edit`;
 }
 
 export function invitationLiveHref(template: Pick<InvitationTemplate, "slug">) {
@@ -211,7 +280,6 @@ export function invitationLiveHref(template: Pick<InvitationTemplate, "slug">) {
 export function invitationTitle(template: InvitationTemplate) {
   return (
     template.content.hostNames ||
-    template.content.celebrantName ||
     [template.content.groomName, template.content.brideName].filter(Boolean).join(" & ") ||
     template.name
   );
@@ -238,30 +306,148 @@ async function readInvitation(url: string, key: "template" | "work"): Promise<In
   }
 }
 
+export function resolveTemplateSlug(slug: string) {
+  return slug;
+}
+
+type ListFetchOptions = {
+  credentials?: RequestCredentials;
+};
+
+async function readList<T>(
+  url: string,
+  key: "templates" | "categories" | "works",
+  options: ListFetchOptions = {}
+): Promise<T[]> {
+  try {
+    const response = await fetch(url, {
+      cache: "no-store",
+      credentials: options.credentials,
+    });
+    const data = (await response.json()) as {
+      success?: boolean;
+      templates?: T[];
+      categories?: T[];
+      works?: T[];
+      message?: string;
+    };
+
+    if (!response.ok || !data.success) {
+      throw new Error(data.message || `Failed to load ${key}`);
+    }
+
+    return (data[key] as T[] | undefined) || [];
+  } catch (error) {
+    if (options.credentials) {
+      throw error;
+    }
+    return [];
+  }
+}
+
 export function fetchTemplate(slug: string) {
-  return readInvitation(`${API_URL}/api/templates/${slug}`, "template");
+  return readInvitation(`${API_URL}/api/templates/${resolveTemplateSlug(slug)}`, "template");
 }
 
-export async function fetchTemplates(): Promise<InvitationTemplate[]> {
-  try {
-    const response = await fetch(`${API_URL}/api/templates`, { cache: "no-store" });
-    const data = (await response.json()) as { success?: boolean; templates?: InvitationTemplate[] };
-    return response.ok && data.success ? data.templates || [] : [];
-  } catch {
-    return [];
-  }
+export function fetchTemplates(options: ListFetchOptions = {}) {
+  return readList<InvitationTemplate>(`${API_URL}/api/templates`, "templates", options);
 }
 
-export async function fetchCategories(): Promise<Category[]> {
-  try {
-    const response = await fetch(`${API_URL}/api/categories`, { cache: "no-store" });
-    const data = (await response.json()) as { success?: boolean; categories?: Category[] };
-    return response.ok && data.success ? data.categories || [] : [];
-  } catch {
-    return [];
+export function fetchCategories(options: ListFetchOptions = {}) {
+  return readList<Category>(`${API_URL}/api/categories`, "categories", options);
+}
+
+export function fetchWorks(options: ListFetchOptions = {}) {
+  return readList<InvitationTemplate>(`${API_URL}/api/works`, "works", {
+    credentials: options.credentials || "include",
+  });
+}
+
+export type StudioUser = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  role: "customer" | "admin";
+  emailVerified: boolean;
+  createdAt?: string;
+};
+
+export async function fetchUsers(): Promise<StudioUser[]> {
+  const response = await fetch(`${API_URL}/api/users`, {
+    cache: "no-store",
+    credentials: "include",
+  });
+  const data = (await response.json()) as {
+    success?: boolean;
+    users?: StudioUser[];
+    message?: string;
+  };
+
+  if (!response.ok || !data.success) {
+    throw new Error(data.message || "Failed to load users");
   }
+
+  return data.users || [];
 }
 
 export function fetchWork(slug: string) {
   return readInvitation(`${API_URL}/api/works/${slug}`, "work");
+}
+
+export async function createWork(body: Record<string, unknown>) {
+  const response = await fetch(`${API_URL}/api/works`, {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const data = (await response.json()) as {
+    success?: boolean;
+    message?: string;
+    work?: InvitationTemplate;
+  };
+
+  if (!response.ok || !data.success || !data.work) {
+    throw new Error(data.message || "Could not create work");
+  }
+
+  return data.work;
+}
+
+export async function updateWork(
+  slug: string,
+  content: TemplateContent,
+  image?: PendingImage
+) {
+  const body = new FormData();
+  body.append("content", JSON.stringify(content));
+
+  if (image) {
+    body.append("image", image.file);
+    body.append("imageSlot", image.slot);
+    if (image.galleryIndex !== undefined) {
+      body.append("galleryIndex", String(image.galleryIndex));
+    }
+    if (image.loveStoryIndex !== undefined) {
+      body.append("loveStoryIndex", String(image.loveStoryIndex));
+    }
+  }
+
+  const response = await fetch(`${API_URL}/api/works/${slug}`, {
+    method: "PUT",
+    credentials: "include",
+    body,
+  });
+  const data = (await response.json()) as {
+    success?: boolean;
+    message?: string;
+    work?: InvitationTemplate;
+  };
+
+  if (!response.ok || !data.success) {
+    throw new Error(data.message || "Could not save invitation");
+  }
+
+  return data.work;
 }

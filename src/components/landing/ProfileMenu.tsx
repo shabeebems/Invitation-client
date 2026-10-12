@@ -86,16 +86,18 @@ export default function ProfileMenu({ user }: { user: AdminUser }) {
             onClick={() => setOpen(false)}
             className="block px-4 py-2.5 text-sm font-semibold text-zinc-800 hover:bg-zinc-50"
           >
-            Dashboard
+            {user.role === "admin" ? "Dashboard" : "My invitations"}
           </Link>
-          <Link
-            href="/account/profile"
-            role="menuitem"
-            onClick={() => setOpen(false)}
-            className="block px-4 py-2.5 text-sm font-semibold text-zinc-800 hover:bg-zinc-50"
-          >
-            Profile
-          </Link>
+          {user.role !== "admin" ? (
+            <Link
+              href="/user/profile"
+              role="menuitem"
+              onClick={() => setOpen(false)}
+              className="block px-4 py-2.5 text-sm font-semibold text-zinc-800 hover:bg-zinc-50"
+            >
+              Profile
+            </Link>
+          ) : null}
           <button
             type="button"
             role="menuitem"

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { fetchWork, invitationTitle } from "@/lib/api";
+import WorkPreviewBar from "@/components/landing/WorkPreviewBar";
 import InvitationView from "@/components/templates/InvitationView";
 
 export async function generateMetadata({
@@ -33,5 +34,10 @@ export default async function WorkPreviewPage({
     notFound();
   }
 
-  return <InvitationView template={template} />;
+  return (
+    <>
+      <WorkPreviewBar slug={template.slug} name={template.name} />
+      <InvitationView template={template} />
+    </>
+  );
 }

@@ -2,7 +2,16 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { API_URL, imageUrl, type Category, type InvitationTemplate } from "@/lib/api";
+import {
+  fetchCategories,
+  fetchTemplates,
+  fetchWorks,
+  imageUrl,
+  invitationPreviewHref,
+  type Category,
+  type InvitationTemplate,
+} from "@/lib/api";
+
 import { useAdmin } from "./AdminContext";
 import { EmptyState, PageHeader, Panel, StatusNote } from "./ui";
 
@@ -17,22 +26,15 @@ export default function AdminDashboard() {
   useEffect(() => {
     async function load() {
       try {
-        const [categoryRes, templateRes, workRes] = await Promise.all([
-          fetch(`${API_URL}/api/categories`, { credentials: "include" }),
-          fetch(`${API_URL}/api/templates`),
-          fetch(`${API_URL}/api/works`, { credentials: "include" }),
+        const [nextCategories, nextTemplates, nextWorks] = await Promise.all([
+          fetchCategories({ credentials: "include" }),
+          fetchTemplates(),
+          fetchWorks(),
         ]);
-        const categoryData = (await categoryRes.json()) as { success?: boolean; categories?: Category[] };
-        const templateData = (await templateRes.json()) as { success?: boolean; templates?: InvitationTemplate[] };
-        const workData = (await workRes.json()) as { success?: boolean; works?: InvitationTemplate[] };
 
-        if (!categoryRes.ok || !templateRes.ok || !workRes.ok) {
-          throw new Error("Could not load studio");
-        }
-
-        setCategories(categoryData.categories || []);
-        setTemplates(templateData.templates || []);
-        setWorks(workData.works || []);
+        setCategories(nextCategories);
+        setTemplates(nextTemplates);
+        setWorks(nextWorks);
       } catch {
         setError("Could not load the studio overview.");
       } finally {
@@ -94,7 +96,7 @@ export default function AdminDashboard() {
               ) : (
                 <div className="flex flex-col gap-3">
                   {works.slice(0, 4).map((work) => (
-                    <Link key={work.id} href="/admin/works">
+                    <Link key={work.id} href={invitationPreviewHref(work, "admin")}>
                       <Panel className="flex items-center gap-4 p-3 transition hover:border-[#cfd3d8]">
                         <Thumb src={imageUrl(work.images, "hero")} alt={work.name} />
                         <div className="min-w-0">
@@ -120,7 +122,7 @@ export default function AdminDashboard() {
               ) : (
                 <div className="flex flex-col gap-3">
                   {templates.slice(0, 4).map((template) => (
-                    <Link key={template.id} href={`/preview/${template.slug}`}>
+                    <Link key={template.id} href={`/admin/templates/${template.slug}`}>
                       <Panel className="flex items-center gap-4 p-3 transition hover:border-[#cfd3d8]">
                         <Thumb src={imageUrl(template.images, "hero")} alt={template.name} />
                         <div className="min-w-0">

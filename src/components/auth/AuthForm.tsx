@@ -97,7 +97,21 @@ export default function AuthForm({ mode }: { mode: Mode }) {
   }, []);
 
   function afterAuth(role?: string) {
-    router.push(nextPathRef.current || (role === "admin" ? "/admin/dashboard" : "/account"));
+    const next = nextPathRef.current;
+    if (next) {
+      if (role === "admin" && (next === "/user" || next.startsWith("/user/"))) {
+        router.push("/admin/dashboard");
+        return;
+      }
+      if (role !== "admin" && (next === "/admin" || next.startsWith("/admin/"))) {
+        router.push("/user/invitations");
+        return;
+      }
+      router.push(next);
+      return;
+    }
+
+    router.push(role === "admin" ? "/admin/dashboard" : "/user/invitations");
   }
 
   onGoogleCredential.current = async (credential) => {

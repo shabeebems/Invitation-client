@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { ReactNode } from "react";
 import type { ProgramItem } from "@/lib/api";
 import EditableField from "@/components/templates/EditableField";
+import { PROGRAM_ITEM_MAX } from "@/lib/content-limits";
 
 export default function CelestialOrbitSchedule({
   items,
@@ -110,6 +111,7 @@ export default function CelestialOrbitSchedule({
               value={currentItem.time}
               editable={editable}
               className="font-serif text-lg font-semibold text-[var(--cs-starlight)]"
+              maxLength={PROGRAM_ITEM_MAX.time}
               onCommit={(val) => onCommitItem?.(activeOrbit, "time", val)}
             />
           </div>
@@ -120,6 +122,7 @@ export default function CelestialOrbitSchedule({
               value={currentItem.title}
               editable={editable}
               className="font-serif text-2xl font-medium text-white sm:text-3xl"
+              maxLength={PROGRAM_ITEM_MAX.title}
               onCommit={(val) => onCommitItem?.(activeOrbit, "title", val)}
             />
           </h3>
@@ -131,6 +134,7 @@ export default function CelestialOrbitSchedule({
               editable={editable}
               multiline
               className="text-sm font-light leading-relaxed text-[var(--cs-text-muted)] sm:text-base"
+              maxLength={PROGRAM_ITEM_MAX.description}
               onCommit={(val) => onCommitItem?.(activeOrbit, "description", val)}
             />
           </p>

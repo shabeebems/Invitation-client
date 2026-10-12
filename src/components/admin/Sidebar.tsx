@@ -98,7 +98,14 @@ export default function Sidebar() {
             </p>
             <div className="mt-2 flex flex-col gap-1">
               {group.items.map((item) => {
-                const active = pathname === item.href;
+                const active =
+                  pathname === item.href ||
+                  (item.href === "/admin/templates" && pathname.startsWith("/admin/templates/")) ||
+                  (item.href === "/admin/works" && pathname.startsWith("/admin/works/")) ||
+                  (item.href !== "/admin/dashboard" &&
+                    item.href !== "/admin/templates" &&
+                    item.href !== "/admin/works" &&
+                    pathname.startsWith(`${item.href}/`));
                 const Icon = item.icon;
 
                 return (

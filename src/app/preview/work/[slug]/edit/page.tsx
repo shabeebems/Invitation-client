@@ -1,33 +1,43 @@
-import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import { fetchWork } from "@/lib/api";
-import InvitationView from "@/components/templates/InvitationView";
+"use client";
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}): Promise<Metadata> {
-  const { slug } = await params;
-  const template = await fetchWork(slug);
+import { useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { invitationEditHref } from "@/lib/api";
+import { loadSession, loginHref } from "@/lib/session";
 
-  return {
-    title: template ? `Edit ${template.name}` : "Work not found",
-    description: template?.description,
-  };
-}
+export default function WorkEditRedirectPage() {
+  const params = useParams<{ slug: string }>();
+  const router = useRouter();
 
-export default async function WorkEditPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
-  const { slug } = await params;
-  const template = await fetchWork(slug);
+  useEffect(() => {
+    let cancelled = false;
 
-  if (!template) {
-    notFound();
-  }
+    void loadSession().then((user) => {
+      if (cancelled) {
+        return;
+      }
 
-  return <InvitationView template={template} editable />;
+      if (!user) {
+        router.replace(loginHref(`/user/works/${params.slug}/edit`));
+        return;
+      }
+
+      if (user.role === "admin") {
+        router.replace(invitationEditHref({ slug: params.slug, source: "work" }, "admin"));
+        return;
+      }
+
+      router.replace(invitationEditHref({ slug: params.slug, source: "work" }, "customer"));
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [params.slug, router]);
+
+  return (
+    <div className="flex min-h-full items-center justify-center bg-page text-sm text-zinc-500">
+      Opening editor…
+    </div>
+  );
 }

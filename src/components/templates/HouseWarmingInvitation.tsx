@@ -3,7 +3,21 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import EditableField from "@/components/templates/EditableField";
 import { useInvitationEditor } from "@/components/templates/useInvitationEditor";
-import { type GalleryItem, type InvitationTemplate, type PendingImage, type ProgramItem, imageUrl, withImageUrl } from "@/lib/api";
+import {
+  type GalleryItem,
+  type InvitationTemplate,
+  type PendingImage,
+  type ProgramItem,
+  imageUrl,
+  withImageUrl,
+} from "@/lib/api";
+import {
+  GALLERY_ITEM_MAX,
+  MAX_GALLERY_ITEMS,
+  MAX_PROGRAM_ITEMS,
+  PROGRAM_ITEM_MAX,
+  clampText,
+} from "@/lib/content-limits";
 
 type ImageSlot = "hero";
 
@@ -102,12 +116,16 @@ export default function HouseWarmingInvitation({
   }
 
   function commitProgram(index: number, key: keyof ProgramItem, value: string) {
+    const safeValue = clampText(value, PROGRAM_ITEM_MAX[key]);
     persistProgram(
-      program.map((item, itemIndex) => (itemIndex === index ? { ...item, [key]: value } : item))
+      program.map((item, itemIndex) => (itemIndex === index ? { ...item, [key]: safeValue } : item))
     );
   }
 
   function addProgram() {
+    if (program.length >= MAX_PROGRAM_ITEMS) {
+      return;
+    }
     persistProgram([...program, { time: "Time", title: "New program", description: "Tap to add details" }]);
   }
 
@@ -124,10 +142,16 @@ export default function HouseWarmingInvitation({
   }
 
   function commitGallery(index: number, key: keyof Pick<GalleryItem, "eyebrow" | "title" | "caption">, value: string) {
-    persistGallery(gallery.map((item, itemIndex) => (itemIndex === index ? { ...item, [key]: value } : item)));
+    const safeValue = clampText(value, GALLERY_ITEM_MAX[key]);
+    persistGallery(
+      gallery.map((item, itemIndex) => (itemIndex === index ? { ...item, [key]: safeValue } : item))
+    );
   }
 
   function addGallery() {
+    if (gallery.length >= MAX_GALLERY_ITEMS) {
+      return;
+    }
     persistGallery([
       ...gallery,
       { eyebrow: "Tag", title: "New photo", caption: "Tap to add details", url: "", publicId: "" },
@@ -260,7 +284,7 @@ export default function HouseWarmingInvitation({
       {chrome}
       <div className={`hw-envelope ${opened ? "is-open" : ""}`}>
         <p className="hw-font-arabic mb-1 text-center text-[1.85rem] leading-[1.4] text-[#e4be57] [text-shadow:0_2px_14px_#e6c56859]">
-          {content.bismillah}
+          {field("bismillah")}
         </p>
         <p className="mb-7 text-center text-[0.88rem] font-medium tracking-[0.12em] text-[#f7f1e7cc] uppercase">
           {field("envelopeTagline", "uppercase")}
@@ -457,6 +481,7 @@ export default function HouseWarmingInvitation({
                     <EditableField
                       value={item.time || ""}
                       editable={editing}
+                      maxLength={PROGRAM_ITEM_MAX.time}
                       onCommit={(value) => commitProgram(index, "time", value)}
                     />
                   </p>
@@ -464,6 +489,7 @@ export default function HouseWarmingInvitation({
                     <EditableField
                       value={item.title || ""}
                       editable={editing}
+                      maxLength={PROGRAM_ITEM_MAX.title}
                       onCommit={(value) => commitProgram(index, "title", value)}
                     />
                   </h3>
@@ -472,6 +498,7 @@ export default function HouseWarmingInvitation({
                       value={item.description || ""}
                       editable={editing}
                       multiline
+                      maxLength={PROGRAM_ITEM_MAX.description}
                       onCommit={(value) => commitProgram(index, "description", value)}
                     />
                   </p>
@@ -559,6 +586,7 @@ export default function HouseWarmingInvitation({
                   <EditableField
                     value={item.eyebrow || ""}
                     editable={editing}
+                    maxLength={GALLERY_ITEM_MAX.eyebrow}
                     onCommit={(value) => commitGallery(index, "eyebrow", value)}
                   />
                 </p>
@@ -566,6 +594,7 @@ export default function HouseWarmingInvitation({
                   <EditableField
                     value={item.title || ""}
                     editable={editing}
+                    maxLength={GALLERY_ITEM_MAX.title}
                     onCommit={(value) => commitGallery(index, "title", value)}
                   />
                 </h3>
@@ -574,6 +603,7 @@ export default function HouseWarmingInvitation({
                     value={item.caption || ""}
                     editable={editing}
                     multiline
+                    maxLength={GALLERY_ITEM_MAX.caption}
                     onCommit={(value) => commitGallery(index, "caption", value)}
                   />
                 </p>

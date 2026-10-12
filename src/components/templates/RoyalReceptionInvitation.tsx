@@ -1,30 +1,15 @@
 "use client";
 
-import { useRef } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useInvitationEditor } from "@/components/templates/useInvitationEditor";
+import RoyalReceptionOpening from "@/components/templates/royal/RoyalReceptionOpening";
+import RoyalCountdown from "@/components/templates/royal/RoyalCountdown";
+import RoyalMeetCouple from "@/components/templates/royal/RoyalMeetCouple";
+import RoyalLoveStory from "@/components/templates/royal/RoyalLoveStory";
+import RoyalGallery from "@/components/templates/royal/RoyalGallery";
+import RoyalLocation from "@/components/templates/royal/RoyalLocation";
+import { normalizeAmbianceEffect, SiteAmbiance } from "@/components/templates/royal/AmbianceEffects";
 import { type InvitationTemplate, type PendingImage, imageUrl, withImageUrl } from "@/lib/api";
-
-const petals = [
-  { left: "2%", width: 13, delay: "1.2s", duration: "17s", sway: "-50px", spin: "534deg", fill: "var(--maroon)" },
-  { left: "10%", width: 15, delay: "2.4s", duration: "12s", sway: "46px", spin: "443deg", fill: "var(--maroon-soft)" },
-  { left: "26%", width: 15, delay: "3.5s", duration: "12s", sway: "-60px", spin: "218deg", fill: "var(--maroon-deep)" },
-  { left: "36%", width: 18, delay: "4.4s", duration: "16s", sway: "9px", spin: "203deg", fill: "var(--gold)" },
-  { left: "48%", width: 16, delay: "5.1s", duration: "12s", sway: "36px", spin: "270deg", fill: "var(--maroon)" },
-  { left: "62%", width: 11, delay: "6.7s", duration: "18s", sway: "50px", spin: "258deg", fill: "var(--maroon-soft)" },
-  { left: "76%", width: 12, delay: "3.8s", duration: "19s", sway: "22px", spin: "534deg", fill: "var(--maroon-deep)" },
-  { left: "90%", width: 20, delay: "7.9s", duration: "18s", sway: "53px", spin: "472deg", fill: "var(--gold)" },
-];
-
-const sparkles = [
-  { left: "8%", top: "18%", size: 3, delay: "0s", duration: "2.4s" },
-  { left: "37%", top: "53%", size: 3, delay: "0.35s", duration: "2.8s" },
-  { left: "74%", top: "6%", size: 4, delay: "0.7s", duration: "3.2s" },
-  { left: "11%", top: "59%", size: 5, delay: "1.05s", duration: "3.6s" },
-  { left: "48%", top: "12%", size: 2, delay: "1.4s", duration: "4s" },
-  { left: "85%", top: "65%", size: 3, delay: "1.75s", duration: "2.4s" },
-  { left: "22%", top: "18%", size: 4, delay: "2.1s", duration: "2.8s" },
-  { left: "59%", top: "71%", size: 5, delay: "2.45s", duration: "3.2s" },
-];
 
 function OrnamentWave() {
   return (
@@ -56,51 +41,6 @@ function CornerVine({ className = "" }: { className?: string }) {
   );
 }
 
-function Petals() {
-  return (
-    <div className="pointer-events-none absolute inset-0 z-[2] overflow-hidden" aria-hidden="true">
-      {petals.map((petal) => (
-        <svg
-          key={petal.left}
-          className="petal absolute top-[-30px]"
-          viewBox="0 0 20 24"
-          style={{
-            left: petal.left,
-            width: petal.width,
-            animationDelay: petal.delay,
-            animationDuration: petal.duration,
-            ["--sway" as string]: petal.sway,
-            ["--spin" as string]: petal.spin,
-          }}
-        >
-          <path d="M10 1 C 16 6, 19 12, 15 19 C 12.5 23, 7.5 23, 5 19 C 1 12, 4 6, 10 1 Z" fill={petal.fill} opacity="0.75" />
-        </svg>
-      ))}
-    </div>
-  );
-}
-
-function Sparkles() {
-  return (
-    <div className="pointer-events-none absolute inset-0 z-[2] overflow-hidden" aria-hidden="true">
-      {sparkles.map((sparkle) => (
-        <span
-          key={`${sparkle.left}-${sparkle.top}`}
-          className="sparkle absolute rounded-full bg-[radial-gradient(circle,#f3e8cd_0%,#b9893e_55%,transparent_70%)] shadow-[0_0_6px_rgba(231,211,164,0.7)]"
-          style={{
-            left: sparkle.left,
-            top: sparkle.top,
-            width: sparkle.size,
-            height: sparkle.size,
-            animationDelay: sparkle.delay,
-            animationDuration: sparkle.duration,
-          }}
-        />
-      ))}
-    </div>
-  );
-}
-
 export default function RoyalReceptionInvitation({
   template,
   editable = false,
@@ -111,28 +51,85 @@ export default function RoyalReceptionInvitation({
   onPublish?: (draft: InvitationTemplate, images: PendingImage[]) => Promise<string>;
 }) {
   const imageInputRef = useRef<HTMLInputElement>(null);
-  const { draft, setDraft, content, editing, persist, field, themeTitle, chrome } = useInvitationEditor({
+  const [sealed, setSealed] = useState(true);
+  const onCoverChange = useCallback((covering: boolean) => setSealed(covering), []);
+  const {
+    draft,
+    setDraft,
+    content,
+    editing,
+    persist,
+    field,
+    commitEventDate,
+    changeImage,
+    commitLoveStoryItem,
+    addLoveStoryItem,
+    removeLoveStoryItem,
+    changeLoveStoryImage,
+    changeGalleryImage,
+    commitGalleryItem,
+    addGalleryItem,
+    removeGalleryItem,
+    setGalleryLayout,
+    setCountdownLayout,
+    setMeetCoupleLayout,
+    setLoveStoryLayout,
+    setLocationLayout,
+    commitLocationItem,
+    addLocationItem,
+    removeLocationItem,
+    themeTitle,
+    chrome,
+  } = useInvitationEditor({
     template,
     editable,
     onPublish,
     variant: "invite",
   });
   const heroImageUrl = imageUrl(draft.images, "hero");
+  const groomImageUrl = imageUrl(draft.images, "groom");
+  const brideImageUrl = imageUrl(draft.images, "bride");
   const groomsInitial = (content.groomName || "").trim().charAt(0) || "I";
   const bridesInitial = (content.brideName || "").trim().charAt(0) || "A";
   const shareText = encodeURIComponent(content.shareText || "");
-  const themeClass = /hulk|emerald/i.test(themeTitle) ? " palette-emerald" : "";
+  const themeClass = /emerald/i.test(themeTitle) ? " palette-emerald" : " palette-velvet";
+  const ambianceEffect = normalizeAmbianceEffect(content.ambianceEffect);
 
-  function changeImage(file: File) {
+  function changeHeroImage(file: File) {
     const preview = URL.createObjectURL(file);
     setDraft((prev) => ({ ...prev, images: withImageUrl(prev.images, "hero", preview) }));
-    void persist(draft.content, { file });
+    void persist(draft.content, { file, slot: "hero" });
   }
 
   return (
-    <main className={`royal-invitation relative${themeClass}`}>
+    <main
+      className={`royal-invitation relative${themeClass}${editable ? " is-editing" : ""}${
+        sealed ? " is-sealed" : ""
+      }`}
+    >
       {chrome}
 
+      <RoyalReceptionOpening
+        groomName={content.groomName || "Ibrahim"}
+        brideName={content.brideName || "Aisha"}
+        groomInitial={groomsInitial}
+        brideInitial={bridesInitial}
+        bismillah={field("bismillah", "rr-opening-bismillah-edit")}
+        weekday={content.weekday}
+        day={content.day}
+        monthYear={content.monthYear}
+        tagline={
+          editable || content.envelopeTagline
+            ? field("envelopeTagline", "rr-opening-tagline-edit")
+            : "An invitation awaits"
+        }
+        openHint={content.openHint || "Tap the seal to open"}
+        editable={editable}
+        onCoverChange={onCoverChange}
+      />
+
+      <div className="rr-site" aria-hidden={sealed || undefined} inert={sealed || undefined}>
+      <SiteAmbiance effect={ambianceEffect} />
       <header className="pointer-events-none fixed inset-x-0 top-0 z-[1100] px-[clamp(12px,2.5vw,32px)]">
         <div className="flex min-h-16 items-center justify-center">
           <a href="#home" className="pointer-events-auto flex flex-col items-center no-underline" aria-label="Home">
@@ -149,13 +146,11 @@ export default function RoyalReceptionInvitation({
         id="home"
         className="invite-hero relative z-[2] flex min-h-svh items-center justify-center overflow-hidden px-[clamp(16px,3vw,40px)] pt-[clamp(64px,8vh,88px)] pb-[clamp(24px,4vh,40px)] text-[#f3e8cd]"
       >
-        <Petals />
-        <Sparkles />
         <CornerVine className="top-[clamp(70px,12vh,96px)] left-[clamp(10px,2vw,24px)]" />
         <CornerVine className="top-[clamp(70px,12vh,96px)] right-[clamp(10px,2vw,24px)] -scale-x-100" />
 
         <div className="relative z-[4] grid w-[min(1180px,100%)] grid-cols-1 items-end gap-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:gap-x-[clamp(20px,3.5vw,48px)]">
-          <div className="relative z-[5] order-2 flex min-h-0 items-end justify-center lg:order-1 lg:col-start-1 lg:row-span-2 lg:min-h-[min(78vh,720px)]">
+          <div className="relative z-[5] order-2 flex min-h-0 items-end justify-center lg:order-1 lg:min-h-[min(78vh,720px)]">
             <div
               className={`relative ${editing ? "cursor-pointer" : ""}`}
               role={editing ? "button" : undefined}
@@ -181,7 +176,7 @@ export default function RoyalReceptionInvitation({
                 </span>
               )}
               {editing ? (
-                <span className="font-caps pointer-events-none absolute bottom-6 left-1/2 -translate-x-1/2 rounded-full border border-[#e7d3a473] bg-[#1a060cc7] px-3 py-1.5 text-[9px] tracking-[1.6px] text-[#e7d3a4] uppercase">
+                <span className="font-caps pointer-events-none absolute bottom-6 left-1/2 -translate-x-1/2 rounded-full border border-[color:color-mix(in_srgb,var(--gold-light)_45%,transparent)] bg-[color:color-mix(in_srgb,var(--night)_78%,transparent)] px-3 py-1.5 text-[9px] tracking-[1.6px] text-[color:var(--gold-light)] uppercase">
                   Change photo
                 </span>
               ) : null}
@@ -195,7 +190,7 @@ export default function RoyalReceptionInvitation({
                 onChange={(event) => {
                   const file = event.target.files?.[0];
                   if (file) {
-                    void changeImage(file);
+                    void changeHeroImage(file);
                   }
                   event.target.value = "";
                 }}
@@ -203,7 +198,7 @@ export default function RoyalReceptionInvitation({
             ) : null}
           </div>
 
-          <div className="order-1 w-full max-w-[540px] justify-self-center self-end px-4 text-center lg:order-2 lg:col-start-2 lg:px-0">
+          <div className="order-1 w-full max-w-[540px] justify-self-center self-end px-4 text-center lg:order-2 lg:px-0">
             <p className="font-arabic text-[clamp(22px,2.4vw+0.6rem,34px)] leading-[1.5] text-[#e7d3a4] [text-shadow:0_2px_24px_rgba(0,0,0,0.45)]">
               {field("bismillah", "")}
             </p>
@@ -236,68 +231,79 @@ export default function RoyalReceptionInvitation({
               {field("presenceLine", "", true)}
             </p>
           </div>
-
-          <div className="order-3 col-start-1 w-full max-w-[540px] justify-self-center pb-1 text-center lg:col-start-2">
-            <div className="mx-auto flex w-fit max-w-full items-stretch justify-center border border-[#e7d3a459] bg-[#fdf9f20f] px-1.5 py-2 backdrop-blur-sm">
-              <div className="flex min-w-0 flex-col items-center justify-center px-[clamp(10px,1.8vw,18px)] py-1">
-                <span className="font-caps border-y border-[#e7d3a473] px-0.5 py-[7px] text-[clamp(10px,0.4vw+0.5rem,13px)] tracking-[1.6px] whitespace-nowrap text-[#f3e8cd]">
-                  {field("weekday", "")}
-                </span>
-              </div>
-              <div className="flex min-w-0 flex-col items-center justify-center border-x border-[#e7d3a473] px-[clamp(10px,1.8vw,18px)] py-1">
-                {field("day", "font-invite-serif text-[clamp(24px,2.2vw+0.6rem,36px)] leading-none text-[#e7d3a4]")}
-                {field(
-                  "monthYear",
-                  "font-caps text-[clamp(8px,0.3vw+0.45rem,11px)] tracking-[1.2px] whitespace-nowrap text-[#f3e8cd]"
-                )}
-              </div>
-              <div className="flex min-w-0 flex-col items-center justify-center px-[clamp(10px,1.8vw,18px)] py-1">
-                <span className="font-caps border-y border-[#e7d3a473] px-0.5 py-[7px] text-[clamp(10px,0.4vw+0.5rem,13px)] tracking-[1.6px] whitespace-nowrap text-[#f3e8cd]">
-                  {field("time", "")}
-                </span>
-              </div>
-            </div>
-            <p className="font-script mt-4 text-center text-[clamp(18px,2vw+0.5rem,24px)] text-[#e7d3a4]">
-              {field("dayNote", "")}
-            </p>
-            <div className="mt-5 flex w-full flex-col items-center gap-0.5">
-              <p className="font-caps mb-1 text-[9px] tracking-[3px] text-[#b9893ed9] uppercase">{field("venueLabel", "")}</p>
-              <p className="font-invite-serif text-[clamp(18px,1.4vw+0.6rem,26px)] leading-[1.25] text-[#f3e8cd]">
-                {field("venueName", "")}
-              </p>
-              <p className="font-caps mt-0.5 text-[clamp(9px,0.3vw+0.45rem,11px)] tracking-[2.2px] text-[#e7d3a4b3] uppercase">
-                {field("venueHall", "")}
-              </p>
-              <p className="font-caps mt-0.5 text-[clamp(9px,0.3vw+0.45rem,11px)] tracking-[2.2px] text-[#e7d3a4b3] uppercase">
-                {field("venueCity", "")}
-              </p>
-              <div className="mt-3 flex w-full max-w-[280px] flex-col items-center justify-center">
-                {editing ? (
-                  <>
-                    <span className="font-caps inline-flex min-h-11 min-w-[168px] items-center justify-center border border-[#b9893e66] bg-transparent px-5 py-2.5 text-[10px] tracking-[1.6px] text-[#b9893e] uppercase">
-                      Open in Maps
-                    </span>
-                    {field(
-                      "mapsUrl",
-                      "font-invite-sans mt-2 block max-w-full break-all text-[10px] tracking-normal text-[#e7d3a4a6] normal-case",
-                      true
-                    )}
-                  </>
-                ) : (
-                  <a
-                    className="font-caps inline-flex min-h-11 min-w-[168px] items-center justify-center border border-[#b9893e66] bg-transparent px-5 py-2.5 text-[10px] tracking-[1.6px] text-[#b9893e] uppercase no-underline transition-colors hover:border-[#e7d3a4a6] hover:text-[#e7d3a4]"
-                    href={content.mapsUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Open in Maps
-                  </a>
-                )}
-              </div>
-            </div>
-          </div>
         </div>
       </section>
+
+      <RoyalCountdown
+        eventDateIso={content.eventDateIso || "2026-12-25T11:00:00+05:30"}
+        weekday={content.weekday}
+        day={content.day}
+        monthYear={content.monthYear}
+        time={content.time}
+        layout={content.countdownLayout}
+        editing={editing}
+        field={field}
+        onLayoutChange={setCountdownLayout}
+        onEventDateChange={(value) => {
+          commitEventDate(value, "wedding");
+        }}
+      />
+
+      <RoyalMeetCouple
+        groomName={content.groomName || "Ibrahim"}
+        brideName={content.brideName || "Aisha"}
+        groomSrc={groomImageUrl}
+        brideSrc={brideImageUrl}
+        editing={editing}
+        layout={content.meetCoupleLayout}
+        onChangeImage={(slot, file) => changeImage(file, slot)}
+        onLayoutChange={setMeetCoupleLayout}
+        field={field}
+      />
+
+      <RoyalLoveStory
+        groomName={content.groomName || "Ibrahim"}
+        brideName={content.brideName || "Aisha"}
+        items={content.loveStoryItems || []}
+        editing={editing}
+        layout={content.loveStoryLayout}
+        field={field}
+        onCommitItem={commitLoveStoryItem}
+        onAddItem={addLoveStoryItem}
+        onRemoveItem={removeLoveStoryItem}
+        onChangeImage={changeLoveStoryImage}
+        onLayoutChange={setLoveStoryLayout}
+      />
+
+      <RoyalGallery
+        items={content.galleryItems || []}
+        layout={content.galleryLayout}
+        editing={editing}
+        field={field}
+        onLayoutChange={setGalleryLayout}
+        onCommitItem={commitGalleryItem}
+        onAddItem={addGalleryItem}
+        onRemoveItem={removeGalleryItem}
+        onChangeImage={changeGalleryImage}
+      />
+
+      <RoyalLocation
+        items={content.locationItems || []}
+        fallback={{
+          label: content.venueLabel || "Venue",
+          title: [content.venueName, content.venueHall].filter(Boolean).join(" — ") || "Grand Palace",
+          address: [content.venueHall, content.venueCity].filter(Boolean).join(", ") || "Kozhikode",
+          mapsUrl: content.mapsUrl || content.googleMapsUrl || "",
+          appleMapsUrl: content.appleMapsUrl || "",
+        }}
+        editing={editing}
+        layout={content.locationLayout}
+        field={field}
+        onCommitItem={commitLocationItem}
+        onAddItem={addLocationItem}
+        onRemoveItem={removeLocationItem}
+        onLayoutChange={setLocationLayout}
+      />
 
       <footer className={`invite-footer relative z-[1] overflow-hidden px-[clamp(16px,3vw,32px)] pt-[clamp(24px,4vh,40px)] text-center ${editable ? "pb-40" : "pb-6"}`}>
         <p className="font-names text-shimmer-slow mt-0 text-[clamp(34px,5vw+0.5rem,54px)] leading-[1.15]">
@@ -332,6 +338,7 @@ export default function RoyalReceptionInvitation({
         </svg>
         <span className="max-sm:sr-only">Share</span>
       </a>
+      </div>
     </main>
   );
 }
