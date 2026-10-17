@@ -1,20 +1,17 @@
 "use client";
 
-import { normalizeLayoutId, type LayoutOption } from "@/components/templates/royal/LayoutPicker";
+import {
+  ROYAL_AMBIANCE_EFFECTS,
+  normalizeAmbianceEffect as normalizeAmbianceForFamily,
+  type AmbianceEffect as SharedAmbianceEffect,
+} from "@/lib/template-ambiance";
 
-export type AmbianceEffect = "petals" | "stars" | "butterflies" | "sparkles" | "hearts" | "none";
+export type AmbianceEffect = Exclude<SharedAmbianceEffect, "leaves" | "dust">;
 
-export const AMBIANCE_EFFECTS: LayoutOption<AmbianceEffect>[] = [
-  { id: "petals", label: "Petals" },
-  { id: "stars", label: "Stars" },
-  { id: "butterflies", label: "Butterflies" },
-  { id: "sparkles", label: "Sparkles" },
-  { id: "hearts", label: "Hearts" },
-  { id: "none", label: "None" },
-];
+export const AMBIANCE_EFFECTS = ROYAL_AMBIANCE_EFFECTS as { id: AmbianceEffect; label: string }[];
 
 export function normalizeAmbianceEffect(value: string | undefined): AmbianceEffect {
-  return normalizeLayoutId(value, AMBIANCE_EFFECTS, "petals");
+  return normalizeAmbianceForFamily(value, "royal") as AmbianceEffect;
 }
 
 const fallSlots = [

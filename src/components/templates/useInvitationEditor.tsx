@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import EditableField from "@/components/templates/EditableField";
 import InvitationEditChrome, { type EditChromeVariant } from "@/components/templates/InvitationEditChrome";
 import {
@@ -32,6 +33,13 @@ import {
 } from "@/lib/content-limits";
 import { isEventDateAllowed, partsFromEventDate, toEventDateIso } from "@/lib/event-date";
 import { loadSession } from "@/lib/session";
+import {
+  resolveEnabledSections,
+  sectionsForFamily,
+  toggleSection,
+  type TemplateSectionFamily,
+} from "@/lib/template-sections";
+import { ambianceEffectsForFamily } from "@/lib/template-ambiance";
 
 function clampContent(content: TemplateContent): TemplateContent {
   const next: TemplateContent = { ...content };
@@ -41,7 +49,8 @@ function clampContent(content: TemplateContent): TemplateContent {
       key === "programItems" ||
       key === "galleryItems" ||
       key === "loveStoryItems" ||
-      key === "locationItems"
+      key === "locationItems" ||
+      key === "enabledSections"
     ) {
       return;
     }
@@ -86,8 +95,15 @@ function clampContent(content: TemplateContent): TemplateContent {
       title: clampText(item.title || "", LOCATION_ITEM_MAX.title),
       address: clampText(item.address || "", LOCATION_ITEM_MAX.address),
       mapsUrl: clampText(item.mapsUrl || "", LOCATION_ITEM_MAX.mapsUrl),
-      appleMapsUrl: clampText(item.appleMapsUrl || "", LOCATION_ITEM_MAX.appleMapsUrl),
     }));
+  }
+
+  if (Array.isArray(next.enabledSections)) {
+    next.enabledSections = next.enabledSections
+      .filter((item): item is string => typeof item === "string")
+      .map((item) => item.trim())
+      .filter(Boolean)
+      .slice(0, 32);
   }
 
   return next;
@@ -95,7 +111,7 @@ function clampContent(content: TemplateContent): TemplateContent {
 
 type ContentTextKey = Exclude<
   keyof TemplateContent,
-  "programItems" | "galleryItems" | "loveStoryItems" | "locationItems"
+  "programItems" | "galleryItems" | "loveStoryItems" | "locationItems" | "enabledSections"
 >;
 
 const emptyGalleryItem = (): GalleryItem => ({
@@ -127,20 +143,32 @@ export function useInvitationEditor({
   editable = false,
   onPublish,
   variant,
+  sectionFamily,
 }: {
   template: InvitationTemplate;
   editable?: boolean;
   onPublish?: (draft: InvitationTemplate, images: PendingImage[]) => Promise<string>;
   variant: EditChromeVariant;
+  /** Enables section add/remove in the bottom edit bar for this template family. */
+  sectionFamily?: TemplateSectionFamily;
 }) {
+  const router = useRouter();
   const [draft, setDraft] = useState(template);
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [statusMessage, setStatusMessage] = useState("");
   const [publishing, setPublishing] = useState(false);
   const [previewing, setPreviewing] = useState(false);
   const [payOpen, setPayOpen] = useState(false);
   const [role, setRole] = useState<AdminUser["role"] | undefined>();
   const pendingImages = useRef<PendingImage[]>([]);
+  const draftRef = useRef(draft);
+  const savesInFlight = useRef<Promise<boolean>[]>([]);
+  const lastSaveOk = useRef(true);
   const editing = editable && !previewing;
+
+  useEffect(() => {
+    draftRef.current = draft;
+  }, [draft]);
 
   useEffect(() => {
     let cancelled = false;
@@ -156,7 +184,7 @@ export function useInvitationEditor({
     };
   }, []);
 
-  async function persist(nextContent: TemplateContent, image?: SaveImage) {
+  async function persist(nextContent: TemplateContent, image?: SaveImage): Promise<boolean> {
     const safeContent = clampContent(nextContent);
 
     if (onPublish) {
@@ -168,10 +196,11 @@ export function useInvitationEditor({
           loveStoryIndex: image.loveStoryIndex,
         });
       }
-      return;
+      return true;
     }
 
     setStatus("saving");
+    setStatusMessage("");
 
     const body = new FormData();
     body.append("content", JSON.stringify(safeContent));
@@ -187,26 +216,51 @@ export function useInvitationEditor({
       }
     }
 
-    try {
-      const response = await fetch(invitationApiBase(draft), {
-        method: "PUT",
-        credentials: "include",
-        body,
-      });
-      const data = (await response.json()) as {
-        success?: boolean;
-        template?: InvitationTemplate;
-      };
+    const request = (async () => {
+      try {
+        const response = await fetch(invitationApiBase(draftRef.current), {
+          method: "PUT",
+          credentials: "include",
+          body,
+        });
+        const data = (await response.json()) as {
+          success?: boolean;
+          message?: string;
+          template?: InvitationTemplate;
+          work?: InvitationTemplate;
+        };
 
-      if (!response.ok || !data.success || !data.template) {
-        throw new Error("Save failed");
+        const saved = data.template || data.work;
+        if (!response.ok || !data.success || !saved) {
+          throw new Error(data.message || "Save failed");
+        }
+
+        setDraft(saved);
+        draftRef.current = saved;
+        lastSaveOk.current = true;
+        setStatus("saved");
+        setStatusMessage("");
+        return true;
+      } catch (error) {
+        lastSaveOk.current = false;
+        setStatus("error");
+        setStatusMessage(error instanceof Error ? error.message : "Could not save");
+        return false;
       }
+    })();
 
-      setDraft(data.template);
-      setStatus("saved");
-    } catch {
-      setStatus("error");
+    savesInFlight.current.push(request);
+    const ok = await request;
+    savesInFlight.current = savesInFlight.current.filter((item) => item !== request);
+    return ok;
+  }
+
+  async function flushSaves() {
+    if (savesInFlight.current.length === 0) {
+      return lastSaveOk.current;
     }
+    const results = await Promise.all([...savesInFlight.current]);
+    return results.every(Boolean);
   }
 
   function commit(key: ContentTextKey, value: string) {
@@ -254,9 +308,34 @@ export function useInvitationEditor({
   }
 
   function changeImage(file: File, slot: ImageSlot = "hero") {
+    const previousImages = draftRef.current.images;
     const preview = URL.createObjectURL(file);
+    lastSaveOk.current = false;
+    setStatus("saving");
+    setStatusMessage("Uploading photo…");
     setDraft((prev) => ({ ...prev, images: withImageUrl(prev.images, slot, preview) }));
-    void persist(draft.content, { file, slot });
+    void persist(draftRef.current.content, { file, slot }).then((ok) => {
+      URL.revokeObjectURL(preview);
+      if (!ok) {
+        setDraft((prev) => ({ ...prev, images: previousImages }));
+        setStatusMessage("Photo not saved — try again");
+      }
+    });
+  }
+
+  async function finishEditing() {
+    setStatus("saving");
+    setStatusMessage("Saving…");
+    const ok = await flushSaves();
+    if (!ok) {
+      setStatus("error");
+      setStatusMessage("Photo not saved — try again");
+      return;
+    }
+    setStatus("saved");
+    setStatusMessage("");
+    router.push(invitationDoneHref(draftRef.current, role));
+    router.refresh();
   }
 
   function persistGallery(items: GalleryItem[]) {
@@ -268,13 +347,26 @@ export function useInvitationEditor({
   }
 
   function changeGalleryImage(index: number, file: File) {
+    const previousItems = draftRef.current.content.galleryItems || [];
     const preview = URL.createObjectURL(file);
+    lastSaveOk.current = false;
+    setStatus("saving");
+    setStatusMessage("Uploading photo…");
     setDraft((prev) => {
       const items = [...(prev.content.galleryItems || [])];
       const item = items[index] || emptyGalleryItem();
       items[index] = { ...item, url: preview };
       const nextContent = { ...prev.content, galleryItems: items };
-      void persist(nextContent, { file, slot: "gallery", galleryIndex: index });
+      void persist(nextContent, { file, slot: "gallery", galleryIndex: index }).then((ok) => {
+        URL.revokeObjectURL(preview);
+        if (!ok) {
+          setDraft((current) => ({
+            ...current,
+            content: { ...current.content, galleryItems: previousItems },
+          }));
+          setStatusMessage("Photo not saved — try again");
+        }
+      });
       return { ...prev, content: nextContent };
     });
   }
@@ -316,6 +408,22 @@ export function useInvitationEditor({
     });
   }
 
+  function setHeroLayout(layout: string) {
+    setDraft((prev) => {
+      const nextContent = { ...prev.content, heroLayout: layout };
+      void persist(nextContent);
+      return { ...prev, content: nextContent };
+    });
+  }
+
+  function setProgramLayout(layout: string) {
+    setDraft((prev) => {
+      const nextContent = { ...prev.content, programLayout: layout };
+      void persist(nextContent);
+      return { ...prev, content: nextContent };
+    });
+  }
+
   function setAmbianceEffect(effect: string) {
     setDraft((prev) => {
       const nextContent = { ...prev.content, ambianceEffect: effect };
@@ -323,6 +431,29 @@ export function useInvitationEditor({
       return { ...prev, content: nextContent };
     });
   }
+
+  function setSectionEnabled(sectionId: string, on: boolean) {
+    if (!sectionFamily) return;
+    setDraft((prev) => {
+      const nextSections = toggleSection(
+        sectionFamily,
+        prev.content.enabledSections || [],
+        sectionId,
+        on
+      );
+      const nextContent = {
+        ...prev.content,
+        enabledSections: resolveEnabledSections(sectionFamily, nextSections),
+      };
+      void persist(nextContent);
+      return { ...prev, content: nextContent };
+    });
+  }
+
+  const sectionCatalog = sectionFamily ? sectionsForFamily(sectionFamily) : undefined;
+  const enabledSections = sectionFamily
+    ? resolveEnabledSections(sectionFamily, draft.content.enabledSections)
+    : undefined;
 
   function setMeetCoupleLayout(layout: string) {
     setDraft((prev) => {
@@ -359,7 +490,7 @@ export function useInvitationEditor({
   function commitLocationItem(index: number, key: keyof LocationItem, value: string) {
     const current = [...(draft.content.locationItems || [])];
     if (!current[index]) {
-      current[index] = { label: "Venue", title: "", address: "", mapsUrl: "", appleMapsUrl: "" };
+      current[index] = { label: "Venue", title: "", address: "", mapsUrl: "" };
     }
     const max = LOCATION_ITEM_MAX[key as keyof typeof LOCATION_ITEM_MAX] ?? maxForContentField(key);
     current[index] = { ...current[index], [key]: clampText(value, max) };
@@ -378,7 +509,6 @@ export function useInvitationEditor({
         title: "Venue name",
         address: "Full address",
         mapsUrl: "",
-        appleMapsUrl: "",
       },
     ]);
   }
@@ -460,12 +590,25 @@ export function useInvitationEditor({
   }
 
   function changeLoveStoryImage(index: number, file: File) {
+    const previousItems = draftRef.current.content.loveStoryItems || [];
     const preview = URL.createObjectURL(file);
+    lastSaveOk.current = false;
+    setStatus("saving");
+    setStatusMessage("Uploading photo…");
     setDraft((prev) => {
       const items = ensureLoveStoryItems(prev.content.loveStoryItems, index + 1);
       items[index] = { ...items[index], url: preview };
       const nextContent = { ...prev.content, loveStoryItems: items };
-      void persist(nextContent, { file, slot: "loveStory", loveStoryIndex: index });
+      void persist(nextContent, { file, slot: "loveStory", loveStoryIndex: index }).then((ok) => {
+        URL.revokeObjectURL(preview);
+        if (!ok) {
+          setDraft((current) => ({
+            ...current,
+            content: { ...current.content, loveStoryItems: previousItems },
+          }));
+          setStatusMessage("Photo not saved — try again");
+        }
+      });
       return { ...prev, content: nextContent };
     });
   }
@@ -515,9 +658,11 @@ export function useInvitationEditor({
       editing={editing}
       previewing={previewing}
       status={status}
+      statusMessage={statusMessage}
       publishing={publishing}
       canPublish={Boolean(onPublish)}
       doneHref={invitationDoneHref(draft, role)}
+      onDone={finishEditing}
       invitationName={draft.name}
       slug={draft.slug}
       selectedThemeId={draft.selectedThemeId}
@@ -547,7 +692,17 @@ export function useInvitationEditor({
       }}
       onConfirmPay={publish}
       ambianceEffect={draft.content.ambianceEffect}
-      onAmbianceEffectChange={variant === "invite" ? setAmbianceEffect : undefined}
+      ambianceEffects={
+        sectionFamily === "royal" || sectionFamily === "house"
+          ? ambianceEffectsForFamily(sectionFamily)
+          : undefined
+      }
+      onAmbianceEffectChange={
+        sectionFamily === "royal" || sectionFamily === "house" ? setAmbianceEffect : undefined
+      }
+      sectionCatalog={sectionCatalog}
+      enabledSections={enabledSections}
+      onSectionToggle={sectionFamily ? setSectionEnabled : undefined}
       onThemeChange={(selectedThemeId, themes) => {
         setDraft((prev) => ({
           ...prev,
@@ -577,6 +732,8 @@ export function useInvitationEditor({
     removeGalleryItem,
     setGalleryLayout,
     setCountdownLayout,
+    setProgramLayout,
+    setHeroLayout,
     setAmbianceEffect,
     setMeetCoupleLayout,
     setLoveStoryLayout,

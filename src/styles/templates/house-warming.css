@@ -3,11 +3,11 @@
   --color-terracotta-dark: #87361b;
   --color-terracotta-light: #d67a5c;
   --color-terracotta-soft: #ab4f3114;
-  --color-linen-bg: #fbf7f2;
-  --color-linen-surface: #f4ece2;
+  --color-linen-bg: #f5eddf;
+  --color-linen-surface: #efe5d4;
   --color-linen-card: #fff;
   --color-linen-border: #e8dccd;
-  --color-linen-nav: #fcf9f5db;
+  --color-linen-nav: #f5eddfdb;
   --color-sage: #5e6f54;
   --color-sage-light: #839678;
   --color-gold: #c59b27;
@@ -57,12 +57,34 @@ body:has(.house-warming) {
   height: auto;
   min-height: 100%;
   overflow: auto;
-  background: #fbf7f2;
+  background: #f5eddf;
+}
+
+html:has(.house-warming.is-sealed),
+body:has(.house-warming.is-sealed) {
+  height: 100%;
+  max-height: 100%;
+  overflow: hidden !important;
+  overscroll-behavior: none;
+  background: #120e0c;
 }
 
 html:has(.house-warming.palette-sage),
 body:has(.house-warming.palette-sage) {
   background: #e6eee3;
+}
+
+html:has(.house-warming.palette-sage.is-sealed),
+body:has(.house-warming.palette-sage.is-sealed) {
+  background: #120e0c;
+}
+
+.house-warming.is-sealed {
+  height: 100svh;
+  max-height: 100svh;
+  min-height: 100svh;
+  overflow: hidden !important;
+  background: #120e0c;
 }
 
 .house-warming::before {
@@ -95,6 +117,10 @@ body:has(.house-warming.palette-sage) {
 
 .house-warming .hw-font-arabic {
   font-family: var(--font-arabic);
+}
+
+.house-warming .hw-font-script {
+  font-family: var(--font-allura), "Segoe Script", cursive;
 }
 
 .house-warming .hw-font-serif {
@@ -166,25 +192,6 @@ body:has(.house-warming.palette-sage) {
   transform: translate(-50%, -40%) scale(1.08);
 }
 
-.house-warming .hw-nav {
-  z-index: 900;
-  backdrop-filter: blur(16px);
-  border-radius: 9999px;
-  background: var(--color-linen-nav);
-  border: 1px solid #c59b2733;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 90%;
-  max-width: 960px;
-  padding: 8px 20px;
-  position: fixed;
-  top: 16px;
-  left: 50%;
-  transform: translate(-50%);
-  box-shadow: 0 10px 30px #1e191614;
-}
-
 .house-warming .hw-name-gradient {
   color: var(--color-terracotta);
   background: linear-gradient(135deg, var(--color-terracotta) 0%, var(--color-terracotta-dark) 100%);
@@ -238,18 +245,6 @@ body:has(.house-warming.palette-sage) {
   left: 31px;
 }
 
-.house-warming .hw-gallery-card {
-  background: #000;
-}
-
-.house-warming .hw-gallery-overlay {
-  background: linear-gradient(#14100d14 40%, #14100de0 100%);
-}
-
-.house-warming .hw-gallery-card:hover .hw-gallery-overlay {
-  background: linear-gradient(#14100d40 30%, #14100df0 100%);
-}
-
 .house-warming .hw-wa {
   background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
   box-shadow: 0 10px 25px #128c7e66, 0 2px 8px #00000026;
@@ -289,11 +284,388 @@ body:has(.house-warming.palette-sage) {
 }
 
 @media (width <= 680px) {
-  .house-warming .hw-nav-links {
-    display: none;
-  }
-
   .house-warming .hw-envelope-card {
     height: 230px;
   }
 }
+
+.house-warming .hw-ambiance {
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* 1. Starry Glow */
+.house-warming .hw-fx-lantern-chain {
+  position: fixed;
+  top: 0;
+  pointer-events: none;
+  transform-origin: top center;
+  animation: hw-fx-lantern-sway 4.5s ease-in-out infinite alternate;
+  filter: drop-shadow(0 4px 10px rgba(197, 155, 39, 0.4));
+}
+
+.house-warming .hw-fx-star {
+  position: fixed;
+  pointer-events: none;
+  animation: hw-fx-star-twinkle ease-in-out infinite;
+  filter: drop-shadow(0 0 5px rgba(228, 190, 87, 0.65));
+}
+
+.house-warming .hw-fx-sparkle {
+  position: fixed;
+  pointer-events: none;
+  background: radial-gradient(circle, #fff7df 0%, #e4be57 55%, transparent 75%);
+  box-shadow: 0 0 6px #e6c56890;
+  animation: hw-fx-sparkle-pulse ease-in-out infinite;
+}
+
+@keyframes hw-fx-lantern-sway {
+  0% {
+    transform: rotate(-2deg);
+  }
+  100% {
+    transform: rotate(2deg);
+  }
+}
+
+@keyframes hw-fx-star-twinkle {
+  0%,
+  100% {
+    transform: scale(0.65) rotate(0deg);
+    opacity: 0.2;
+  }
+  50% {
+    transform: scale(1.1) rotate(45deg);
+    opacity: 0.95;
+  }
+}
+
+@keyframes hw-fx-sparkle-pulse {
+  0%,
+  100% {
+    opacity: 0.2;
+    transform: scale(0.75);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}
+
+/* 2. Butterflies */
+.house-warming .hw-fx-butterfly {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  offset-path: ellipse(var(--brx, 16vw) var(--bry, 12vh) at var(--bx, 50%) var(--by, 45%));
+  offset-rotate: auto 90deg;
+  offset-anchor: center;
+  animation: hw-fx-orbit linear infinite;
+  filter: drop-shadow(0 2px 5px color-mix(in srgb, var(--color-terracotta) 35%, transparent));
+}
+
+.house-warming .hw-fx-butterfly.is-reverse {
+  animation-direction: reverse;
+}
+
+.house-warming .hw-fx-butterfly-mark {
+  display: block;
+  overflow: visible;
+  transform: translate(-50%, -50%);
+}
+
+.house-warming .hw-fx-wing-l {
+  transform-box: fill-box;
+  transform-origin: center right;
+  animation: hw-fx-wing 0.2s ease-in-out infinite;
+}
+
+.house-warming .hw-fx-wing-r {
+  transform-box: fill-box;
+  transform-origin: center left;
+  animation: hw-fx-wing 0.2s ease-in-out infinite;
+}
+
+@keyframes hw-fx-wing {
+  0%,
+  100% {
+    transform: scaleX(1);
+  }
+  50% {
+    transform: scaleX(0.18);
+  }
+}
+
+@keyframes hw-fx-orbit {
+  0% {
+    offset-distance: 0%;
+  }
+  100% {
+    offset-distance: 100%;
+  }
+}
+
+/* 3. Floral Bloom */
+.house-warming .hw-fx-petal-fall {
+  position: fixed;
+  top: -30px;
+  pointer-events: none;
+  animation: hw-fx-petal-fall linear infinite;
+  filter: drop-shadow(0 2px 4px rgba(171, 79, 49, 0.12));
+}
+
+.house-warming .hw-fx-bloom-corner-tl {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: clamp(65px, 11vw, 105px);
+  height: auto;
+  pointer-events: none;
+  opacity: 0.85;
+  z-index: 1;
+  animation: hw-fx-bloom-sway 8s ease-in-out infinite alternate;
+}
+
+.house-warming .hw-fx-bloom-corner-br {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  width: clamp(70px, 12vw, 115px);
+  height: auto;
+  pointer-events: none;
+  opacity: 0.85;
+  z-index: 1;
+  animation: hw-fx-bloom-sway 9s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes hw-fx-petal-fall {
+  0% {
+    transform: translate3d(0, -30px, 0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.85;
+  }
+  85% {
+    opacity: 0.75;
+  }
+  100% {
+    transform: translate3d(var(--sway, 0), 110vh, 0) rotate(var(--spin, 360deg));
+    opacity: 0.05;
+  }
+}
+
+@keyframes hw-fx-bloom-sway {
+  0% {
+    transform: scale(1) rotate(0deg);
+  }
+  100% {
+    transform: scale(1.03) rotate(1.8deg);
+  }
+}
+
+/* 4. Floating Lights */
+.house-warming .hw-fx-lantern-float {
+  position: fixed;
+  bottom: -40px;
+  pointer-events: none;
+  animation: hw-fx-lantern-rise linear infinite;
+  filter: drop-shadow(0 0 9px rgba(235, 170, 50, 0.55));
+}
+
+@keyframes hw-fx-lantern-rise {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(-2deg);
+    opacity: 0;
+  }
+  8% {
+    opacity: 0.95;
+  }
+  85% {
+    opacity: 0.85;
+  }
+  100% {
+    transform: translate3d(var(--sway, 20px), -115vh, 0) rotate(3deg);
+    opacity: 0;
+  }
+}
+
+.house-warming .rr-layout-picker,
+.house-warming .hw-layout-picker {
+  margin-inline: auto;
+  max-width: 720px;
+  padding: 1rem 1.25rem;
+  border-radius: 20px;
+  border: 1px solid var(--color-linen-border);
+  background: var(--color-linen-card);
+  box-shadow: var(--shadow-md);
+}
+
+.house-warming .rr-layout-picker-title {
+  margin: 0 0 0.75rem;
+  text-align: center;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #796e65;
+}
+
+.house-warming .rr-layout-picker-options {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.45rem;
+}
+
+.house-warming .rr-layout-picker-btn {
+  border-radius: 9999px;
+  border: 1px solid #e8dccd;
+  background: var(--color-linen-surface);
+  padding: 0.35rem 0.85rem;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #87361b;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.house-warming .rr-layout-picker-btn:hover {
+  border-color: var(--color-terracotta);
+  background: var(--color-terracotta-soft);
+}
+
+.house-warming .rr-layout-picker-btn.is-active {
+  border-color: var(--color-terracotta);
+  background: var(--color-terracotta);
+  color: #fff;
+}
+
+/* Location section palette — follows active theme tokens (Clay / Sage Grove) */
+.house-warming #location {
+  --loc-ivory: var(--color-linen-bg);
+  --loc-ivory-deep: var(--color-linen-surface);
+  --loc-card: transparent;
+  --loc-surface: var(--loc-ivory-deep);
+  --loc-border: var(--color-linen-border);
+  --loc-ink: var(--color-charcoal-deep);
+  --loc-muted: var(--color-charcoal-muted);
+  --loc-accent: var(--color-terracotta);
+  --loc-accent-deep: var(--color-terracotta-dark);
+  --loc-accent-soft: var(--color-terracotta-soft);
+  --loc-leaf: var(--color-terracotta-light);
+  --loc-shadow: none;
+}
+
+/* No capsule board — sit on the template background like other sections */
+.house-warming #location .hw-loc-card {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  color: var(--loc-ink);
+}
+
+.house-warming #location .hw-loc-title {
+  color: var(--loc-accent-deep);
+}
+
+.house-warming #location .hw-loc-accent {
+  color: var(--loc-accent);
+}
+
+.house-warming #location .hw-loc-muted {
+  color: var(--loc-muted);
+}
+
+.house-warming #location .hw-loc-leaf {
+  color: var(--loc-leaf);
+}
+
+.house-warming #location .hw-loc-btn-fill {
+  background: var(--loc-accent);
+  color: #fffaf5;
+  box-shadow: 0 8px 18px color-mix(in srgb, var(--loc-accent) 25%, transparent);
+}
+
+.house-warming #location .hw-loc-btn-fill:hover {
+  background: var(--loc-accent-deep);
+}
+
+.house-warming #location .hw-loc-btn-line {
+  border: 1px solid color-mix(in srgb, var(--loc-accent) 45%, transparent);
+  background: transparent;
+  color: var(--loc-accent-deep);
+}
+
+.house-warming #location .hw-loc-btn-line:hover {
+  border-color: var(--loc-accent);
+  background: var(--loc-accent-soft);
+}
+
+.house-warming #location .hw-loc-circle {
+  border: 1px solid color-mix(in srgb, var(--loc-accent) 35%, transparent);
+  background: transparent;
+  color: var(--loc-accent);
+}
+
+/* Organic map frame for Atlas location layout */
+.house-warming .hw-location-blob {
+  border: 10px solid var(--color-linen-bg);
+  border-radius: 48% 52% 46% 54% / 54% 46% 54% 46%;
+  box-shadow: 0 14px 32px color-mix(in srgb, var(--color-charcoal-deep) 10%, transparent);
+}
+
+/* Countdown + rail: keep horizontal rhythm with scroll on narrow viewports */
+.house-warming .hw-countdown-scroll {
+  scrollbar-width: none;
+  touch-action: pan-x;
+}
+
+.house-warming .hw-countdown-scroll::-webkit-scrollbar {
+  display: none;
+  height: 0;
+}
+
+/* Rail schedule: fixed-width horizontal track on every breakpoint */
+.house-warming .hw-rail-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--color-terracotta) 55%, transparent) transparent;
+  touch-action: pan-x;
+}
+
+.house-warming .hw-rail-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+
+.house-warming .hw-rail-scroll::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--color-terracotta) 45%, transparent);
+  border-radius: 999px;
+}
+
+.house-warming .hw-rail-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .house-warming .hw-fx-fall,
+  .house-warming .hw-fx-sparkle,
+  .house-warming .hw-fx-dust,
+  .house-warming .hw-fx-butterfly,
+  .house-warming .hw-fx-lantern-float,
+  .house-warming .hw-fx-petal-fall {
+    animation: none;
+    opacity: 0;
+  }
+}
+
+.hw-edit-bar select,
+.hw-edit-bar select option {
+  background-color: #ffffff !important;
+  color: #221c18 !important;
+}
+

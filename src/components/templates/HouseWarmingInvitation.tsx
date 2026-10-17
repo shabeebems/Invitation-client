@@ -1,79 +1,79 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
-import EditableField from "@/components/templates/EditableField";
+import { useEffect, useMemo, useState } from "react";
+import HouseHero from "@/components/templates/house/HouseHero";
+import HouseCountdown from "@/components/templates/house/HouseCountdown";
+import HouseFooter from "@/components/templates/house/HouseFooter";
+import { HouseIcon } from "@/components/templates/house/HouseIcons";
+import HouseLocation from "@/components/templates/house/HouseLocation";
+import HouseSchedule from "@/components/templates/house/HouseSchedule";
+import HouseAmbiance from "@/components/templates/house/HouseAmbiance";
 import { useInvitationEditor } from "@/components/templates/useInvitationEditor";
+import { normalizeAmbianceEffect } from "@/lib/template-ambiance";
 import {
-  type GalleryItem,
   type InvitationTemplate,
   type PendingImage,
   type ProgramItem,
+  type TemplateContent,
   imageUrl,
-  withImageUrl,
 } from "@/lib/api";
 import {
-  GALLERY_ITEM_MAX,
-  MAX_GALLERY_ITEMS,
   MAX_PROGRAM_ITEMS,
   PROGRAM_ITEM_MAX,
   clampText,
 } from "@/lib/content-limits";
+import { isSectionEnabled, resolveEnabledSections } from "@/lib/template-sections";
 
-type ImageSlot = "hero";
+function buildHouseShareMessage(content: TemplateContent, url?: string): string {
+  const parts: string[] = [];
 
-type Countdown = { days: number; hours: number; minutes: number; seconds: number; live: boolean };
-
-function useCountdown(iso: string): Countdown {
-  const [now, setNow] = useState(() => Date.now());
-
-  useEffect(() => {
-    const timer = window.setInterval(() => setNow(Date.now()), 1000);
-    return () => window.clearInterval(timer);
-  }, []);
-
-  const target = new Date(iso).getTime();
-  if (!iso || Number.isNaN(target)) {
-    return { days: 0, hours: 0, minutes: 0, seconds: 0, live: true };
+  if (content.bismillah?.trim()) {
+    parts.push(content.bismillah.trim());
   }
 
-  const diff = Math.max(0, target - now);
-  return {
-    days: Math.floor(diff / 86_400_000),
-    hours: Math.floor((diff / 3_600_000) % 24),
-    minutes: Math.floor((diff / 60_000) % 60),
-    seconds: Math.floor((diff / 1000) % 60),
-    live: diff <= 0,
-  };
-}
+  const houseName = content.houseName?.trim();
+  const hostNames = content.hostNames?.trim();
+  const familyLine = content.familyLine?.trim();
 
-function pad(value: number) {
-  return String(value).padStart(2, "0");
-}
-
-function icsStamp(iso: string) {
-  return new Date(iso).toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
-}
-
-function mapsEmbed(url: string) {
-  const pair = url.match(/(-?\d+\.\d+),\s*(-?\d+\.\d+)/);
-  if (pair) {
-    return `https://maps.google.com/maps?q=${pair[1]},${pair[2]}&z=17&output=embed`;
+  const titleLines: string[] = [];
+  if (houseName) {
+    titleLines.push(`🏡 *${houseName}*`);
+  }
+  if (hostNames) {
+    titleLines.push(
+      `Warm Welcome to the New Home of\n*${hostNames}*${familyLine ? `\n_${familyLine}_` : ""}`
+    );
+  }
+  if (titleLines.length > 0) {
+    parts.push(titleLines.join("\n\n"));
   }
 
-  return `https://maps.google.com/maps?q=${encodeURIComponent(url)}&output=embed`;
-}
+  // Event date and time
+  const dateStr = [
+    content.weekday?.trim(),
+    [content.day?.trim(), content.monthYear?.trim()].filter(Boolean).join(" "),
+  ]
+    .filter(Boolean)
+    .join(", ");
+  const timeStr = content.time?.trim();
+  const dateTime = [dateStr, timeStr].filter(Boolean).join(" · ");
+  if (dateTime) {
+    parts.push(`🗓 *Event Date & Time:*\n*${dateTime}*`);
+  }
 
-function Flower({ className = "" }: { className?: string }) {
-  return <span className={className}>❀</span>;
-}
+  // Full address
+  const fullAddress =
+    content.addressFull?.trim() ||
+    [content.venueName?.trim(), content.venueCity?.trim()].filter(Boolean).join(", ");
+  if (fullAddress) {
+    parts.push(`📍 *Address:*\n${fullAddress}`);
+  }
 
-function HouseIcon({ className = "h-8 w-8" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} fill="none" aria-hidden="true">
-      <path d="M4 11.5 12 5l8 6.5V20H4v-8.5Z" stroke="currentColor" strokeWidth="1.6" />
-      <path d="M9 20v-6h6v6" stroke="currentColor" strokeWidth="1.6" />
-    </svg>
-  );
+  if (url) {
+    parts.push(`🔗 *View Invitation:*\n${url}`);
+  }
+
+  return parts.join("\n\n");
 }
 
 export default function HouseWarmingInvitation({
@@ -85,203 +85,123 @@ export default function HouseWarmingInvitation({
   editable?: boolean;
   onPublish?: (draft: InvitationTemplate, images: PendingImage[]) => Promise<string>;
 }) {
-  const { draft, setDraft, content, editing, previewing, payOpen, persist, field, themeTitle, chrome } =
-    useInvitationEditor({
-      template,
-      editable,
-      onPublish,
-      variant: "house",
-    });
-  const [opened, setOpened] = useState(editable);
-  const [calendarOpen, setCalendarOpen] = useState(false);
-  const [lightbox, setLightbox] = useState<number | null>(null);
-  const [copied, setCopied] = useState(false);
-  const imageRefs = useRef<Record<ImageSlot, HTMLInputElement | null>>({
-    hero: null,
+  const {
+    draft,
+    setDraft,
+    content,
+    editing,
+    previewing,
+    payOpen,
+    persist,
+    field,
+    commitEventDate,
+    themeTitle,
+    chrome,
+    changeImage,
+    setCountdownLayout,
+    setProgramLayout,
+    setLocationLayout,
+  } = useInvitationEditor({
+    template,
+    editable,
+    onPublish,
+    variant: "house",
+    sectionFamily: "house",
   });
-  const galleryInputRefs = useRef<(HTMLInputElement | null)[]>([]);
-  const countdown = useCountdown(content.eventDateIso || "");
-  const shareText = encodeURIComponent(content.shareText || "");
+  const ambianceEffect = normalizeAmbianceEffect(content.ambianceEffect, "house");
+  const [opened, setOpened] = useState(false);
   const heroSrc = imageUrl(draft.images, "hero");
 
-  const program = content.programItems || [];
-  const gallery = content.galleryItems || [];
+  const shareMessage = useMemo(() => {
+    const currentUrl = typeof window !== "undefined" ? window.location.href : "";
+    return buildHouseShareMessage(content, currentUrl);
+  }, [
+    content.bismillah,
+    content.houseName,
+    content.hostNames,
+    content.familyLine,
+    content.weekday,
+    content.day,
+    content.monthYear,
+    content.time,
+    content.addressFull,
+    content.venueName,
+    content.venueCity,
+  ]);
 
-  function persistProgram(items: ProgramItem[]) {
-    setDraft((prev) => {
-      const nextContent = { ...prev.content, programItems: items };
-      void persist(nextContent);
-      return { ...prev, content: nextContent };
-    });
+  function handleWhatsAppClick(e: React.MouseEvent<HTMLAnchorElement>) {
+    e.preventDefault();
+    const currentUrl = typeof window !== "undefined" ? window.location.href : "";
+    const msg = buildHouseShareMessage(content, currentUrl);
+    const waUrl = `https://wa.me/?text=${encodeURIComponent(msg)}`;
+    window.open(waUrl, "_blank", "noopener,noreferrer");
   }
+
+  const program = content.programItems || [];
+
+  useEffect(() => {
+    if (opened) return;
+    const prevHtml = document.documentElement.style.overflow;
+    const prevBody = document.body.style.overflow;
+    const prevHtmlHeight = document.documentElement.style.height;
+    const prevBodyHeight = document.body.style.height;
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.height = "100%";
+    document.body.style.height = "100%";
+    return () => {
+      document.documentElement.style.overflow = prevHtml;
+      document.body.style.overflow = prevBody;
+      document.documentElement.style.height = prevHtmlHeight;
+      document.body.style.height = prevBodyHeight;
+    };
+  }, [opened]);
 
   function commitProgram(index: number, key: keyof ProgramItem, value: string) {
     const safeValue = clampText(value, PROGRAM_ITEM_MAX[key]);
-    persistProgram(
-      program.map((item, itemIndex) => (itemIndex === index ? { ...item, [key]: safeValue } : item))
-    );
-  }
-
-  function addProgram() {
-    if (program.length >= MAX_PROGRAM_ITEMS) {
-      return;
-    }
-    persistProgram([...program, { time: "Time", title: "New program", description: "Tap to add details" }]);
-  }
-
-  function removeProgram(index: number) {
-    persistProgram(program.filter((_, itemIndex) => itemIndex !== index));
-  }
-
-  function persistGallery(items: GalleryItem[]) {
     setDraft((prev) => {
-      const nextContent = { ...prev.content, galleryItems: items };
+      const current = prev.content.programItems || [];
+      const nextItems = current.map((item, itemIndex) =>
+        itemIndex === index ? { ...item, [key]: safeValue } : item
+      );
+      const nextContent = { ...prev.content, programItems: nextItems };
       void persist(nextContent);
       return { ...prev, content: nextContent };
     });
   }
 
-  function commitGallery(index: number, key: keyof Pick<GalleryItem, "eyebrow" | "title" | "caption">, value: string) {
-    const safeValue = clampText(value, GALLERY_ITEM_MAX[key]);
-    persistGallery(
-      gallery.map((item, itemIndex) => (itemIndex === index ? { ...item, [key]: safeValue } : item))
-    );
-  }
-
-  function addGallery() {
-    if (gallery.length >= MAX_GALLERY_ITEMS) {
-      return;
-    }
-    persistGallery([
-      ...gallery,
-      { eyebrow: "Tag", title: "New photo", caption: "Tap to add details", url: "", publicId: "" },
-    ]);
-  }
-
-  function removeGallery(index: number) {
-    persistGallery(gallery.filter((_, itemIndex) => itemIndex !== index));
-    setLightbox((open) => (open === index ? null : open !== null && open > index ? open - 1 : open));
-  }
-
-  function changeImage(slot: ImageSlot, file: File) {
-    const preview = URL.createObjectURL(file);
-    setDraft((prev) => ({ ...prev, images: withImageUrl(prev.images, slot, preview) }));
-    void persist(draft.content, { file, slot });
-  }
-
-  function changeGalleryImage(index: number, file: File) {
-    const preview = URL.createObjectURL(file);
+  function addProgram() {
     setDraft((prev) => {
-      const items = [...(prev.content.galleryItems || [])];
-      items[index] = { ...items[index], url: preview };
-      return { ...prev, content: { ...prev.content, galleryItems: items } };
+      const current = prev.content.programItems || [];
+      if (current.length >= MAX_PROGRAM_ITEMS) {
+        return prev;
+      }
+      const nextItems = [
+        ...current,
+        { time: "Time", title: "New program", description: "Tap to add details" },
+      ];
+      const nextContent = { ...prev.content, programItems: nextItems };
+      void persist(nextContent);
+      return { ...prev, content: nextContent };
     });
-    void persist(content, { file, slot: "gallery", galleryIndex: index });
   }
 
-  function imageButton(slot: ImageSlot, className: string, children: ReactNode, label: string) {
-    return (
-      <>
-        <div
-          className={`${className} ${editing ? "cursor-pointer" : ""}`}
-          role={editing ? "button" : undefined}
-          tabIndex={editing ? 0 : undefined}
-          onClick={() => {
-            if (editing) {
-              imageRefs.current[slot]?.click();
-            }
-          }}
-          onKeyDown={(event) => {
-            if (editing && (event.key === "Enter" || event.key === " ")) {
-              event.preventDefault();
-              imageRefs.current[slot]?.click();
-            }
-          }}
-          aria-label={editing ? label : undefined}
-        >
-          {children}
-          {editing ? (
-            <span className="pointer-events-none absolute bottom-4 left-1/2 z-10 -translate-x-1/2 rounded-full border border-[var(--color-linen-border)] bg-[var(--color-linen-card)]/90 px-3 py-1 text-[10px] font-semibold tracking-[1.2px] text-[#87361b] uppercase">
-              Change photo
-            </span>
-          ) : null}
-        </div>
-        {editing ? (
-          <input
-            ref={(node) => {
-              imageRefs.current[slot] = node;
-            }}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(event) => {
-              const file = event.target.files?.[0];
-              if (file) {
-                void changeImage(slot, file);
-              }
-              event.target.value = "";
-            }}
-          />
-        ) : null}
-      </>
-    );
+  function removeProgram(index: number) {
+    setDraft((prev) => {
+      const current = prev.content.programItems || [];
+      const nextItems = current.filter((_, itemIndex) => itemIndex !== index);
+      const nextContent = { ...prev.content, programItems: nextItems };
+      void persist(nextContent);
+      return { ...prev, content: nextContent };
+    });
   }
-
-  function downloadIcs() {
-    const start = icsStamp(content.eventDateIso || new Date().toISOString());
-    const end = icsStamp(content.eventEndIso || content.eventDateIso || new Date().toISOString());
-    const ics = [
-      "BEGIN:VCALENDAR",
-      "VERSION:2.0",
-      "BEGIN:VEVENT",
-      `DTSTART:${start}`,
-      `DTEND:${end}`,
-      `SUMMARY:Housewarming — ${content.hostNames}`,
-      `LOCATION:${content.addressFull}`,
-      `DESCRIPTION:${(content.shareText || "").replace(/\n/g, "\\n")}`,
-      "END:VEVENT",
-      "END:VCALENDAR",
-    ].join("\r\n");
-    const blob = new Blob([ics], { type: "text/calendar" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "housewarming.ics";
-    link.click();
-    URL.revokeObjectURL(url);
-  }
-
-  async function copyAddress() {
-    try {
-      await navigator.clipboard.writeText(content.addressFull || "");
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 2200);
-    } catch {
-      setCopied(false);
-    }
-  }
-
-  const googleCalendar = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
-    `Housewarming Celebration — ${content.hostNames}`
-  )}&dates=${icsStamp(content.eventDateIso || new Date().toISOString()).replace("Z", "")}/${icsStamp(
-    content.eventEndIso || content.eventDateIso || new Date().toISOString()
-  ).replace("Z", "")}&details=${encodeURIComponent(
-    content.shareText || ""
-  )}&location=${encodeURIComponent(content.addressFull || "")}`;
 
   const themeClass = /sage/i.test(themeTitle) ? " palette-sage" : "";
-
-  const units = [
-    { label: "Days", value: countdown.days },
-    { label: "Hours", value: countdown.hours },
-    { label: "Minutes", value: countdown.minutes },
-    { label: "Seconds", value: countdown.seconds },
-  ];
+  const enabled = resolveEnabledSections("house", content.enabledSections);
 
   return (
-    <>
-    <main className={`house-warming relative${themeClass}`}>
-      {chrome}
+    <main className={`house-warming relative${themeClass}${opened ? "" : " is-sealed"}`}>
+      {opened ? chrome : null}
       <div className={`hw-envelope ${opened ? "is-open" : ""}`}>
         <p className="hw-font-arabic mb-1 text-center text-[1.85rem] leading-[1.4] text-[#e4be57] [text-shadow:0_2px_14px_#e6c56859]">
           {field("bismillah")}
@@ -296,497 +216,90 @@ export default function HouseWarmingInvitation({
           </span>
         </button>
         <p className="mt-8 rounded-full border border-white/20 bg-white/10 px-5 py-2 text-[0.95rem] text-[#f7f1e7]">
-          → {field("openHint")}
+          → Tap the wax seal to unveil your invitation
         </p>
         <button type="button" className="mt-3.5 text-[0.82rem] text-white/55 underline" onClick={() => setOpened(true)}>
           {field("skipLabel")}
         </button>
       </div>
 
-      <nav className="hw-nav" aria-label="Primary Navigation">
-        <a href="#celebration" className="hw-font-serif flex items-center gap-2 text-[1.15rem] font-semibold text-[#221c18] no-underline">
-          <Flower className="text-[var(--color-terracotta)]" />
-          {field("hostNames")}
-          <Flower className="text-[var(--color-terracotta)]" />
-        </a>
-        <ul className="hw-nav-links m-0 flex list-none items-center gap-6 p-0">
-          <li>
-            <a className="text-[0.88rem] font-medium text-[#473e37] no-underline hover:text-[var(--color-terracotta)]" href="#celebration">
-              {field("navCelebration")}
-            </a>
-          </li>
-          <li>
-            <a className="text-[0.88rem] font-medium text-[#473e37] no-underline hover:text-[var(--color-terracotta)]" href="#schedule">
-              {field("navProgram")}
-            </a>
-          </li>
-          <li>
-            <a className="text-[0.88rem] font-medium text-[#473e37] no-underline hover:text-[var(--color-terracotta)]" href="#gallery">
-              {field("navTour")}
-            </a>
-          </li>
-          <li>
-            <a className="text-[0.88rem] font-medium text-[#473e37] no-underline hover:text-[var(--color-terracotta)]" href="#location">
-              {field("navLocation")}
-            </a>
-          </li>
-        </ul>
-        <button
-          type="button"
-          className="flex h-[38px] w-[38px] items-center justify-center rounded-full border border-[#c59b2740] bg-[var(--color-terracotta-soft)] text-[var(--color-terracotta-dark)]"
-          onClick={() => setOpened(false)}
-          aria-label="Replay envelope opening"
-        >
-          <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" aria-hidden="true">
-            <path d="M4 8h12l-3-3M20 16H8l3 3" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-          </svg>
-        </button>
-      </nav>
+      {opened ? (
+        <>
+          <HouseAmbiance effect={ambianceEffect} />
 
-      <section id="celebration" className="relative z-[2] flex min-h-svh flex-col items-center px-6 pt-[110px] pb-[70px] text-center">
-        <p className="hw-font-arabic mb-1.5 text-[clamp(2.2rem,5vw,3.2rem)] leading-[1.3] text-[#c59b27] [filter:drop-shadow(0_2px_8px_#c59b2740)]">
-          {field("bismillah")}
-        </p>
-        <p className="mb-[22px] text-[0.88rem] tracking-[0.08em] text-[#796e65] italic">
-          {field("bismillahTranslation")}
-        </p>
-        <p className="hw-badge mb-5 inline-flex items-center gap-2 px-5 py-1.5 text-[0.82rem] font-semibold">
-          <Flower /> {field("mashallahBadge")} <Flower />
-        </p>
-        <h1 className="hw-font-serif mb-3.5 text-[clamp(2.4rem,5.5vw,4.2rem)] leading-[1.15] font-semibold text-[#221c18]">
-          {field("headlinePrefix")}
-          <span className="hw-name-gradient mt-1 block">{field("hostNames")}</span>
-        </h1>
-        <p className="hw-font-serif mb-2.5 text-[1.3rem] tracking-[0.04em] text-[var(--color-terracotta-dark)] italic">
-          {field("familyLine")}
-        </p>
-        <p className="mx-auto mb-7 max-w-[640px] text-[clamp(1rem,2vw,1.2rem)] leading-[1.7] text-[#473e37] italic">
-          “{field("blessing", "", true)}”
-        </p>
-
-        {imageButton(
-          "hero",
-          "hw-cutout-stage relative mx-auto mb-9 flex w-full max-w-[820px] flex-col items-center",
-          <>
-            <span className="pointer-events-none absolute top-1/2 left-1/2 h-[260px] w-[90%] max-w-[560px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(#e6c56852_0%,#ab4f311f_45%,transparent_75%)] blur-2xl" />
-            {heroSrc ? (
-              <img src={heroSrc} alt={content.houseName} className="hw-cutout-img relative z-[2]" />
-            ) : (
-              <span className="relative z-[2] inline-flex min-h-48 items-center rounded-2xl border border-dashed border-[var(--color-linen-border)] px-8 text-sm text-[#796e65]">
-                Add house photo
-              </span>
-            )}
-            <span className="relative z-[3] mt-3.5 inline-flex items-center gap-2.5 rounded-full border border-[var(--color-linen-border)] bg-[var(--color-linen-card)]/90 px-4 py-1.5 shadow-sm">
-              <span className="hw-font-serif inline-flex items-center gap-1.5 text-[1.05rem] font-semibold text-[#221c18]">
-                <HouseIcon className="h-4 w-4 text-[var(--color-terracotta)]" />
-                {field("houseName")}
-              </span>
-              <span className="border-l border-[var(--color-linen-border)] pl-2.5 text-[0.82rem] text-[#796e65]">{field("venueCity")}</span>
-            </span>
-          </>,
-          "Change house photo"
-        )}
-
-        <div className="mb-9 flex flex-wrap items-center justify-center gap-4">
-          <span className="inline-flex items-center gap-2 rounded-full border border-[var(--color-linen-border)] bg-[var(--color-linen-card)] px-5 py-2.5 text-[0.92rem] font-medium shadow-sm">
-            {field("weekday")}
-            {", "}
-            {field("day")} {field("monthYear")}
-          </span>
-          <span className="inline-flex items-center gap-2 rounded-full border border-[var(--color-linen-border)] bg-[var(--color-linen-card)] px-5 py-2.5 text-[0.92rem] font-medium shadow-sm">
-            {field("time")}
-          </span>
-          <span className="inline-flex items-center gap-2 rounded-full border border-[var(--color-linen-border)] bg-[var(--color-linen-card)] px-5 py-2.5 text-[0.92rem] font-medium shadow-sm">
-            {field("venueName")}
-          </span>
-        </div>
-
-        <div className="relative mx-auto mb-9 w-full max-w-[620px] rounded-[24px] border border-[var(--color-linen-border)] bg-[var(--color-linen-card)] px-8 py-7 shadow-[var(--shadow-md)]">
-          <p className="hw-font-serif mb-5 flex items-center justify-center gap-2 text-[1.18rem] font-semibold tracking-[0.08em] text-[var(--color-terracotta-dark)] uppercase">
-            {countdown.live ? field("countdownLiveLabel") : field("countdownHeading")}
-          </p>
-          <div className="grid grid-cols-4 gap-3.5">
-            {units.map((unit) => (
-              <div key={unit.label} className="rounded-2xl border border-[var(--color-terracotta-soft)] bg-[var(--color-linen-surface)] px-2 py-4">
-                <p className="mb-1 text-[clamp(1.8rem,3.8vw,2.4rem)] leading-none font-bold text-[var(--color-terracotta-dark)]">
-                  {pad(unit.value)}
-                </p>
-                <p className="text-[0.72rem] font-semibold tracking-[0.14em] text-[#796e65] uppercase">{unit.label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="flex flex-wrap items-center justify-center gap-4">
-          <button type="button" className="hw-btn-primary inline-flex items-center gap-2.5 px-[30px] py-[15px] text-[0.96rem] font-semibold" onClick={() => setCalendarOpen(true)}>
-            {field("addToCalendarLabel")}
-          </button>
-          {editing ? (
-            <span className="inline-flex items-center gap-2.5 rounded-full border border-[var(--color-linen-border)] bg-[var(--color-linen-card)] px-7 py-[15px] text-[0.96rem] font-semibold shadow-sm">
-              {field("getDirectionsLabel")}
-            </span>
-          ) : (
-            <a
-              className="inline-flex items-center gap-2.5 rounded-full border border-[var(--color-linen-border)] bg-[var(--color-linen-card)] px-7 py-[15px] text-[0.96rem] font-semibold text-[#221c18] no-underline shadow-sm"
-              href={content.googleMapsUrl || content.mapsUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {content.getDirectionsLabel}
-            </a>
-          )}
-        </div>
-        {editing ? <p className="mt-3 max-w-xl text-[11px] break-all text-[#796e65]">{field("googleMapsUrl", "", true)}</p> : null}
-      </section>
-
-      <section id="schedule" className="relative z-[2] mx-auto max-w-[940px] px-6 py-[90px]">
-        <header className="mb-[50px] text-center">
-          <p className="mb-2 inline-flex items-center gap-1.5 text-[0.8rem] font-bold tracking-[0.16em] text-[var(--color-sage)] uppercase">
-            {field("programEyebrow")}
-          </p>
-          <h2 className="hw-font-serif mb-3 text-[clamp(2.1rem,4.2vw,3rem)] font-semibold text-[#221c18]">
-            {field("programTitle")}
-          </h2>
-          <p className="mx-auto max-w-[600px] text-[1rem] leading-[1.65] text-[#796e65]">{field("programIntro", "", true)}</p>
-        </header>
-        <div className="hw-timeline relative mx-auto max-w-[760px] py-5">
-          {program.map((item, index) => {
-            const odd = index % 2 === 0;
-            return (
-              <article
-                key={`${item.title}-${index}`}
-                className={`relative mb-11 flex items-start md:mb-12 ${odd ? "md:flex-row-reverse" : ""}`}
-              >
-                <span className="relative z-[5] flex h-16 min-w-16 items-center justify-center rounded-full border-2 border-[#e4be57] bg-[var(--color-linen-card)] text-[var(--color-terracotta)] shadow-[0_6px_18px_#c59b2738] md:absolute md:left-1/2 md:-translate-x-1/2">
-                  <HouseIcon className="h-[26px] w-[26px]" />
-                </span>
-                <div
-                  className={`relative flex-1 rounded-2xl border border-[var(--color-linen-border)] bg-[var(--color-linen-card)] p-[26px] shadow-sm md:w-[44%] md:flex-none ${
-                    odd ? "ml-5 md:mr-9 md:ml-0 md:text-right" : "ml-5 md:ml-9"
-                  }`}
-                >
-                  {editing ? (
-                    <button
-                      type="button"
-                      className={`absolute top-3 flex h-8 w-8 items-center justify-center rounded-full border border-[var(--color-linen-border)] bg-[var(--color-linen-card)] text-[#87361b] hover:bg-[#ab4f31] hover:text-white ${
-                        odd ? "left-3" : "right-3"
-                      }`}
-                      onClick={() => removeProgram(index)}
-                      aria-label="Delete program item"
-                    >
-                      ×
-                    </button>
-                  ) : null}
-                  <p className="mb-2.5 inline-flex rounded-full bg-[var(--color-terracotta-soft)] px-3.5 py-1 text-[0.82rem] font-bold text-[var(--color-terracotta-dark)]">
-                    <EditableField
-                      value={item.time || ""}
-                      editable={editing}
-                      maxLength={PROGRAM_ITEM_MAX.time}
-                      onCommit={(value) => commitProgram(index, "time", value)}
-                    />
-                  </p>
-                  <h3 className="hw-font-serif mb-1.5 text-[1.4rem] text-[#221c18]">
-                    <EditableField
-                      value={item.title || ""}
-                      editable={editing}
-                      maxLength={PROGRAM_ITEM_MAX.title}
-                      onCommit={(value) => commitProgram(index, "title", value)}
-                    />
-                  </h3>
-                  <p className="text-[0.93rem] leading-[1.65] text-[#796e65]">
-                    <EditableField
-                      value={item.description || ""}
-                      editable={editing}
-                      multiline
-                      maxLength={PROGRAM_ITEM_MAX.description}
-                      onCommit={(value) => commitProgram(index, "description", value)}
-                    />
-                  </p>
-                </div>
-              </article>
-            );
-          })}
-          {editing ? (
-            <div className="relative flex justify-center pt-2">
-              <button
-                type="button"
-                className="relative z-[5] flex h-16 w-16 items-center justify-center rounded-full border-2 border-dashed border-[#e4be57] bg-[var(--color-linen-card)] text-[1.7rem] leading-none text-[var(--color-terracotta)] shadow-[0_6px_18px_#c59b2738]"
-                onClick={addProgram}
-                aria-label="Add program item"
-              >
-                +
-              </button>
-            </div>
-          ) : null}
-        </div>
-      </section>
-
-      <section id="gallery" className="relative z-[2] mx-auto max-w-[940px] px-6 py-[90px]">
-        <header className="mb-[50px] text-center">
-          <p className="mb-2 inline-flex text-[0.8rem] font-bold tracking-[0.16em] text-[var(--color-sage)] uppercase">
-            {field("galleryEyebrow")}
-          </p>
-          <h2 className="hw-font-serif mb-3 text-[clamp(2.1rem,4.2vw,3rem)] font-semibold text-[#221c18]">
-            {field("galleryTitle")}
-          </h2>
-          <p className="mx-auto max-w-[600px] text-[1rem] leading-[1.65] text-[#796e65]">{field("galleryIntro", "", true)}</p>
-        </header>
-        <div className="grid grid-cols-12 gap-[22px]">
-          {gallery.map((item, index) => (
-            <article
-              key={`${item.title}-${index}`}
-              className={`hw-gallery-card relative min-h-[300px] overflow-hidden rounded-[24px] border border-[var(--color-linen-border)] shadow-[var(--shadow-md)] ${
-                index === 0 ? "col-span-12 min-h-[440px]" : "col-span-12 min-h-[330px] md:col-span-6"
-              }`}
-            >
-              <div className="absolute inset-0">
-                {item.url ? (
-                  <img
-                    src={item.url}
-                    alt={item.title}
-                    className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
-                  />
-                ) : (
-                  <span className="flex h-full items-center justify-center bg-[#2b221c] text-white/70">Add photo</span>
-                )}
-              </div>
-              {editing ? (
-                <input
-                  ref={(node) => {
-                    galleryInputRefs.current[index] = node;
-                  }}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(event) => {
-                    const file = event.target.files?.[0];
-                    if (file) {
-                      void changeGalleryImage(index, file);
-                    }
-                    event.target.value = "";
-                  }}
-                />
-              ) : null}
-              <div
-                className={`hw-gallery-overlay absolute inset-0 z-[2] flex flex-col justify-end p-[26px] text-white ${
-                  editing ? "" : "pointer-events-none"
-                }`}
-              >
-                {editing ? (
-                  <button
-                    type="button"
-                    className="absolute top-3 right-3 flex h-8 w-8 items-center justify-center rounded-full border border-white/40 bg-[#120e0bb8] text-white hover:bg-[#ab4f31]"
-                    onClick={() => removeGallery(index)}
-                    aria-label="Delete gallery photo"
-                  >
-                    ×
-                  </button>
-                ) : null}
-                <p className="mb-1.5 text-[0.76rem] font-semibold tracking-[0.12em] text-[#e4be57] uppercase">
-                  <EditableField
-                    value={item.eyebrow || ""}
-                    editable={editing}
-                    maxLength={GALLERY_ITEM_MAX.eyebrow}
-                    onCommit={(value) => commitGallery(index, "eyebrow", value)}
-                  />
-                </p>
-                <h3 className="hw-font-serif mb-1 text-[1.45rem] font-semibold">
-                  <EditableField
-                    value={item.title || ""}
-                    editable={editing}
-                    maxLength={GALLERY_ITEM_MAX.title}
-                    onCommit={(value) => commitGallery(index, "title", value)}
-                  />
-                </h3>
-                <p className="mb-3 text-[0.9rem] text-white/82">
-                  <EditableField
-                    value={item.caption || ""}
-                    editable={editing}
-                    multiline
-                    maxLength={GALLERY_ITEM_MAX.caption}
-                    onCommit={(value) => commitGallery(index, "caption", value)}
-                  />
-                </p>
-                <div className="flex flex-wrap items-center gap-3">
-                  <button
-                    type="button"
-                    className="pointer-events-auto inline-flex w-fit items-center gap-1.5 text-[0.84rem] font-semibold text-white"
-                    onClick={() => setLightbox(index)}
-                  >
-                    {content.viewPhotoLabel}
-                  </button>
-                  {editing ? (
-                    <button
-                      type="button"
-                      className="inline-flex rounded-full border border-[var(--color-linen-border)] bg-[var(--color-linen-card)]/90 px-3 py-1 text-[10px] font-semibold tracking-[1.2px] text-[#87361b] uppercase"
-                      onClick={() => galleryInputRefs.current[index]?.click()}
-                    >
-                      Change photo
-                    </button>
-                  ) : null}
-                </div>
-              </div>
-            </article>
-          ))}
-          {editing ? (
-            <button
-              type="button"
-              className={`flex min-h-[120px] items-center justify-center rounded-[24px] border-2 border-dashed border-[#e4be57] bg-[var(--color-linen-card)] text-[1.7rem] leading-none text-[var(--color-terracotta)] ${
-                gallery.length === 0 ? "col-span-12" : "col-span-12 md:col-span-6"
-              }`}
-              onClick={addGallery}
-              aria-label="Add gallery photo"
-            >
-              +
-            </button>
-          ) : null}
-        </div>
-      </section>
-
-      <section id="location" className="relative z-[2] mx-auto max-w-[940px] px-6 py-[90px]">
-        <header className="mb-[50px] text-center">
-          <p className="mb-2 inline-flex text-[0.8rem] font-bold tracking-[0.16em] text-[var(--color-sage)] uppercase">
-            {field("locationEyebrow")}
-          </p>
-          <h2 className="hw-font-serif mb-3 text-[clamp(2.1rem,4.2vw,3rem)] font-semibold text-[#221c18]">
-            {field("locationTitle")}
-          </h2>
-          <p className="mx-auto max-w-[600px] text-[1rem] leading-[1.65] text-[#796e65]">{field("locationIntro", "", true)}</p>
-        </header>
-        <div className="grid overflow-hidden rounded-[24px] border border-[var(--color-linen-border)] bg-[var(--color-linen-card)] shadow-[var(--shadow-lg)] md:grid-cols-[1.15fr_1fr]">
-          <div className="flex flex-col justify-center px-9 py-11">
-            <p className="mb-2 text-[0.76rem] font-bold tracking-[0.14em] text-[var(--color-sage)] uppercase">
-              {field("destinationLabel")}
-            </p>
-            <h3 className="hw-font-serif mb-2 text-[2.2rem] text-[var(--color-terracotta-dark)]">{field("houseName")}</h3>
-            <p className="mt-4 mb-7 text-[0.98rem] leading-[1.7] text-[#473e37]">{field("addressFull", "", true)}</p>
-            <p className="mb-7 flex items-center gap-2 text-[0.9rem] font-medium text-[var(--color-sage)]">
-              {field("addressShort")}
-            </p>
-            <div className="flex flex-col gap-3">
-              <button type="button" className="hw-btn-primary px-5 py-3.5 text-sm font-semibold" onClick={() => void copyAddress()}>
-                {field("copyAddressLabel")}
-              </button>
-              {editing ? (
-                <>
-                  <span className="rounded-2xl border border-[var(--color-linen-border)] bg-[var(--color-linen-surface)] px-5 py-3.5 text-center text-sm font-semibold">
-                    {field("openGoogleLabel")}
-                  </span>
-                  {field("googleMapsUrl", "block break-all text-[11px] text-[#796e65]", true)}
-                  <span className="rounded-2xl border border-[var(--color-linen-border)] bg-[var(--color-linen-surface)] px-5 py-3.5 text-center text-sm font-semibold">
-                    {field("openAppleLabel")}
-                  </span>
-                  {field("appleMapsUrl", "block break-all text-[11px] text-[#796e65]", true)}
-                </>
-              ) : (
-                <>
-                  <a
-                    className="rounded-2xl border border-[var(--color-linen-border)] bg-[var(--color-linen-surface)] px-5 py-3.5 text-center text-sm font-semibold text-[#221c18] no-underline"
-                    href={content.googleMapsUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {content.openGoogleLabel}
-                  </a>
-                  <a
-                    className="rounded-2xl border border-[var(--color-linen-border)] bg-[var(--color-linen-surface)] px-5 py-3.5 text-center text-sm font-semibold text-[#221c18] no-underline"
-                    href={content.appleMapsUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {content.openAppleLabel}
-                  </a>
-                </>
-              )}
-            </div>
-          </div>
-          <div className="min-h-[330px] bg-[var(--color-linen-surface)]">
-            <iframe
-              title="Venue map"
-              className="h-full min-h-[330px] w-full border-0"
-              src={mapsEmbed(content.appleMapsUrl || content.googleMapsUrl || content.addressFull || "")}
-              loading="lazy"
+          {isSectionEnabled(enabled, "hero") ? (
+            <HouseHero
+              field={field}
+              editing={editing}
+              heroSrc={heroSrc}
+              houseName={content.houseName || ""}
+              onChangeHeroImage={(file) => changeImage(file, "hero")}
             />
-          </div>
-        </div>
-      </section>
+          ) : null}
 
-      <footer className={`relative z-[2] border-t border-[var(--color-linen-border)] bg-[var(--color-linen-surface)] px-6 pt-[70px] text-center ${editable ? "pb-40" : "pb-[90px]"}`}>
-        <p className="hw-font-arabic mb-2 text-[1.9rem] text-[var(--color-terracotta)]">{field("hamdalah")}</p>
-        <p className="hw-font-serif mx-auto mb-3.5 max-w-[620px] text-[1.3rem] leading-[1.6] text-[#221c18] italic">
-          “{field("closingBlessing", "", true)}”
-        </p>
-        <p className="text-[0.96rem] font-medium text-[#796e65]">
-          {field("closingPresence")}
-          <br />
-          <strong className="text-[#221c18]">{field("hostNames")}</strong>
-          <br />
-          {field("familyLine")}
-        </p>
-        <button
-          type="button"
-          className="mt-6 inline-flex items-center gap-2 rounded-full border border-[#e4be57] bg-[var(--color-linen-card)] px-5 py-2 text-[0.86rem] font-semibold text-[var(--color-terracotta-dark)] shadow-sm"
-          onClick={() => setOpened(false)}
-        >
-          {field("replayLabel")}
-        </button>
-        <p className="mt-8 border-t border-[var(--color-terracotta-soft)] pt-[18px] text-[0.82rem] tracking-[0.06em] text-[#796e65]">
-          {field("craftedBy")}
-        </p>
-      </footer>
+          {isSectionEnabled(enabled, "countdown") ? (
+            <HouseCountdown
+              field={field}
+              editing={editing}
+              eventDateIso={content.eventDateIso || ""}
+              weekday={content.weekday}
+              day={content.day}
+              monthYear={content.monthYear}
+              time={content.time}
+              layout={content.countdownLayout}
+              onLayoutChange={setCountdownLayout}
+              onEventDateChange={(value) => {
+                commitEventDate(value, "house");
+              }}
+            />
+          ) : null}
 
-      <a
-        className={`hw-wa fixed right-6 z-[10060] inline-flex items-center gap-2.5 rounded-full border border-white/50 px-[22px] py-3 text-[0.92rem] font-semibold text-white no-underline ${editable ? "bottom-24" : "bottom-6"} ${previewing || payOpen ? "pointer-events-none invisible" : ""}`}
-        href={`https://wa.me/?text=${shareText}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label="Share invitation via WhatsApp"
-        aria-hidden={previewing || payOpen}
-      >
-        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
-          <path
-            fill="currentColor"
-            d="M12 2a10 10 0 0 0-8.7 15l-1.2 4.3 4.4-1.2A10 10 0 1 0 12 2zm5.6 14.2c-.2.7-1.3 1.2-1.8 1.3-.5.1-1 .2-3.3-.7-2.8-1.1-4.6-3.9-4.7-4.1-.2-.2-1.3-1.7-1.3-3.3 0-1.5.8-2.3 1.1-2.6.3-.3.6-.4.8-.4h.6c.2 0 .4 0 .6.5.2.6.7 2 .8 2.1.1.2.1.3 0 .5l-.3.5c-.1.2-.3.3-.4.5-.2.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.2 1.4 2.5 1.5.3.1.5.1.7-.1l.8-1c.2-.2.4-.2.6-.1.2.1 1.6.8 1.9.9.3.2.5.2.6.3.1.2.1 1-.1 1.7z"
-          />
-        </svg>
-        Share on WhatsApp
-      </a>
+          {isSectionEnabled(enabled, "schedule") ? (
+            <HouseSchedule
+              field={field}
+              editing={editing}
+              layout={content.programLayout}
+              onLayoutChange={setProgramLayout}
+              program={program}
+              onCommitProgram={commitProgram}
+              onRemoveProgram={removeProgram}
+              onAddProgram={addProgram}
+            />
+          ) : null}
 
-      {calendarOpen ? (
-        <div className="fixed inset-0 z-[10001] flex items-center justify-center bg-[#120e0bbf] p-5 backdrop-blur-md" onClick={() => setCalendarOpen(false)}>
-          <div className="relative w-full max-w-[450px] rounded-[24px] border border-[var(--color-linen-border)] bg-[var(--color-linen-card)] p-8 text-center" onClick={(event) => event.stopPropagation()}>
-            <h3 className="hw-font-serif mb-2 text-[1.6rem] text-[#221c18]">{field("calendarModalTitle")}</h3>
-            <p className="mb-6 text-[0.92rem] text-[#796e65]">{field("calendarModalDesc")}</p>
-            <div className="flex flex-col gap-3">
-              <a
-                className="rounded-2xl border border-[var(--color-linen-border)] bg-[var(--color-linen-surface)] px-5 py-3.5 text-sm font-semibold text-[#221c18] no-underline"
-                href={googleCalendar}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {content.googleCalendarLabel}
-              </a>
-              <button type="button" className="rounded-2xl border border-[var(--color-linen-border)] bg-[var(--color-linen-surface)] px-5 py-3.5 text-sm font-semibold" onClick={downloadIcs}>
-                {content.icsCalendarLabel}
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+          {isSectionEnabled(enabled, "location") ? (
+            <HouseLocation
+              field={field}
+              editing={editing}
+              layout={content.locationLayout}
+              onLayoutChange={setLocationLayout}
+              googleMapsUrl={content.googleMapsUrl}
+              addressFull={content.addressFull}
+            />
+          ) : null}
 
-      {lightbox !== null && gallery[lightbox]?.url ? (
-        <div className="fixed inset-0 z-[100000] flex flex-col items-center justify-center bg-[#120e0bf0] p-5 backdrop-blur-md" onClick={() => setLightbox(null)}>
-          <img src={gallery[lightbox].url} alt={gallery[lightbox].title} className="max-h-[72vh] max-w-full rounded-2xl object-contain" />
-          <p className="hw-font-serif mt-4 text-[1.35rem] text-[#e4be57]">{gallery[lightbox].title}</p>
-        </div>
-      ) : null}
+          {isSectionEnabled(enabled, "footer") ? (
+            <HouseFooter editable={editable} field={field} onReplay={() => setOpened(false)} />
+          ) : null}
 
-      {copied ? (
-        <p className="fixed bottom-8 left-1/2 z-[100000] -translate-x-1/2 rounded-full bg-[#1e1916] px-6 py-3 text-[0.92rem] text-white">
-          Address copied to clipboard!
-        </p>
+          <a
+            className={`hw-wa fixed right-6 z-[10060] inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/40 text-white no-underline shadow-lg transition-transform hover:scale-105 ${editable ? "bottom-24" : "bottom-6"} ${previewing || payOpen ? "pointer-events-none invisible" : ""}`}
+            href={`https://wa.me/?text=${encodeURIComponent(shareMessage)}`}
+            onClick={handleWhatsAppClick}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Share invitation via WhatsApp"
+            aria-hidden={previewing || payOpen}
+          >
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+              <path
+                fill="currentColor"
+                d="M12 2a10 10 0 0 0-8.7 15l-1.2 4.3 4.4-1.2A10 10 0 1 0 12 2zm5.6 14.2c-.2.7-1.3 1.2-1.8 1.3-.5.1-1 .2-3.3-.7-2.8-1.1-4.6-3.9-4.7-4.1-.2-.2-1.3-1.7-1.3-3.3 0-1.5.8-2.3 1.1-2.6.3-.3.6-.4.8-.4h.6c.2 0 .4 0 .6.5.2.6.7 2 .8 2.1.1.2.1.3 0 .5l-.3.5c-.1.2-.3.3-.4.5-.2.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.2 1.4 2.5 1.5.3.1.5.1.7-.1l.8-1c.2-.2.4-.2.6-.1.2.1 1.6.8 1.9.9.3.2.5.2.6.3.1.2.1 1-.1 1.7z"
+              />
+            </svg>
+          </a>
+        </>
       ) : null}
     </main>
-    </>
   );
 }

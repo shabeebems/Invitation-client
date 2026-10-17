@@ -3,14 +3,11 @@ import {
   Amiri,
   Cinzel,
   Cormorant_Garamond,
-  Fraunces,
   Jost,
-  Manrope,
   Outfit,
 } from "next/font/google";
 import "@/styles/templates/royal-reception.css";
 import "@/styles/templates/house-warming.css";
-import "@/styles/templates/celestial-starlight.css";
 
 const allura = Allura({
   weight: "400",
@@ -49,22 +46,10 @@ const outfit = Outfit({
   variable: "--font-outfit",
 });
 
-const fraunces = Fraunces({
-  weight: ["400", "500", "600", "700"],
-  subsets: ["latin"],
-  variable: "--font-fraunces",
-});
-
-const manrope = Manrope({
-  weight: ["400", "500", "600", "700"],
-  subsets: ["latin"],
-  variable: "--font-manrope",
-});
-
 export default function InvitationChrome({ children }: { children: React.ReactNode }) {
   return (
     <div
-      className={`${allura.variable} ${amiri.variable} ${cinzel.variable} ${cormorant.variable} ${jost.variable} ${outfit.variable} ${fraunces.variable} ${manrope.variable}`}
+      className={`${allura.variable} ${amiri.variable} ${cinzel.variable} ${cormorant.variable} ${jost.variable} ${outfit.variable}`}
     >
       {children}
     </div>

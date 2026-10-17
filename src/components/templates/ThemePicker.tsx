@@ -123,7 +123,7 @@ export default function ThemePicker({
         }
       >
         {items.map((theme) => (
-          <option key={theme.id} value={theme.id}>
+          <option key={theme.id} value={theme.id} className="bg-white text-[#221c18]">
             {theme.title}
           </option>
         ))}

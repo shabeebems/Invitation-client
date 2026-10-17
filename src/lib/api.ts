@@ -57,8 +57,12 @@ export type TemplateContent = {
   countdownLiveLabel?: string;
   /** classic | ornate | rings | ribbon | minimal */
   countdownLayout?: string;
+  /** classic | stacked | compact | split */
+  heroLayout?: string;
   /** petals | stars | butterflies | sparkles | hearts | none */
   ambianceEffect?: string;
+  /** zigzag | editorial | rail | botanical | modern */
+  programLayout?: string;
   programEyebrow?: string;
   programTitle?: string;
   programIntro?: string;
@@ -66,7 +70,7 @@ export type TemplateContent = {
   galleryEyebrow?: string;
   galleryTitle?: string;
   galleryIntro?: string;
-  /** grid | masonry | polaroid | carousel | scrapbook */
+  /** Royal/wedding gallery layout id */
   galleryLayout?: string;
   galleryItems?: GalleryItem[];
   viewPhotoLabel?: string;
@@ -74,24 +78,18 @@ export type TemplateContent = {
   locationTitle?: string;
   locationIntro?: string;
   /** split | palace | folio | cards | compact */
+  /** portrait | atlas | pane | pill */
   locationLayout?: string;
   destinationLabel?: string;
   addressFull?: string;
   addressShort?: string;
   googleMapsUrl?: string;
-  appleMapsUrl?: string;
   copyAddressLabel?: string;
-  openGoogleLabel?: string;
-  openAppleLabel?: string;
   hamdalah?: string;
   closingBlessing?: string;
   closingPresence?: string;
   replayLabel?: string;
   craftedBy?: string;
-  navCelebration?: string;
-  navProgram?: string;
-  navTour?: string;
-  navLocation?: string;
   addToCalendarLabel?: string;
   getDirectionsLabel?: string;
   calendarModalTitle?: string;
@@ -117,6 +115,8 @@ export type TemplateContent = {
   loveStoryLayout?: string;
   loveStoryItems?: LoveStoryItem[];
   locationItems?: LocationItem[];
+  /** Section ids enabled for this invitation (template-specific catalog). */
+  enabledSections?: string[];
 };
 
 export type ProgramItem = {
@@ -147,7 +147,6 @@ export type LocationItem = {
   title: string;
   address: string;
   mapsUrl: string;
-  appleMapsUrl?: string;
 };
 
 export type InvitationTheme = {

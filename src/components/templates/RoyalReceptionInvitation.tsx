@@ -1,45 +1,19 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useInvitationEditor } from "@/components/templates/useInvitationEditor";
 import RoyalReceptionOpening from "@/components/templates/royal/RoyalReceptionOpening";
+import RoyalNav from "@/components/templates/royal/RoyalNav";
+import RoyalHero from "@/components/templates/royal/RoyalHero";
 import RoyalCountdown from "@/components/templates/royal/RoyalCountdown";
 import RoyalMeetCouple from "@/components/templates/royal/RoyalMeetCouple";
 import RoyalLoveStory from "@/components/templates/royal/RoyalLoveStory";
 import RoyalGallery from "@/components/templates/royal/RoyalGallery";
 import RoyalLocation from "@/components/templates/royal/RoyalLocation";
+import RoyalFooter from "@/components/templates/royal/RoyalFooter";
 import { normalizeAmbianceEffect, SiteAmbiance } from "@/components/templates/royal/AmbianceEffects";
-import { type InvitationTemplate, type PendingImage, imageUrl, withImageUrl } from "@/lib/api";
-
-function OrnamentWave() {
-  return (
-    <svg className="mx-auto my-1.5 mb-3 block w-[130px] max-w-full text-[#b9893e] opacity-90" viewBox="0 0 160 24" fill="none" aria-hidden="true">
-      <path
-        d="M4 12 C 24 12, 30 5, 44 5 C 58 5, 60 19, 74 19 C 80 19, 80 12, 80 12 C 80 12, 80 5, 86 5 C 100 5, 102 19, 116 19 C 130 19, 136 12, 156 12"
-        stroke="currentColor"
-        strokeWidth="1.2"
-        strokeLinecap="round"
-      />
-      <circle cx="80" cy="12" r="2.6" fill="currentColor" />
-      <circle cx="8" cy="12" r="1.6" fill="currentColor" />
-      <circle cx="152" cy="12" r="1.6" fill="currentColor" />
-    </svg>
-  );
-}
-
-function CornerVine({ className = "" }: { className?: string }) {
-  return (
-    <span className={`absolute hidden w-[clamp(56px,11vw,96px)] text-[#b9893ea6] sm:block ${className}`}>
-      <svg viewBox="0 0 120 120" fill="none" aria-hidden="true" className="block h-auto w-full">
-        <path d="M8 8 C30 10 24 38 48 44 C70 50 66 18 92 26 C106 30 110 48 116 54" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-        <path d="M8 8 C12 30 38 24 48 44 C22 60 28 86 32 112" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-        <circle cx="48" cy="44" r="3" fill="currentColor" />
-        <circle cx="8" cy="8" r="2.4" fill="currentColor" />
-        <path d="M72 20 C78 12 90 16 90 26 C90 34 78 34 74 28 C70 22 72 20 72 20Z" fill="currentColor" opacity="0.55" />
-      </svg>
-    </span>
-  );
-}
+import { isSectionEnabled, resolveEnabledSections } from "@/lib/template-sections";
+import { type InvitationTemplate, type PendingImage, imageUrl } from "@/lib/api";
 
 export default function RoyalReceptionInvitation({
   template,
@@ -50,15 +24,12 @@ export default function RoyalReceptionInvitation({
   editable?: boolean;
   onPublish?: (draft: InvitationTemplate, images: PendingImage[]) => Promise<string>;
 }) {
-  const imageInputRef = useRef<HTMLInputElement>(null);
   const [sealed, setSealed] = useState(true);
   const onCoverChange = useCallback((covering: boolean) => setSealed(covering), []);
   const {
     draft,
-    setDraft,
     content,
     editing,
-    persist,
     field,
     commitEventDate,
     changeImage,
@@ -85,7 +56,9 @@ export default function RoyalReceptionInvitation({
     editable,
     onPublish,
     variant: "invite",
+    sectionFamily: "royal",
   });
+
   const heroImageUrl = imageUrl(draft.images, "hero");
   const groomImageUrl = imageUrl(draft.images, "groom");
   const brideImageUrl = imageUrl(draft.images, "bride");
@@ -94,12 +67,10 @@ export default function RoyalReceptionInvitation({
   const shareText = encodeURIComponent(content.shareText || "");
   const themeClass = /emerald/i.test(themeTitle) ? " palette-emerald" : " palette-velvet";
   const ambianceEffect = normalizeAmbianceEffect(content.ambianceEffect);
-
-  function changeHeroImage(file: File) {
-    const preview = URL.createObjectURL(file);
-    setDraft((prev) => ({ ...prev, images: withImageUrl(prev.images, "hero", preview) }));
-    void persist(draft.content, { file, slot: "hero" });
-  }
+  const enabled = useMemo(
+    () => resolveEnabledSections("royal", content.enabledSections),
+    [content.enabledSections]
+  );
 
   return (
     <main
@@ -129,199 +100,101 @@ export default function RoyalReceptionInvitation({
       />
 
       <div className="rr-site" aria-hidden={sealed || undefined} inert={sealed || undefined}>
-      <SiteAmbiance effect={ambianceEffect} />
-      <header className="pointer-events-none fixed inset-x-0 top-0 z-[1100] px-[clamp(12px,2.5vw,32px)]">
-        <div className="flex min-h-16 items-center justify-center">
-          <a href="#home" className="pointer-events-auto flex flex-col items-center no-underline" aria-label="Home">
-            <span className="font-names text-[clamp(28px,4vw,38px)] leading-none tracking-wide text-[#e7d3a4] [text-shadow:0_2px_18px_rgba(185,137,62,0.35)]">
-              {groomsInitial}
-              <span className="mx-0.5 text-[0.55em] text-[#b9893e]">&</span>
-              {bridesInitial}
-            </span>
-          </a>
-        </div>
-      </header>
+        <SiteAmbiance effect={ambianceEffect} />
+        <RoyalNav groomInitial={groomsInitial} brideInitial={bridesInitial} />
 
-      <section
-        id="home"
-        className="invite-hero relative z-[2] flex min-h-svh items-center justify-center overflow-hidden px-[clamp(16px,3vw,40px)] pt-[clamp(64px,8vh,88px)] pb-[clamp(24px,4vh,40px)] text-[#f3e8cd]"
-      >
-        <CornerVine className="top-[clamp(70px,12vh,96px)] left-[clamp(10px,2vw,24px)]" />
-        <CornerVine className="top-[clamp(70px,12vh,96px)] right-[clamp(10px,2vw,24px)] -scale-x-100" />
-
-        <div className="relative z-[4] grid w-[min(1180px,100%)] grid-cols-1 items-end gap-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:gap-x-[clamp(20px,3.5vw,48px)]">
-          <div className="relative z-[5] order-2 flex min-h-0 items-end justify-center lg:order-1 lg:min-h-[min(78vh,720px)]">
-            <div
-              className={`relative ${editing ? "cursor-pointer" : ""}`}
-              role={editing ? "button" : undefined}
-              tabIndex={editing ? 0 : undefined}
-              onClick={() => editing && imageInputRef.current?.click()}
-              onKeyDown={(event) => {
-                if (editing && (event.key === "Enter" || event.key === " ")) {
-                  event.preventDefault();
-                  imageInputRef.current?.click();
-                }
-              }}
-              aria-label={editing ? "Change couple photo" : undefined}
-            >
-              {heroImageUrl ? (
-                <img
-                  src={heroImageUrl}
-                  alt={`${content.groomName} and ${content.brideName}`}
-                  className="h-auto w-full max-w-[min(86vw,620px)] object-contain object-bottom lg:max-h-[min(78vh,720px)] lg:max-w-none"
-                />
-              ) : (
-                <span className="font-caps inline-flex min-h-48 min-w-48 items-center justify-center border border-dashed border-[#e7d3a473] px-6 text-[10px] tracking-[2px] text-[#e7d3a4] uppercase">
-                  Add photo
-                </span>
-              )}
-              {editing ? (
-                <span className="font-caps pointer-events-none absolute bottom-6 left-1/2 -translate-x-1/2 rounded-full border border-[color:color-mix(in_srgb,var(--gold-light)_45%,transparent)] bg-[color:color-mix(in_srgb,var(--night)_78%,transparent)] px-3 py-1.5 text-[9px] tracking-[1.6px] text-[color:var(--gold-light)] uppercase">
-                  Change photo
-                </span>
+        {isSectionEnabled(enabled, "hero") ? (
+          <RoyalHero
+            editing={editing}
+            heroImageUrl={heroImageUrl}
+            groomName={content.groomName || "Ibrahim"}
+            brideName={content.brideName || "Aisha"}
+            field={field}
+            onChangeImage={(file) => changeImage(file, "hero")}
+          />
               ) : null}
-            </div>
-            {editing ? (
-              <input
-                ref={imageInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(event) => {
-                  const file = event.target.files?.[0];
-                  if (file) {
-                    void changeHeroImage(file);
-                  }
-                  event.target.value = "";
+
+        {isSectionEnabled(enabled, "countdown") ? (
+          <RoyalCountdown
+            eventDateIso={content.eventDateIso || "2026-12-25T11:00:00+05:30"}
+            weekday={content.weekday}
+            day={content.day}
+            monthYear={content.monthYear}
+            time={content.time}
+            layout={content.countdownLayout}
+            editing={editing}
+            field={field}
+            onLayoutChange={setCountdownLayout}
+            onEventDateChange={(value) => {
+              commitEventDate(value, "wedding");
                 }}
               />
             ) : null}
-          </div>
 
-          <div className="order-1 w-full max-w-[540px] justify-self-center self-end px-4 text-center lg:order-2 lg:px-0">
-            <p className="font-arabic text-[clamp(22px,2.4vw+0.6rem,34px)] leading-[1.5] text-[#e7d3a4] [text-shadow:0_2px_24px_rgba(0,0,0,0.45)]">
-              {field("bismillah", "")}
-            </p>
-            <OrnamentWave />
-            <p className="font-caps px-1 text-[clamp(10px,0.35vw+0.55rem,12.5px)] leading-[1.75] tracking-[2.4px] text-[#f3e8cdc7] uppercase">
-              {field("hostLabel", "")}
-              {field(
-                "hostNames",
-                "font-invite-serif mt-1 block text-[clamp(20px,1.6vw+0.7rem,28px)] tracking-[0.4px] text-[#e7d3a4] normal-case italic"
-              )}
-            </p>
-            <p className="font-caps mt-2.5 px-1 text-[clamp(10px,0.35vw+0.55rem,12.5px)] leading-[1.75] tracking-[2.4px] text-[#f3e8cdd9] uppercase">
-              {field("introLine", "")}
-            </p>
-            <h1 className="font-names my-3 mb-2 flex w-full flex-col items-center">
-              {field("groomName", "text-shimmer block text-[clamp(46px,5vw+0.5rem,82px)] leading-[1.05]")}
-              <span className="font-invite-serif my-0.5 text-[clamp(22px,2vw+0.4rem,34px)] text-[#b9893e] italic">
-                &
-              </span>
-              {field("brideName", "text-shimmer block text-[clamp(42px,4.5vw+0.5rem,72px)] leading-[1.05]")}
-            </h1>
-            <p className="font-caps mt-1 px-1 text-[clamp(9px,0.3vw+0.5rem,11px)] leading-[1.7] tracking-[2px] text-[#f3e8cdb8] uppercase">
-              {field("brideParentsLabel", "")}
-              {field(
-                "brideParents",
-                "font-invite-serif mt-0.5 block text-[clamp(16px,1.2vw+0.55rem,22px)] tracking-[0.3px] text-[#e7d3a4] normal-case italic"
-              )}
-            </p>
-            <p className="font-caps mx-auto mt-2.5 max-w-[380px] text-[clamp(10px,0.3vw+0.55rem,12px)] leading-[1.7] tracking-[2px] text-[#e7d3a4c7] uppercase">
-              {field("presenceLine", "", true)}
-            </p>
-          </div>
-        </div>
-      </section>
+        {isSectionEnabled(enabled, "couple") ? (
+          <RoyalMeetCouple
+            groomName={content.groomName || "Ibrahim"}
+            brideName={content.brideName || "Aisha"}
+            groomSrc={groomImageUrl}
+            brideSrc={brideImageUrl}
+            editing={editing}
+            layout={content.meetCoupleLayout}
+            onChangeImage={(slot, file) => changeImage(file, slot)}
+            onLayoutChange={setMeetCoupleLayout}
+            field={field}
+          />
+        ) : null}
 
-      <RoyalCountdown
-        eventDateIso={content.eventDateIso || "2026-12-25T11:00:00+05:30"}
-        weekday={content.weekday}
-        day={content.day}
-        monthYear={content.monthYear}
-        time={content.time}
-        layout={content.countdownLayout}
-        editing={editing}
-        field={field}
-        onLayoutChange={setCountdownLayout}
-        onEventDateChange={(value) => {
-          commitEventDate(value, "wedding");
-        }}
-      />
+        {isSectionEnabled(enabled, "story") ? (
+          <RoyalLoveStory
+            groomName={content.groomName || "Ibrahim"}
+            brideName={content.brideName || "Aisha"}
+            items={content.loveStoryItems || []}
+            editing={editing}
+            layout={content.loveStoryLayout}
+            field={field}
+            onCommitItem={commitLoveStoryItem}
+            onAddItem={addLoveStoryItem}
+            onRemoveItem={removeLoveStoryItem}
+            onChangeImage={changeLoveStoryImage}
+            onLayoutChange={setLoveStoryLayout}
+          />
+        ) : null}
 
-      <RoyalMeetCouple
-        groomName={content.groomName || "Ibrahim"}
-        brideName={content.brideName || "Aisha"}
-        groomSrc={groomImageUrl}
-        brideSrc={brideImageUrl}
-        editing={editing}
-        layout={content.meetCoupleLayout}
-        onChangeImage={(slot, file) => changeImage(file, slot)}
-        onLayoutChange={setMeetCoupleLayout}
-        field={field}
-      />
+        {isSectionEnabled(enabled, "gallery") ? (
+          <RoyalGallery
+            items={content.galleryItems || []}
+            layout={content.galleryLayout}
+            editing={editing}
+            field={field}
+            onLayoutChange={setGalleryLayout}
+            onCommitItem={commitGalleryItem}
+            onAddItem={addGalleryItem}
+            onRemoveItem={removeGalleryItem}
+            onChangeImage={changeGalleryImage}
+          />
+        ) : null}
 
-      <RoyalLoveStory
-        groomName={content.groomName || "Ibrahim"}
-        brideName={content.brideName || "Aisha"}
-        items={content.loveStoryItems || []}
-        editing={editing}
-        layout={content.loveStoryLayout}
-        field={field}
-        onCommitItem={commitLoveStoryItem}
-        onAddItem={addLoveStoryItem}
-        onRemoveItem={removeLoveStoryItem}
-        onChangeImage={changeLoveStoryImage}
-        onLayoutChange={setLoveStoryLayout}
-      />
+        {isSectionEnabled(enabled, "location") ? (
+          <RoyalLocation
+            items={content.locationItems || []}
+            fallback={{
+              label: content.venueLabel || "Venue",
+              title: [content.venueName, content.venueHall].filter(Boolean).join(" — ") || "Grand Palace",
+              address: [content.venueHall, content.venueCity].filter(Boolean).join(", ") || "Kozhikode",
+              mapsUrl: content.mapsUrl || content.googleMapsUrl || "",
+            }}
+            editing={editing}
+            layout={content.locationLayout}
+            field={field}
+            onCommitItem={commitLocationItem}
+            onAddItem={addLocationItem}
+            onRemoveItem={removeLocationItem}
+            onLayoutChange={setLocationLayout}
+          />
+        ) : null}
 
-      <RoyalGallery
-        items={content.galleryItems || []}
-        layout={content.galleryLayout}
-        editing={editing}
-        field={field}
-        onLayoutChange={setGalleryLayout}
-        onCommitItem={commitGalleryItem}
-        onAddItem={addGalleryItem}
-        onRemoveItem={removeGalleryItem}
-        onChangeImage={changeGalleryImage}
-      />
-
-      <RoyalLocation
-        items={content.locationItems || []}
-        fallback={{
-          label: content.venueLabel || "Venue",
-          title: [content.venueName, content.venueHall].filter(Boolean).join(" — ") || "Grand Palace",
-          address: [content.venueHall, content.venueCity].filter(Boolean).join(", ") || "Kozhikode",
-          mapsUrl: content.mapsUrl || content.googleMapsUrl || "",
-          appleMapsUrl: content.appleMapsUrl || "",
-        }}
-        editing={editing}
-        layout={content.locationLayout}
-        field={field}
-        onCommitItem={commitLocationItem}
-        onAddItem={addLocationItem}
-        onRemoveItem={removeLocationItem}
-        onLayoutChange={setLocationLayout}
-      />
-
-      <footer className={`invite-footer relative z-[1] overflow-hidden px-[clamp(16px,3vw,32px)] pt-[clamp(24px,4vh,40px)] text-center ${editable ? "pb-40" : "pb-6"}`}>
-        <p className="font-names text-shimmer-slow mt-0 text-[clamp(34px,5vw+0.5rem,54px)] leading-[1.15]">
-          {field("groomName", "")} <span className="font-invite-serif text-[0.55em] text-[#b9893e] not-italic"> & </span> {field("brideName", "")}
-        </p>
-        <p className="font-caps mt-1.5 text-[clamp(10px,0.4vw+0.5rem,12px)] tracking-[3px] text-[#b9893e] uppercase">
-          {field("hashtag", "")}
-        </p>
-        <p className="font-invite-serif mx-auto mt-3.5 max-w-[440px] px-2 text-[clamp(14px,1vw+0.55rem,17px)] leading-[1.7] text-[#f3e8cdc7] italic">
-          {field("blessing", "", true)}
-        </p>
-        <p className="font-caps mt-2.5 px-2 text-[clamp(9px,0.3vw+0.45rem,11px)] leading-[1.5] tracking-[2.2px] text-[#e7d3a4a6] uppercase">
-          {field("inviteLine", "", true)}
-        </p>
-        <p className="font-invite-sans mt-4 mb-0 text-[9px] tracking-[0.14em] text-[#f3e8cd38]">
-          {field("footer", "")}
-        </p>
-      </footer>
+        {isSectionEnabled(enabled, "footer") ? <RoyalFooter editable={editable} field={field} /> : null}
 
       <a
         className={`invite-share font-caps fixed right-[max(14px,env(safe-area-inset-right,0px))] z-[10060] inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-[#f3e8cd73] px-4 py-3 text-[10px] tracking-[2px] text-[#e7d3a4] uppercase no-underline ${editable ? "bottom-[4.75rem]" : "bottom-[max(18px,env(safe-area-inset-bottom,0px))]"}`}

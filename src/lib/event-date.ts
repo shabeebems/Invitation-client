@@ -77,7 +77,7 @@ export function partsFromEventDate(value: string, categoryName = "wedding"): Eve
   }
 
   const clock = formatClock(date);
-  const house = /house\s*warm/i.test(categoryName);
+  const house = /house/i.test(categoryName);
   const wedding = /wedding|nikah|engag|royal/i.test(categoryName) || !categoryName;
 
   return {

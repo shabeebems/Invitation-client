@@ -45,12 +45,6 @@ function googleDirectionsUrl(item: LocationItem) {
   return `https://www.google.com/maps/dir/?api=1&destination=${query}`;
 }
 
-function appleDirectionsUrl(item: LocationItem) {
-  if (item.appleMapsUrl) return item.appleMapsUrl;
-  const query = encodeURIComponent([item.title, item.address].filter(Boolean).join(", "));
-  return `https://maps.apple.com/?daddr=${query}`;
-}
-
 function shareTextFor(item: LocationItem) {
   const link = item.mapsUrl || googleDirectionsUrl(item);
   return [`📍 ${item.label || "Venue"}`, item.title, item.address, link].filter(Boolean).join("\n");
@@ -90,14 +84,6 @@ function ActionButtons({
           rel="noopener noreferrer"
         >
           Get directions
-        </a>
-      )}
-
-      {editing ? (
-        <span className="rr-location-btn font-caps">Apple Maps</span>
-      ) : (
-        <a className="rr-location-btn font-caps" href={appleDirectionsUrl(item)} target="_blank" rel="noopener noreferrer">
-          Apple Maps
         </a>
       )}
 
@@ -162,7 +148,7 @@ export default function RoyalLocation({
   const embedSrc = useMemo(
     () =>
       mapsEmbed(
-        active.mapsUrl || active.appleMapsUrl || "",
+        active.mapsUrl || "",
         [active.title, active.address].filter(Boolean).join(", ")
       ),
     [active]
@@ -190,15 +176,6 @@ export default function RoyalLocation({
           className="rr-location-url"
           maxLength={LOCATION_ITEM_MAX.mapsUrl}
           onCommit={(value) => onCommitItem(index, "mapsUrl", value)}
-        />
-        <p className="font-caps">Apple Maps URL</p>
-        <EditableField
-          value={item.appleMapsUrl || ""}
-          editable
-          multiline
-          className="rr-location-url"
-          maxLength={LOCATION_ITEM_MAX.appleMapsUrl}
-          onCommit={(value) => onCommitItem(index, "appleMapsUrl", value)}
         />
         {locations.length > 1 ? (
           <button
@@ -330,7 +307,7 @@ export default function RoyalLocation({
             <div className="rr-location-cards">
               {locations.map((item, index) => {
                 const src = mapsEmbed(
-                  item.mapsUrl || item.appleMapsUrl || "",
+                  item.mapsUrl || "",
                   [item.title, item.address].filter(Boolean).join(", ")
                 );
                 return (

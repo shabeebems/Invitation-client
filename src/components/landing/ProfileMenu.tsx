@@ -15,7 +15,13 @@ function ProfileIcon() {
   );
 }
 
-export default function ProfileMenu({ user }: { user: AdminUser }) {
+export default function ProfileMenu({
+  user,
+  variant = "default",
+}: {
+  user: AdminUser;
+  variant?: "default" | "sage";
+}) {
   const router = useRouter();
   const menuRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
@@ -71,14 +77,22 @@ export default function ProfileMenu({ user }: { user: AdminUser }) {
         aria-haspopup="menu"
         aria-label={`${user.name} account menu`}
         onClick={() => setOpen((current) => !current)}
-        className="flex h-10 w-10 items-center justify-center rounded-full bg-accent text-white hover:bg-accent-hover"
+        className={
+          variant === "sage"
+            ? "flex h-9 w-9 items-center justify-center rounded-full bg-[#183C2C] text-white hover:bg-[#224C38] transition shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#183C2C]"
+            : "flex h-10 w-10 items-center justify-center rounded-full bg-accent text-white hover:bg-accent-hover"
+        }
       >
         <ProfileIcon />
       </button>
       {open ? (
         <div
           role="menu"
-          className="absolute top-12 right-0 z-30 w-44 overflow-hidden rounded-2xl bg-white py-1.5 shadow-lg ring-1 ring-black/5"
+          className={
+            variant === "sage"
+              ? "absolute top-12 right-0 z-30 w-44 overflow-hidden rounded-2xl bg-[#f7f9f3] py-1.5 shadow-xl ring-1 ring-[#c5d3ba]/70"
+              : "absolute top-12 right-0 z-30 w-44 overflow-hidden rounded-2xl bg-white py-1.5 shadow-lg ring-1 ring-black/5"
+          }
         >
           <Link
             href={homeFor(user)}
