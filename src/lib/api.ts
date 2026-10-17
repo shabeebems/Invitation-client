@@ -19,7 +19,7 @@ export type Category = {
 };
 
 export type TemplateContent = {
-  [key: string]: any;
+  [key: string]: unknown;
   bismillah?: string;
   hostLabel?: string;
   hostNames?: string;
@@ -449,4 +449,73 @@ export async function updateWork(
   }
 
   return data.work;
+}
+
+export interface PaymentOrder {
+  orderId: string;
+  orderNumber: string;
+  gatewayOrderId: string;
+  amount: number;
+  displayAmount: string;
+  currency: string;
+  keyId: string;
+  isMock: boolean;
+  alreadyPaid?: boolean;
+  customerName?: string;
+  customerEmail?: string;
+  customerPhone?: string;
+  notes?: Record<string, string>;
+}
+
+export interface PaymentVerifyResult {
+  success: boolean;
+  status: string;
+  orderNumber: string;
+  workSlug?: string;
+  publishedUrl?: string;
+}
+
+export async function createPaymentOrder(input: {
+  templateId: string;
+  workSlug?: string;
+  draftName?: string;
+}): Promise<PaymentOrder> {
+  const response = await fetch(`${API_URL}/api/payments/orders`, {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+  const data = (await response.json()) as {
+    success?: boolean;
+    message?: string;
+    order?: PaymentOrder;
+  };
+  if (!response.ok || !data.success || !data.order) {
+    throw new Error(data.message || "Failed to create payment order");
+  }
+  return data.order;
+}
+
+export async function verifyPayment(input: {
+  orderId: string;
+  razorpayOrderId: string;
+  razorpayPaymentId: string;
+  razorpaySignature: string;
+}): Promise<PaymentVerifyResult> {
+  const response = await fetch(`${API_URL}/api/payments/verify`, {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+  const data = (await response.json()) as {
+    success?: boolean;
+    message?: string;
+    result?: PaymentVerifyResult;
+  };
+  if (!response.ok || !data.success || !data.result) {
+    throw new Error(data.message || "Payment verification failed");
+  }
+  return data.result;
 }

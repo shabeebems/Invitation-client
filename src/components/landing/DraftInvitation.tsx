@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useSyncExternalStore, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import InvitationView from "@/components/templates/InvitationView";
 import {
@@ -10,7 +10,9 @@ import {
   type PendingImage,
   type TemplateContent,
 } from "@/lib/api";
-import { clearUseDraft, readUseDraft, type UseDraft } from "@/lib/use-draft";
+import { clearUseDraft, readUseDraft } from "@/lib/use-draft";
+
+const emptySubscribe = () => () => {};
 
 function contentForSave(content: TemplateContent): TemplateContent {
   return {
@@ -25,20 +27,20 @@ function contentForSave(content: TemplateContent): TemplateContent {
 export default function DraftInvitation({ template }: { template: InvitationTemplate }) {
   const router = useRouter();
   const createdSlug = useRef("");
-  const [stored, setStored] = useState<UseDraft | null | undefined>(undefined);
+  const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
+  const stored = useSyncExternalStore(
+    emptySubscribe,
+    () => readUseDraft(template.slug),
+    () => null
+  );
 
   useEffect(() => {
-    const draft = readUseDraft(template.slug);
-
-    if (!draft) {
+    if (mounted && !stored) {
       router.replace(`/user/use/${template.slug}`);
-      return;
     }
+  }, [mounted, stored, router, template.slug]);
 
-    setStored(draft);
-  }, [router, template.slug]);
-
-  async function publish(draft: InvitationTemplate, images: PendingImage[]) {
+  async function publish(draft: InvitationTemplate, images: PendingImage[], orderId?: string) {
     const details = contentForSave(draft.content);
     const existing = createdSlug.current;
     let slug = existing;
@@ -49,6 +51,7 @@ export default function DraftInvitation({ template }: { template: InvitationTemp
         categoryId: template.categoryId,
         templateId: template.id,
         selectedThemeId: draft.selectedThemeId,
+        orderId,
         details,
       });
 

@@ -83,7 +83,11 @@ export default function HouseWarmingInvitation({
 }: {
   template: InvitationTemplate;
   editable?: boolean;
-  onPublish?: (draft: InvitationTemplate, images: PendingImage[]) => Promise<string>;
+  onPublish?: (
+    draft: InvitationTemplate,
+    images: PendingImage[],
+    orderId?: string
+  ) => Promise<string | undefined | void>;
 }) {
   const {
     draft,

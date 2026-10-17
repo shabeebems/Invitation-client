@@ -17,7 +17,11 @@ export default function InvitationView({
 }: {
   template: InvitationTemplate;
   editable?: boolean;
-  onPublish?: (draft: InvitationTemplate, images: PendingImage[]) => Promise<string>;
+  onPublish?: (
+    draft: InvitationTemplate,
+    images: PendingImage[],
+    orderId?: string
+  ) => Promise<string | undefined | void>;
 }) {
   const props = { template, editable, onPublish };
 

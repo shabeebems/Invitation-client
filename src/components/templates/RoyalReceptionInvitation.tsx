@@ -22,7 +22,11 @@ export default function RoyalReceptionInvitation({
 }: {
   template: InvitationTemplate;
   editable?: boolean;
-  onPublish?: (draft: InvitationTemplate, images: PendingImage[]) => Promise<string>;
+  onPublish?: (
+    draft: InvitationTemplate,
+    images: PendingImage[],
+    orderId?: string
+  ) => Promise<string | undefined | void>;
 }) {
   const [sealed, setSealed] = useState(true);
   const onCoverChange = useCallback((covering: boolean) => setSealed(covering), []);

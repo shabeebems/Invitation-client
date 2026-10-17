@@ -147,7 +147,11 @@ export function useInvitationEditor({
 }: {
   template: InvitationTemplate;
   editable?: boolean;
-  onPublish?: (draft: InvitationTemplate, images: PendingImage[]) => Promise<string>;
+  onPublish?: (
+    draft: InvitationTemplate,
+    images: PendingImage[],
+    orderId?: string
+  ) => Promise<string | undefined | void>;
   variant: EditChromeVariant;
   /** Enables section add/remove in the bottom edit bar for this template family. */
   sectionFamily?: TemplateSectionFamily;
@@ -613,7 +617,7 @@ export function useInvitationEditor({
     });
   }
 
-  async function publish() {
+  async function publish(orderId?: string) {
     if (!onPublish || publishing) {
       return;
     }
@@ -624,7 +628,8 @@ export function useInvitationEditor({
     try {
       await onPublish(
         { ...draft, content: clampContent(draft.content) },
-        pendingImages.current
+        pendingImages.current,
+        orderId
       );
     } catch (err) {
       setStatus("error");
@@ -665,6 +670,7 @@ export function useInvitationEditor({
       onDone={finishEditing}
       invitationName={draft.name}
       slug={draft.slug}
+      templateId={draft.templateId || draft.id}
       selectedThemeId={draft.selectedThemeId}
       themes={draft.themes || []}
       source={draft.source}

@@ -92,6 +92,7 @@ export default function InvitationEditChrome({
   onDone,
   invitationName,
   slug,
+  templateId,
   selectedThemeId,
   themes,
   source = "template",
@@ -120,6 +121,7 @@ export default function InvitationEditChrome({
   onDone?: () => void | Promise<void>;
   invitationName: string;
   slug: string;
+  templateId?: string;
   selectedThemeId: string;
   themes: InvitationTheme[];
   source?: InvitationSource;
@@ -128,7 +130,7 @@ export default function InvitationEditChrome({
   onBackToEdit: () => void;
   onOpenPay: () => void;
   onClosePay: () => void;
-  onConfirmPay: () => Promise<void>;
+  onConfirmPay: (orderId?: string) => Promise<void> | void;
   onThemeChange: (selectedThemeId: string, themes: InvitationTheme[]) => void;
   ambianceEffect?: string;
   onAmbianceEffectChange?: (effect: AmbianceEffect) => void;
@@ -254,6 +256,8 @@ export default function InvitationEditChrome({
 
       <PublishPaymentModal
         open={payOpen}
+        templateId={templateId}
+        workSlug={source === "work" ? slug : undefined}
         invitationName={invitationName}
         onClose={onClosePay}
         onSuccess={onConfirmPay}
