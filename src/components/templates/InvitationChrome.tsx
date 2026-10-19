@@ -4,8 +4,12 @@ import {
   Amiri,
   Cinzel,
   Cormorant_Garamond,
+  Fraunces,
   Great_Vibes,
+  Inter,
   Jost,
+  Lato,
+  Marcellus,
   Montserrat,
   Outfit,
   Pinyon_Script,
@@ -15,6 +19,9 @@ import "@/styles/templates/house-warming.css";
 import "@/styles/templates/velvet-heritage.css";
 import "@/styles/templates/palace-parchment.css";
 import "@/styles/templates/botanical-script.css";
+import "@/styles/templates/royal-ruby.css";
+import "@/styles/templates/aurelia-nocturne.css";
+import "@/styles/templates/cream-editorial.css";
 
 const allura = Allura({
   weight: "400",
@@ -77,10 +84,35 @@ const montserrat = Montserrat({
   variable: "--font-montserrat",
 });
 
+const marcellus = Marcellus({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-marcellus",
+});
+
+const lato = Lato({
+  weight: ["300", "400"],
+  subsets: ["latin"],
+  variable: "--font-lato",
+});
+
+const inter = Inter({
+  weight: ["300", "400", "500"],
+  subsets: ["latin"],
+  variable: "--font-inter",
+});
+
+const fraunces = Fraunces({
+  weight: ["300", "400"],
+  subsets: ["latin"],
+  style: ["normal", "italic"],
+  variable: "--font-fraunces",
+});
+
 export default function InvitationChrome({ children }: { children: React.ReactNode }) {
   return (
     <div
-      className={`${allura.variable} ${amiri.variable} ${cinzel.variable} ${cormorant.variable} ${jost.variable} ${outfit.variable} ${pinyon.variable} ${alex.variable} ${greatVibes.variable} ${montserrat.variable}`}
+      className={`${allura.variable} ${amiri.variable} ${cinzel.variable} ${cormorant.variable} ${jost.variable} ${outfit.variable} ${pinyon.variable} ${alex.variable} ${greatVibes.variable} ${montserrat.variable} ${marcellus.variable} ${lato.variable} ${inter.variable} ${fraunces.variable}`}
     >
       {children}
     </div>

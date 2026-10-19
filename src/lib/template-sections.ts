@@ -1,4 +1,12 @@
-export type TemplateSectionFamily = "royal" | "house" | "velvet" | "palace" | "botanical";
+export type TemplateSectionFamily =
+  | "royal"
+  | "house"
+  | "velvet"
+  | "palace"
+  | "botanical"
+  | "ruby"
+  | "aurelia"
+  | "cream";
 
 export type SectionDef = {
   id: string;
@@ -58,12 +66,58 @@ export const BOTANICAL_SECTIONS: SectionDef[] = [
   { id: "footer", label: "Footer" },
 ];
 
+/** Royal Ruby — deep ruby & gold foil wedding with envelope seal, mandala hero, flip events. */
+export const RUBY_SECTIONS: SectionDef[] = [
+  { id: "hero", label: "Hero", required: true },
+  { id: "blessings", label: "Blessings" },
+  { id: "countdown", label: "Countdown" },
+  { id: "events", label: "Celebrations" },
+  { id: "location", label: "Venue" },
+  { id: "rsvp", label: "RSVP" },
+  { id: "footer", label: "Footer" },
+];
+
+/** Aurelia Nocturne — midnight navy & champagne cinematic wedding (Lake Como reference). */
+export const AURELIA_SECTIONS: SectionDef[] = [
+  { id: "hero", label: "Hero", required: true },
+  { id: "couple", label: "The Couple" },
+  { id: "gallery", label: "Story Frames" },
+  { id: "story", label: "Journey" },
+  { id: "events", label: "Celebration" },
+  { id: "location", label: "Venue" },
+  { id: "countdown", label: "Countdown" },
+  { id: "dress", label: "Dress Code" },
+  { id: "rsvp", label: "RSVP" },
+  { id: "final", label: "Closing" },
+  { id: "footer", label: "Footer" },
+];
+
+/** Cream Editorial — ivory/cream garden wedding with split cover, arch hero, mosaic gallery. */
+export const CREAM_SECTIONS: SectionDef[] = [
+  { id: "hero", label: "Hero", required: true },
+  { id: "welcome", label: "Welcome" },
+  { id: "couple", label: "The Couple" },
+  { id: "story", label: "Our Story" },
+  { id: "gallery", label: "Gallery" },
+  { id: "events", label: "Events" },
+  { id: "location", label: "Venue" },
+  { id: "countdown", label: "Countdown" },
+  { id: "dress", label: "Dress & Travel" },
+  { id: "faq", label: "FAQ" },
+  { id: "rsvp", label: "RSVP" },
+  { id: "final", label: "Closing" },
+  { id: "footer", label: "Footer" },
+];
+
 export const SECTION_CATALOGS: Record<TemplateSectionFamily, SectionDef[]> = {
   royal: ROYAL_SECTIONS,
   house: HOUSE_SECTIONS,
   velvet: VELVET_SECTIONS,
   palace: PALACE_SECTIONS,
   botanical: BOTANICAL_SECTIONS,
+  ruby: RUBY_SECTIONS,
+  aurelia: AURELIA_SECTIONS,
+  cream: CREAM_SECTIONS,
 };
 
 export function sectionsForFamily(family: TemplateSectionFamily): SectionDef[] {

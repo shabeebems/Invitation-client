@@ -1,0 +1,1029 @@
+/* Royal Ruby — deep ruby & gold foil wedding invitation */
+
+html:has(.royal-ruby) {
+  --rb-bg: #2e0612;
+  --rb-bg2: #4a0d1c;
+  --rb-bg3: #6b1530;
+  --rb-gold: #d4a94f;
+  --rb-gl: #f6e2a4;
+  --rb-ivory: #fbefdc;
+  --rb-mute: #d9bfae;
+  --rb-card: #7a1a38;
+  --maroon: #8a2142;
+  --maroon-soft: #a8324e;
+  --maroon-deep: #4a0d1c;
+  --gold: #d4a94f;
+  --gold-light: #f6e2a4;
+  --night: #2e0612;
+  scroll-behavior: smooth;
+}
+
+html:has(.royal-ruby),
+body:has(.royal-ruby) {
+  background: var(--rb-bg);
+}
+
+.royal-ruby,
+.royal-ruby.palette-ruby {
+  --font-script: var(--font-great-vibes), cursive;
+  --font-title: var(--font-marcellus), Georgia, serif;
+  --font-body: var(--font-lato), var(--font-outfit), system-ui, sans-serif;
+  position: relative;
+  min-height: 100svh;
+  color: var(--rb-ivory);
+  font-family: var(--font-body);
+  font-weight: 300;
+  font-size: 17px;
+  line-height: 1.75;
+  overflow-x: hidden;
+  background: var(--rb-bg);
+}
+
+.royal-ruby.palette-ember {
+  --rb-bg: #1f050c;
+  --rb-bg2: #3d0a16;
+  --rb-bg3: #5c1226;
+  --rb-gold: #e0b45a;
+  --rb-gl: #ffe9b8;
+}
+
+.royal-ruby.is-sealed {
+  height: 100svh;
+  overflow: hidden;
+}
+
+.rb-mc {
+  font-family: var(--font-title);
+  font-weight: 400;
+}
+
+.rb-gv {
+  font-family: var(--font-script);
+  font-weight: 400;
+}
+
+.rb-foil {
+  background: linear-gradient(100deg, #b88a2f 15%, #fff1b8 40%, #d4a94f 55%, #b88a2f 80%);
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: rb-sheen 6s linear infinite;
+}
+
+@keyframes rb-sheen {
+  to {
+    background-position: -250% 0;
+  }
+}
+
+.rb-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  width: 0;
+  z-index: 95;
+  background: linear-gradient(90deg, var(--rb-gold), var(--rb-gl));
+  box-shadow: 0 0 12px var(--rb-gold);
+  pointer-events: none;
+}
+
+.rb-site {
+  position: relative;
+  z-index: 1;
+}
+
+.rb-layout-picker {
+  margin: 0 auto 1rem;
+  max-width: 980px;
+  padding: 0 1rem;
+}
+
+.rb-lock {
+  overflow: hidden;
+  height: 100vh;
+}
+
+/* Envelope stage */
+.rb-stage {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(90% 70% at 50% 40%, #5d1128, #220510);
+  transition: opacity 1.2s, transform 1.5s cubic-bezier(0.7, 0, 0.2, 1);
+}
+
+.rb-stage.is-opening {
+  opacity: 0;
+  transform: scale(1.35);
+  pointer-events: none;
+  transition-delay: 2.2s;
+}
+
+.rb-env {
+  position: relative;
+  width: min(86vw, 440px);
+  aspect-ratio: 7 / 5;
+  perspective: 1400px;
+}
+
+.rb-env > * {
+  position: absolute;
+}
+
+.rb-env-back {
+  inset: 0;
+  background: var(--rb-bg2);
+  border-radius: 6px;
+  box-shadow: 0 40px 90px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(212, 169, 79, 0.5);
+}
+
+.rb-env-card {
+  left: 6%;
+  right: 6%;
+  top: 6%;
+  bottom: 6%;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  background: linear-gradient(#fff9ea, #f1dfb2);
+  border: 1px solid var(--rb-gold);
+  color: var(--rb-bg2);
+  transition: transform 1.4s cubic-bezier(0.3, 0.7, 0.2, 1) 0.8s;
+  box-shadow: inset 0 0 0 5px #fff9ea, inset 0 0 0 6px rgba(212, 169, 79, 0.7);
+  padding: 1rem;
+}
+
+.rb-env-card small {
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  display: block;
+}
+
+.rb-env-names {
+  font-size: clamp(34px, 10vw, 52px);
+  line-height: 1.05;
+  color: #7a1a38;
+  display: block;
+  margin: 6px 0;
+}
+
+.rb-env.is-open .rb-env-card {
+  transform: translateY(-60%);
+}
+
+.rb-env-pocket {
+  inset: 0;
+  z-index: 3;
+  background: linear-gradient(#7a1a38, #4a0d1c);
+  clip-path: polygon(0 36%, 50% 64%, 100% 36%, 100% 100%, 0 100%);
+}
+
+.rb-env-flap {
+  inset: 0;
+  z-index: 4;
+  background: linear-gradient(#8a2142, #5a0f24);
+  clip-path: polygon(0 0, 100% 0, 50% 64%);
+  transform-origin: top;
+}
+
+.rb-env.is-open .rb-env-flap {
+  animation: rb-flap 1s cubic-bezier(0.5, 0, 0.2, 1) forwards;
+}
+
+@keyframes rb-flap {
+  0% {
+    transform: rotateX(0);
+    z-index: 4;
+  }
+  49% {
+    z-index: 4;
+  }
+  50% {
+    z-index: 1;
+  }
+  100% {
+    transform: rotateX(180deg);
+    z-index: 1;
+  }
+}
+
+.rb-seal {
+  left: 50%;
+  top: 64%;
+  z-index: 6;
+  width: 76px;
+  height: 76px;
+  margin: -38px 0 0 -38px;
+  border-radius: 50%;
+  border: 0;
+  cursor: pointer;
+  color: #4a0d1c;
+  font-size: 34px;
+  background: radial-gradient(circle at 35% 30%, #f9e5a6, var(--rb-gold) 55%, #9a7020);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  animation: rb-pl 2.4s ease-in-out infinite;
+  transition: transform 0.6s, opacity 0.5s;
+}
+
+.rb-seal:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 5px;
+}
+
+.rb-env.is-open .rb-seal {
+  transform: scale(1.8);
+  opacity: 0;
+  animation: none;
+}
+
+@keyframes rb-pl {
+  50% {
+    box-shadow: 0 0 0 14px rgba(212, 169, 79, 0), 0 8px 24px rgba(0, 0, 0, 0.5);
+  }
+}
+
+.rb-tap {
+  position: absolute;
+  bottom: 13vh;
+  left: 0;
+  right: 0;
+  text-align: center;
+  color: var(--rb-gl);
+  letter-spacing: 0.3em;
+  font-size: 13px;
+  transition: opacity 0.4s;
+}
+
+.rb-stage.is-opened .rb-tap {
+  opacity: 0;
+}
+
+/* Hero */
+.rb-hero {
+  min-height: 100vh;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 60px 18px;
+  position: relative;
+  overflow: hidden;
+  background: radial-gradient(60% 55% at 50% 48%, #6b1530 0%, transparent 72%), var(--rb-bg);
+}
+
+.rb-mandala {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(135vw, 980px);
+  height: min(135vw, 980px);
+  margin: calc(min(135vw, 980px) / -2) 0 0 calc(min(135vw, 980px) / -2);
+  opacity: 0.9;
+  will-change: transform;
+  pointer-events: none;
+}
+
+.rb-mandala path,
+.rb-mandala circle {
+  fill: none;
+  stroke: var(--rb-gold);
+  stroke-width: 1;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.rb-hero.is-ready .rb-mandala path,
+.rb-hero.is-ready .rb-mandala circle {
+  animation: rb-draw 3.5s cubic-bezier(0.5, 0, 0.2, 1) forwards;
+  animation-delay: calc(var(--k) * 0.35s);
+}
+
+@keyframes rb-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.rb-mandala-a {
+  transform-origin: 0 0;
+  animation: rb-spin 90s linear infinite;
+}
+
+.rb-mandala-b {
+  transform-origin: 0 0;
+  animation: rb-spin 140s linear infinite reverse;
+}
+
+@keyframes rb-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.rb-hero-inner {
+  position: relative;
+  z-index: 2;
+}
+
+.rb-tg {
+  font-size: 13px;
+  letter-spacing: 0.38em;
+  text-transform: uppercase;
+  color: var(--rb-gl);
+  opacity: 0;
+}
+
+.rb-hero.is-ready .rb-tg {
+  animation: rb-fi 1.4s 1.2s forwards;
+}
+
+.rb-nm {
+  font-size: clamp(70px, 20vw, 190px);
+  line-height: 1;
+  margin: 6px 0;
+}
+
+.rb-nm > span {
+  display: block;
+  clip-path: inset(-20% 100% -20% 0);
+  padding: 0 0.15em;
+}
+
+.rb-nm .rb-am {
+  font-size: 0.45em;
+  color: var(--rb-gl);
+  -webkit-text-fill-color: var(--rb-gl);
+  background: none;
+}
+
+.rb-hero.is-ready .rb-nm > span {
+  animation: rb-wipe 1.8s cubic-bezier(0.6, 0, 0.2, 1) forwards;
+}
+
+.rb-hero.is-ready .rb-s1 {
+  animation-delay: 1.8s;
+}
+.rb-hero.is-ready .rb-s2 {
+  animation-delay: 2.6s;
+}
+.rb-hero.is-ready .rb-s3 {
+  animation-delay: 3s;
+}
+
+@keyframes rb-wipe {
+  to {
+    clip-path: inset(-20% -10% -20% -10%);
+  }
+}
+
+.rb-dt {
+  font-size: clamp(20px, 3.6vw, 28px);
+  letter-spacing: 0.2em;
+  margin-top: 18px;
+  opacity: 0;
+}
+
+.rb-pl2 {
+  color: var(--rb-mute);
+  margin-top: 4px;
+  opacity: 0;
+}
+
+.rb-hero.is-ready .rb-dt {
+  animation: rb-fi 1.4s 4.2s forwards;
+}
+.rb-hero.is-ready .rb-pl2 {
+  animation: rb-fi 1.4s 4.6s forwards;
+}
+
+@keyframes rb-fi {
+  to {
+    opacity: 1;
+  }
+}
+
+.rb-cue {
+  position: absolute;
+  bottom: 18px;
+  left: 50%;
+  width: 1px;
+  height: 50px;
+  background: linear-gradient(var(--rb-gold), transparent);
+  transform-origin: top;
+  animation: rb-dp 2.2s infinite;
+  z-index: 2;
+}
+
+@keyframes rb-dp {
+  0% {
+    transform: scaleY(0);
+  }
+  60% {
+    transform: scaleY(1);
+  }
+  100% {
+    transform: scaleY(1);
+    opacity: 0;
+  }
+}
+
+/* Marquee */
+.rb-mq {
+  overflow: hidden;
+  border-block: 1px solid rgba(212, 169, 79, 0.5);
+  background: var(--rb-bg2);
+  padding: 13px 0;
+  white-space: nowrap;
+}
+
+.rb-mq-track {
+  display: inline-block;
+  animation: rb-mq 30s linear infinite;
+  font-size: 24px;
+  color: var(--rb-gl);
+}
+
+.rb-mq-track b {
+  margin: 0 26px;
+  color: var(--rb-gold);
+  font-weight: 400;
+}
+
+@keyframes rb-mq {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* Sections */
+.rb-sec {
+  padding: clamp(80px, 12vw, 140px) 22px;
+  text-align: center;
+}
+
+.rb-sec-alt {
+  background: var(--rb-bg2);
+}
+
+.rb-wrap {
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+.rb-h2 {
+  font-size: clamp(32px, 6vw, 56px);
+  line-height: 1.15;
+  color: var(--rb-gl);
+  letter-spacing: 0.5em;
+  opacity: 0;
+  transition: letter-spacing 1.6s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 1.2s;
+  margin: 0;
+}
+
+.rb-h2.in {
+  letter-spacing: 0.08em;
+  opacity: 1;
+}
+
+.rb-orn {
+  display: block;
+  width: 150px;
+  height: 14px;
+  margin: 18px auto 0;
+}
+
+.rb-orn path {
+  fill: none;
+  stroke: var(--rb-gold);
+  stroke-width: 1;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset 2s 0.3s;
+}
+
+.rb-h2.in + .rb-orn path {
+  stroke-dashoffset: 0;
+}
+
+.rb-fd {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 1s, transform 1s cubic-bezier(0.2, 0.7, 0.2, 1);
+  transition-delay: var(--d, 0s);
+}
+
+.rb-fd.in {
+  opacity: 1;
+  transform: none;
+}
+
+.rb-lead {
+  max-width: 50ch;
+  margin: 26px auto 0;
+  color: var(--rb-mute);
+}
+
+/* Blessings */
+.rb-fam {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-top: 50px;
+}
+
+@media (max-width: 640px) {
+  .rb-fam {
+    grid-template-columns: 1fr;
+  }
+}
+
+.rb-fc {
+  position: relative;
+  padding: 44px 20px;
+  background: linear-gradient(var(--rb-bg2), var(--rb-bg));
+}
+
+.rb-sec-alt .rb-fc {
+  background: linear-gradient(var(--rb-bg3), var(--rb-bg2));
+}
+
+.rb-fc::before,
+.rb-fc::after {
+  content: "";
+  position: absolute;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--rb-gold);
+}
+
+.rb-fc::before {
+  top: 10px;
+  left: 10px;
+  border-right: 0;
+  border-bottom: 0;
+}
+
+.rb-fc::after {
+  bottom: 10px;
+  right: 10px;
+  border-left: 0;
+  border-top: 0;
+}
+
+.rb-fc-label {
+  font-size: 12px;
+  letter-spacing: 0.3em;
+  color: var(--rb-gold);
+  text-transform: uppercase;
+}
+
+.rb-fc-name {
+  font-size: 44px;
+  margin: 8px 0 4px;
+  line-height: 1.1;
+  color: var(--rb-ivory);
+}
+
+.rb-fc-note {
+  color: var(--rb-mute);
+  margin: 0;
+}
+
+/* Countdown rings */
+.rb-rings {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: clamp(12px, 3vw, 30px);
+  margin-top: 50px;
+}
+
+.rb-rg {
+  position: relative;
+  width: clamp(120px, 20vw, 160px);
+}
+
+.rb-rg svg {
+  width: 100%;
+  transform: rotate(-90deg);
+  display: block;
+}
+
+.rb-rg circle {
+  fill: none;
+  stroke-width: 2;
+}
+
+.rb-rg-t {
+  stroke: rgba(212, 169, 79, 0.2);
+}
+
+.rb-rg-p {
+  stroke: var(--rb-gold);
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  filter: drop-shadow(0 0 4px rgba(212, 169, 79, 0.8));
+  transition: stroke-dashoffset 1s linear;
+}
+
+.rb-rg div {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  line-height: 1.1;
+}
+
+.rb-rg b {
+  font: 400 clamp(32px, 6vw, 44px) var(--font-title);
+  color: var(--rb-gl);
+  font-variant-numeric: tabular-nums;
+}
+
+.rb-rg span {
+  font-size: 11px;
+  letter-spacing: 0.25em;
+  color: var(--rb-mute);
+}
+
+.rb-live {
+  font-size: clamp(36px, 6vw, 56px);
+  margin-top: 40px;
+  color: var(--rb-gl);
+}
+
+.rb-date-edit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 1rem;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  color: var(--rb-gold);
+}
+
+.rb-date-edit input {
+  background: transparent;
+  border: 1px solid var(--rb-gold);
+  color: var(--rb-ivory);
+  padding: 0.4rem 0.6rem;
+  font: inherit;
+}
+
+/* Flip cards */
+.rb-evs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 26px;
+  margin-top: 50px;
+  perspective: 1400px;
+}
+
+.rb-fl {
+  height: 360px;
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.9s cubic-bezier(0.3, 0.7, 0.2, 1);
+  transform-style: preserve-3d;
+  border: 0;
+  background: none;
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  width: 100%;
+}
+
+.rb-fl.is-flip {
+  transform: rotateY(180deg);
+}
+
+.rb-fl:focus-visible {
+  outline: 2px solid var(--rb-gl);
+  outline-offset: 6px;
+}
+
+.rb-fl > div {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 30px;
+  border: 1px solid var(--rb-gold);
+  border-radius: 180px 180px 12px 12px;
+}
+
+.rb-fl-f {
+  background: linear-gradient(var(--rb-bg3), var(--rb-bg2));
+  box-shadow: inset 0 0 0 6px var(--rb-bg2), inset 0 0 0 7px rgba(212, 169, 79, 0.5);
+}
+
+.rb-fl-k {
+  transform: rotateY(180deg);
+  background: linear-gradient(#fff9ea, #f1dfb2);
+  color: var(--rb-bg2);
+  box-shadow: inset 0 0 0 6px #fff9ea, inset 0 0 0 7px rgba(212, 169, 79, 0.7);
+  text-align: center;
+}
+
+.rb-fl-n {
+  font: 400 78px / 1 var(--font-title);
+  color: var(--rb-gl);
+}
+
+.rb-fl-m {
+  letter-spacing: 0.3em;
+  font-size: 12px;
+  color: var(--rb-gold);
+  margin-bottom: 20px;
+}
+
+.rb-fl h3 {
+  font-size: 25px;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.rb-fl-k h3 {
+  color: #7a1a38;
+  margin-bottom: 10px;
+}
+
+.rb-fl-k p {
+  font-size: 15px;
+  margin: 0;
+}
+
+.rb-fl-h {
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  color: var(--rb-mute);
+  margin-top: 16px;
+}
+
+.rb-fl-time-edit {
+  color: var(--rb-gl);
+  font-size: 1.1rem;
+  margin-bottom: 0.75rem;
+}
+
+.rb-add,
+.rb-remove {
+  display: block;
+  margin: 1rem auto 0;
+  font-family: var(--font-title);
+  font-size: 0.85rem;
+  letter-spacing: 0.12em;
+  color: var(--rb-gl);
+  background: transparent;
+  border: 1px dashed var(--rb-gold);
+  padding: 0.5rem 1.25rem;
+  cursor: pointer;
+}
+
+/* Venue + buttons */
+.rb-venue-name {
+  font-size: clamp(44px, 9vw, 72px);
+  margin-top: 24px;
+  color: var(--rb-ivory);
+  line-height: 1.1;
+}
+
+.rb-venue-addr {
+  margin-top: 0;
+}
+
+.rb-btn {
+  display: inline-block;
+  margin-top: 26px;
+  padding: 16px 38px;
+  border: 1px solid var(--rb-gold);
+  color: var(--rb-gl);
+  background: none;
+  font: 400 16px var(--font-title);
+  letter-spacing: 0.14em;
+  cursor: pointer;
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+  transition: color 0.4s;
+  isolation: isolate;
+}
+
+.rb-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--rb-gold);
+  transform: translateX(-101%);
+  transition: transform 0.5s cubic-bezier(0.6, 0, 0.2, 1);
+  z-index: -1;
+}
+
+.rb-btn:hover,
+.rb-btn:focus-visible {
+  color: var(--rb-bg);
+  outline: none;
+}
+
+.rb-btn:hover::before,
+.rb-btn:focus-visible::before {
+  transform: none;
+}
+
+.rb-btn-solid {
+  background: var(--rb-gold);
+  color: var(--rb-bg);
+  margin: 0;
+}
+
+.rb-btn-solid::before {
+  display: none;
+}
+
+.rb-btn-solid:hover {
+  color: var(--rb-bg);
+  filter: brightness(1.05);
+}
+
+/* RSVP form */
+.rb-form {
+  max-width: 440px;
+  margin: 36px auto 0;
+  display: grid;
+  gap: 18px;
+  text-align: left;
+}
+
+.rb-form label {
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  color: var(--rb-gold);
+  display: block;
+}
+
+.rb-form input,
+.rb-form select,
+.rb-form textarea {
+  width: 100%;
+  margin-top: 4px;
+  padding: 12px 4px;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--rb-gold);
+  color: var(--rb-ivory);
+  font: inherit;
+  font-size: 18px;
+  border-radius: 0;
+}
+
+.rb-form select option {
+  color: #222;
+}
+
+.rb-form input:focus,
+.rb-form select:focus,
+.rb-form textarea:focus {
+  outline: none;
+  border-bottom-width: 2px;
+  border-color: var(--rb-gl);
+}
+
+.rb-tog {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.rb-tog button {
+  padding: 13px 6px;
+  border: 1px solid var(--rb-gold);
+  background: none;
+  color: var(--rb-ivory);
+  font: inherit;
+  cursor: pointer;
+  transition: all 0.35s;
+}
+
+.rb-tog button[aria-pressed="true"] {
+  background: var(--rb-gold);
+  color: var(--rb-bg);
+}
+
+.rb-err {
+  color: #ffb4b4;
+  font-size: 14px;
+  min-height: 20px;
+}
+
+.rb-ok {
+  display: none;
+  margin-top: 36px;
+}
+
+.rb-ok.show {
+  display: block;
+  animation: rb-fi 1s forwards;
+  opacity: 0;
+}
+
+.rb-thanks {
+  font-size: 44px;
+  line-height: 1.2;
+  margin: 0 0 1rem;
+}
+
+/* Footer */
+.rb-footer {
+  padding: 80px 20px 120px;
+  text-align: center;
+  background: linear-gradient(var(--rb-bg), #1b040c);
+}
+
+.rb-diya {
+  width: 70px;
+  height: 60px;
+  display: block;
+  margin: 0 auto 10px;
+}
+
+.rb-fire {
+  transform-origin: 35px 30px;
+  animation: rb-fk 1.6s ease-in-out infinite alternate;
+  filter: drop-shadow(0 0 8px #ffb83a);
+}
+
+@keyframes rb-fk {
+  0% {
+    transform: scale(1, 1) skewX(0);
+  }
+  30% {
+    transform: scale(0.94, 1.08) skewX(3deg);
+  }
+  60% {
+    transform: scale(1.04, 0.96) skewX(-3deg);
+  }
+  100% {
+    transform: scale(0.97, 1.06);
+  }
+}
+
+.rb-footer-names {
+  font-size: clamp(54px, 12vw, 96px);
+  line-height: 1.1;
+}
+
+.rb-footer-tag {
+  letter-spacing: 0.3em;
+  color: var(--rb-mute);
+  font-size: 13px;
+  margin-top: 8px;
+}
+
+.rb-footer-legal {
+  margin-top: 1.5rem;
+  font-size: 0.75rem;
+  color: rgba(217, 191, 174, 0.55);
+  letter-spacing: 0.08em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .royal-ruby *,
+  .royal-ruby *::before,
+  .royal-ruby *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
+  }
+
+  html:has(.royal-ruby) {
+    scroll-behavior: auto;
+  }
+
+  .rb-nm > span {
+    clip-path: none;
+  }
+
+  .rb-fd,
+  .rb-h2,
+  .rb-tg,
+  .rb-dt,
+  .rb-pl2 {
+    opacity: 1;
+    transform: none;
+    letter-spacing: 0.08em;
+  }
+}

@@ -4,6 +4,9 @@ import HouseWarmingInvitation from "@/components/templates/HouseWarmingInvitatio
 import VelvetHeritageInvitation from "@/components/templates/VelvetHeritageInvitation";
 import PalaceParchmentInvitation from "@/components/templates/PalaceParchmentInvitation";
 import BotanicalScriptInvitation from "@/components/templates/BotanicalScriptInvitation";
+import RoyalRubyInvitation from "@/components/templates/RoyalRubyInvitation";
+import AureliaNocturneInvitation from "@/components/templates/AureliaNocturneInvitation";
+import CreamEditorialInvitation from "@/components/templates/CreamEditorialInvitation";
 
 function slugOf(template: InvitationTemplate) {
   return `${template.slug || ""} ${template.templateSlug || ""}`;
@@ -42,6 +45,18 @@ export default function InvitationView({
 
   if (matches(template, /botanical-script|botanical/i)) {
     return <BotanicalScriptInvitation {...props} />;
+  }
+
+  if (matches(template, /royal-ruby|ruby/i)) {
+    return <RoyalRubyInvitation {...props} />;
+  }
+
+  if (matches(template, /aurelia-nocturne|aurelia/i)) {
+    return <AureliaNocturneInvitation {...props} />;
+  }
+
+  if (matches(template, /cream-editorial|cream/i)) {
+    return <CreamEditorialInvitation {...props} />;
   }
 
   return <RoyalReceptionInvitation {...props} />;

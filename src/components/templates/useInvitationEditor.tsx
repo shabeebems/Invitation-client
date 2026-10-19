@@ -727,7 +727,10 @@ export function useInvitationEditor({
         sectionFamily === "house" ||
         sectionFamily === "velvet" ||
         sectionFamily === "palace" ||
-        sectionFamily === "botanical"
+        sectionFamily === "botanical" ||
+        sectionFamily === "ruby" ||
+        sectionFamily === "aurelia" ||
+        sectionFamily === "cream"
           ? ambianceEffectsForFamily(sectionFamily)
           : undefined
       }
@@ -736,7 +739,10 @@ export function useInvitationEditor({
         sectionFamily === "house" ||
         sectionFamily === "velvet" ||
         sectionFamily === "palace" ||
-        sectionFamily === "botanical"
+        sectionFamily === "botanical" ||
+        sectionFamily === "ruby" ||
+        sectionFamily === "aurelia" ||
+        sectionFamily === "cream"
           ? setAmbianceEffect
           : undefined
       }

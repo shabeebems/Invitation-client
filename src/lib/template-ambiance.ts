@@ -16,7 +16,15 @@ export type AmbianceEffect =
   | "dust"
   | "none";
 
-export type AmbianceFamily = "royal" | "house" | "velvet" | "palace" | "botanical";
+export type AmbianceFamily =
+  | "royal"
+  | "house"
+  | "velvet"
+  | "palace"
+  | "botanical"
+  | "ruby"
+  | "aurelia"
+  | "cream";
 
 export const ROYAL_AMBIANCE_EFFECTS: LayoutOption<AmbianceEffect>[] = [
   { id: "petals", label: "Petals" },
@@ -64,6 +72,31 @@ export const BOTANICAL_AMBIANCE_EFFECTS: LayoutOption<AmbianceEffect>[] = [
   { id: "none", label: "None" },
 ];
 
+/** Royal Ruby — marigold gold petals matching the reference canvas effect. */
+export const RUBY_AMBIANCE_EFFECTS: LayoutOption<AmbianceEffect>[] = [
+  { id: "petals", label: "Marigold Petals" },
+  { id: "sparkles", label: "Sparkles" },
+  { id: "hearts", label: "Hearts" },
+  { id: "stars", label: "Stars" },
+  { id: "none", label: "None" },
+];
+
+/** Aurelia Nocturne — subtle sparkles over cinematic grain. */
+export const AURELIA_AMBIANCE_EFFECTS: LayoutOption<AmbianceEffect>[] = [
+  { id: "sparkles", label: "Sparkles" },
+  { id: "stars", label: "Stars" },
+  { id: "petals", label: "Petals" },
+  { id: "none", label: "None" },
+];
+
+/** Cream Editorial — soft petals over paper grain (optional). */
+export const CREAM_AMBIANCE_EFFECTS: LayoutOption<AmbianceEffect>[] = [
+  { id: "none", label: "None" },
+  { id: "petals", label: "Petals" },
+  { id: "sparkles", label: "Sparkles" },
+  { id: "hearts", label: "Hearts" },
+];
+
 const ROYAL_ALIASES: Record<string, AmbianceEffect> = {
   leaves: "petals",
   dust: "sparkles",
@@ -93,6 +126,9 @@ export function ambianceEffectsForFamily(family: AmbianceFamily): LayoutOption<A
   if (family === "velvet") return VELVET_AMBIANCE_EFFECTS;
   if (family === "palace") return PALACE_AMBIANCE_EFFECTS;
   if (family === "botanical") return BOTANICAL_AMBIANCE_EFFECTS;
+  if (family === "ruby") return RUBY_AMBIANCE_EFFECTS;
+  if (family === "aurelia") return AURELIA_AMBIANCE_EFFECTS;
+  if (family === "cream") return CREAM_AMBIANCE_EFFECTS;
   return ROYAL_AMBIANCE_EFFECTS;
 }
 
@@ -102,7 +138,15 @@ export function normalizeAmbianceEffect(
 ): AmbianceEffect {
   const options = ambianceEffectsForFamily(family);
   const fallback =
-    family === "house" ? "starry-glow" : family === "botanical" ? "leaves" : "petals";
+    family === "house"
+      ? "starry-glow"
+      : family === "botanical"
+        ? "leaves"
+        : family === "aurelia"
+          ? "sparkles"
+          : family === "cream"
+            ? "none"
+            : "petals";
   return normalizeLayoutId(
     value,
     options,
