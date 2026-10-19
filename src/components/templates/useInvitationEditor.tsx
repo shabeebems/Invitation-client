@@ -483,6 +483,30 @@ export function useInvitationEditor({
     });
   }
 
+  function setFooterLayout(layout: string) {
+    setDraft((prev) => {
+      const nextContent = { ...prev.content, footerLayout: layout };
+      void persist(nextContent);
+      return { ...prev, content: nextContent };
+    });
+  }
+
+  function setStoryLayout(layout: string) {
+    setDraft((prev) => {
+      const nextContent = { ...prev.content, storyLayout: layout };
+      void persist(nextContent);
+      return { ...prev, content: nextContent };
+    });
+  }
+
+  function setQuoteLayout(layout: string) {
+    setDraft((prev) => {
+      const nextContent = { ...prev.content, quoteLayout: layout };
+      void persist(nextContent);
+      return { ...prev, content: nextContent };
+    });
+  }
+
   function persistLocations(items: LocationItem[]) {
     setDraft((prev) => {
       const nextContent = { ...prev.content, locationItems: items };
@@ -699,12 +723,22 @@ export function useInvitationEditor({
       onConfirmPay={publish}
       ambianceEffect={draft.content.ambianceEffect}
       ambianceEffects={
-        sectionFamily === "royal" || sectionFamily === "house"
+        sectionFamily === "royal" ||
+        sectionFamily === "house" ||
+        sectionFamily === "velvet" ||
+        sectionFamily === "palace" ||
+        sectionFamily === "botanical"
           ? ambianceEffectsForFamily(sectionFamily)
           : undefined
       }
       onAmbianceEffectChange={
-        sectionFamily === "royal" || sectionFamily === "house" ? setAmbianceEffect : undefined
+        sectionFamily === "royal" ||
+        sectionFamily === "house" ||
+        sectionFamily === "velvet" ||
+        sectionFamily === "palace" ||
+        sectionFamily === "botanical"
+          ? setAmbianceEffect
+          : undefined
       }
       sectionCatalog={sectionCatalog}
       enabledSections={enabledSections}
@@ -744,6 +778,9 @@ export function useInvitationEditor({
     setMeetCoupleLayout,
     setLoveStoryLayout,
     setLocationLayout,
+    setFooterLayout,
+    setStoryLayout,
+    setQuoteLayout,
     commitLocationItem,
     addLocationItem,
     removeLocationItem,

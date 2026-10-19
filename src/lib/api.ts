@@ -115,6 +115,15 @@ export type TemplateContent = {
   loveStoryLayout?: string;
   loveStoryItems?: LoveStoryItem[];
   locationItems?: LocationItem[];
+  amenityOneLabel?: string;
+  amenityOneDetail?: string;
+  amenityTwoLabel?: string;
+  amenityTwoDetail?: string;
+  amenityThreeLabel?: string;
+  amenityThreeDetail?: string;
+  footerLayout?: string;
+  storyLayout?: string;
+  quoteLayout?: string;
   /** Section ids enabled for this invitation (template-specific catalog). */
   enabledSections?: string[];
 };
@@ -182,7 +191,16 @@ export function withImageUrl(
   return next;
 }
 
-export type ImageSlot = "hero" | "gallery" | "groom" | "bride" | "loveStory";
+export type ImageSlot =
+  | "hero"
+  | "gallery"
+  | "groom"
+  | "bride"
+  | "loveStory"
+  | "envelope"
+  | "story"
+  | "parentsLeft"
+  | "parentsRight";
 
 export type PendingImage = {
   file: File;

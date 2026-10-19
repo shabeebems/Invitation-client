@@ -1,6 +1,9 @@
 import type { InvitationTemplate, PendingImage } from "@/lib/api";
 import RoyalReceptionInvitation from "@/components/templates/RoyalReceptionInvitation";
 import HouseWarmingInvitation from "@/components/templates/HouseWarmingInvitation";
+import VelvetHeritageInvitation from "@/components/templates/VelvetHeritageInvitation";
+import PalaceParchmentInvitation from "@/components/templates/PalaceParchmentInvitation";
+import BotanicalScriptInvitation from "@/components/templates/BotanicalScriptInvitation";
 
 function slugOf(template: InvitationTemplate) {
   return `${template.slug || ""} ${template.templateSlug || ""}`;
@@ -27,6 +30,18 @@ export default function InvitationView({
 
   if (matches(template, /parambil-house/i) || /house\s*warm/i.test(template.categoryName || "")) {
     return <HouseWarmingInvitation {...props} />;
+  }
+
+  if (matches(template, /velvet-heritage|velvet/i)) {
+    return <VelvetHeritageInvitation {...props} />;
+  }
+
+  if (matches(template, /palace-parchment|palace/i)) {
+    return <PalaceParchmentInvitation {...props} />;
+  }
+
+  if (matches(template, /botanical-script|botanical/i)) {
+    return <BotanicalScriptInvitation {...props} />;
   }
 
   return <RoyalReceptionInvitation {...props} />;

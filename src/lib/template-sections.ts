@@ -1,4 +1,4 @@
-export type TemplateSectionFamily = "royal" | "house";
+export type TemplateSectionFamily = "royal" | "house" | "velvet" | "palace" | "botanical";
 
 export type SectionDef = {
   id: string;
@@ -25,9 +25,45 @@ export const HOUSE_SECTIONS: SectionDef[] = [
   { id: "footer", label: "Footer" },
 ];
 
+/** Velvet Heritage — burgundy/ivory cinematic wedding (reference envelope design). */
+export const VELVET_SECTIONS: SectionDef[] = [
+  { id: "hero", label: "Hero", required: true },
+  { id: "countdown", label: "Countdown" },
+  { id: "gallery", label: "Gallery" },
+  { id: "story", label: "Timeline" },
+  { id: "location", label: "Venue" },
+  { id: "footer", label: "Footer" },
+];
+
+/** Palace Parchment — parchment sage wedding with royal palace double-door intro. */
+export const PALACE_SECTIONS: SectionDef[] = [
+  { id: "hero", label: "Hero", required: true },
+  { id: "countdown", label: "Countdown" },
+  { id: "gallery", label: "Gallery" },
+  { id: "story", label: "Timeline" },
+  { id: "location", label: "Venue" },
+  { id: "footer", label: "Footer" },
+];
+
+/** Botanical Script — paper-texture elegant wedding with story, events, family, travel & RSVP. */
+export const BOTANICAL_SECTIONS: SectionDef[] = [
+  { id: "hero", label: "Hero", required: true },
+  { id: "story", label: "Our Story" },
+  { id: "events", label: "Events" },
+  { id: "quote", label: "Quote" },
+  { id: "gallery", label: "Gallery" },
+  { id: "itinerary", label: "Itinerary" },
+  { id: "family", label: "Family" },
+  { id: "travel", label: "Travel & RSVP" },
+  { id: "footer", label: "Footer" },
+];
+
 export const SECTION_CATALOGS: Record<TemplateSectionFamily, SectionDef[]> = {
   royal: ROYAL_SECTIONS,
   house: HOUSE_SECTIONS,
+  velvet: VELVET_SECTIONS,
+  palace: PALACE_SECTIONS,
+  botanical: BOTANICAL_SECTIONS,
 };
 
 export function sectionsForFamily(family: TemplateSectionFamily): SectionDef[] {

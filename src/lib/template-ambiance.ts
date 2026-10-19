@@ -16,7 +16,7 @@ export type AmbianceEffect =
   | "dust"
   | "none";
 
-export type AmbianceFamily = "royal" | "house";
+export type AmbianceFamily = "royal" | "house" | "velvet" | "palace" | "botanical";
 
 export const ROYAL_AMBIANCE_EFFECTS: LayoutOption<AmbianceEffect>[] = [
   { id: "petals", label: "Petals" },
@@ -32,6 +32,35 @@ export const HOUSE_AMBIANCE_EFFECTS: LayoutOption<AmbianceEffect>[] = [
   { id: "butterflies", label: "Butterflies" },
   { id: "floral-bloom", label: "Floral Bloom" },
   { id: "floating-lights", label: "Floating Lights" },
+  { id: "none", label: "None" },
+];
+
+/** Velvet Heritage defaults to falling petals (reference intro effect). */
+export const VELVET_AMBIANCE_EFFECTS: LayoutOption<AmbianceEffect>[] = [
+  { id: "petals", label: "Petals" },
+  { id: "hearts", label: "Hearts" },
+  { id: "sparkles", label: "Sparkles" },
+  { id: "stars", label: "Stars" },
+  { id: "butterflies", label: "Butterflies" },
+  { id: "none", label: "None" },
+];
+
+/** Palace Parchment — rose petals + golden sparkles from the reference. */
+export const PALACE_AMBIANCE_EFFECTS: LayoutOption<AmbianceEffect>[] = [
+  { id: "petals", label: "Petals" },
+  { id: "sparkles", label: "Sparkles" },
+  { id: "hearts", label: "Hearts" },
+  { id: "stars", label: "Stars" },
+  { id: "butterflies", label: "Butterflies" },
+  { id: "none", label: "None" },
+];
+
+/** Botanical Script — soft leaves / hearts for paper botanical atmosphere. */
+export const BOTANICAL_AMBIANCE_EFFECTS: LayoutOption<AmbianceEffect>[] = [
+  { id: "leaves", label: "Leaves" },
+  { id: "hearts", label: "Hearts" },
+  { id: "petals", label: "Petals" },
+  { id: "sparkles", label: "Sparkles" },
   { id: "none", label: "None" },
 ];
 
@@ -60,7 +89,11 @@ const HOUSE_ALIASES: Record<string, AmbianceEffect> = {
 };
 
 export function ambianceEffectsForFamily(family: AmbianceFamily): LayoutOption<AmbianceEffect>[] {
-  return family === "house" ? HOUSE_AMBIANCE_EFFECTS : ROYAL_AMBIANCE_EFFECTS;
+  if (family === "house") return HOUSE_AMBIANCE_EFFECTS;
+  if (family === "velvet") return VELVET_AMBIANCE_EFFECTS;
+  if (family === "palace") return PALACE_AMBIANCE_EFFECTS;
+  if (family === "botanical") return BOTANICAL_AMBIANCE_EFFECTS;
+  return ROYAL_AMBIANCE_EFFECTS;
 }
 
 export function normalizeAmbianceEffect(
@@ -68,7 +101,8 @@ export function normalizeAmbianceEffect(
   family: AmbianceFamily = "royal"
 ): AmbianceEffect {
   const options = ambianceEffectsForFamily(family);
-  const fallback = family === "house" ? "starry-glow" : "petals";
+  const fallback =
+    family === "house" ? "starry-glow" : family === "botanical" ? "leaves" : "petals";
   return normalizeLayoutId(
     value,
     options,
