@@ -663,10 +663,15 @@ export function useInvitationEditor({
   }
 
   function field(key: ContentTextKey, className = "", multiline = false) {
-    const value = draft.content[key];
+    const raw = draft.content[key];
+    const defaultValue =
+      key === "getDirectionsLabel" && (!raw || typeof raw !== "string" || !raw.trim())
+        ? "Get Directions →"
+        : "";
+    const value = typeof raw === "string" && raw.trim().length > 0 ? raw : defaultValue;
     return (
       <EditableField
-        value={typeof value === "string" ? value : ""}
+        value={value}
         editable={editing}
         className={className}
         multiline={multiline}

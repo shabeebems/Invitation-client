@@ -9,7 +9,7 @@ import BotanicalQuote from "@/components/templates/botanical/BotanicalQuote";
 import BotanicalGallery from "@/components/templates/botanical/BotanicalGallery";
 import BotanicalItinerary from "@/components/templates/botanical/BotanicalItinerary";
 import BotanicalFamily from "@/components/templates/botanical/BotanicalFamily";
-import BotanicalTravel from "@/components/templates/botanical/BotanicalTravel";
+import BotanicalLocation from "@/components/templates/botanical/BotanicalLocation";
 import BotanicalFooter from "@/components/templates/botanical/BotanicalFooter";
 import { BotanicalSprigs } from "@/components/templates/botanical/BotanicalDecor";
 import {
@@ -89,7 +89,9 @@ export default function BotanicalScriptInvitation({
     [content.enabledSections]
   );
   const mapsUrl = content.mapsUrl || content.googleMapsUrl || "";
-  const themeClass = /forest|olive|sage/i.test(themeTitle) ? " palette-forest" : " palette-parchment";
+  const themeClass = /twilight|fern|dusk|midnight/i.test(themeTitle)
+    ? " palette-twilight"
+    : " palette-parchment";
 
   const groomInitial = (content.groomName || "").trim().charAt(0) || "A";
   const brideInitial = (content.brideName || "").trim().charAt(0) || "D";
@@ -143,12 +145,7 @@ export default function BotanicalScriptInvitation({
             {isSectionEnabled(enabled, "story") ? <a href="#story">Our Story</a> : null}
             {isSectionEnabled(enabled, "events") ? <a href="#events">Events</a> : null}
             {isSectionEnabled(enabled, "gallery") ? <a href="#gallery">Gallery</a> : null}
-            {isSectionEnabled(enabled, "travel") ? <a href="#travel">Travel</a> : null}
-            {isSectionEnabled(enabled, "travel") ? (
-              <a href="#rsvp" className="is-strong">
-                RSVP
-              </a>
-            ) : null}
+            {isSectionEnabled(enabled, "location") ? <a href="#location">Location</a> : null}
           </nav>
         </header>
 
@@ -238,8 +235,8 @@ export default function BotanicalScriptInvitation({
           />
         ) : null}
 
-        {isSectionEnabled(enabled, "travel") ? (
-          <BotanicalTravel
+        {isSectionEnabled(enabled, "location") ? (
+          <BotanicalLocation
             editing={editing}
             layout={content.locationLayout}
             mapsUrl={mapsUrl}

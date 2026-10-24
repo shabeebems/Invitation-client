@@ -56,12 +56,26 @@ export default function BotanicalHero({
               {field("brideName", "bs-script bs-hero-names")}
             </h1>
             <p className="bs-hero-poem">{field("introLine", "bs-hero-poem", true)}</p>
-            <div className="bs-hero-cta">
-              <a className="bs-btn-outline" href="#rsvp">
-                <span>{field("openHint", "bs-btn-outline-label")}</span>
-                <span aria-hidden="true">→</span>
-              </a>
-            </div>
+            <p className="bs-hero-blessing">{field("blessing", "bs-hero-blessing", true)}</p>
+            <dl className="bs-hero-meta">
+              <div className="bs-hero-meta-row">
+                <dt>When</dt>
+                <dd>
+                  {field("weekday", "bs-hero-meta-value")}
+                  <span aria-hidden="true"> · </span>
+                  {field("day", "bs-hero-meta-value")} {field("monthYear", "bs-hero-meta-value")}
+                  <span aria-hidden="true"> · </span>
+                  {field("time", "bs-hero-meta-value")}
+                </dd>
+              </div>
+              <div className="bs-hero-meta-row">
+                <dt>Where</dt>
+                <dd>
+                  {field("venueName", "bs-hero-meta-value")}
+                  <span className="bs-hero-meta-city">{field("venueCity", "bs-hero-meta-city")}</span>
+                </dd>
+              </div>
+            </dl>
           </Reveal>
 
           <Reveal className="bs-hero-photo-wrap">

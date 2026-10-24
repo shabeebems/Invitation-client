@@ -122,7 +122,7 @@ export default function RoyalRubyInvitation({
         sealed ? " is-sealed" : ""
       }`}
     >
-      {chrome}
+      {sealed ? null : chrome}
 
       <div className="rb-progress" id="rb-bar" aria-hidden="true" />
 

@@ -46,6 +46,24 @@ function EventIcon({ index }: { index: number }) {
   );
 }
 
+function TimeGlyph() {
+  return (
+    <svg className="bs-event-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+      <rect height="18" rx="2" strokeWidth="1.6" width="18" x="3" y="4" />
+      <path d="M16 2v4M8 2v4M3 10h18" strokeWidth="1.6" />
+    </svg>
+  );
+}
+
+function PlaceGlyph() {
+  return (
+    <svg className="bs-event-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+      <path d="M12 21s-7-5.5-7-11a7 7 0 0 1 14 0c0 5.5-7 11-7 11z" strokeWidth="1.6" />
+      <circle cx="12" cy="10" r="2.4" strokeWidth="1.6" />
+    </svg>
+  );
+}
+
 export default function BotanicalEvents({
   items,
   layout,
@@ -86,11 +104,14 @@ export default function BotanicalEvents({
         />
       ) : null}
 
-      <Reveal>
-        <FlourishRule>
-          <h2 className="bs-section-eyebrow">{field("programEyebrow", "bs-section-eyebrow")}</h2>
-        </FlourishRule>
-      </Reveal>
+      <div className="bs-events-head">
+        <Reveal>
+          <FlourishRule>
+            <h2 className="bs-section-eyebrow">{field("programEyebrow", "bs-section-eyebrow")}</h2>
+          </FlourishRule>
+        </Reveal>
+        <p className="bs-events-lead">{field("programIntro", "bs-events-lead", true)}</p>
+      </div>
 
       <div className="bs-events-grid">
         {cards.map((item, index) => (
@@ -104,28 +125,31 @@ export default function BotanicalEvents({
                 editable={editing}
                 maxLength={PROGRAM_ITEM_MAX.title}
                 onCommit={(value) => onCommitItem(index, "title", value)}
-                className="bs-event-title"
+                className="bs-event-field"
               />
             </h3>
             <p className="bs-event-time">
+              <TimeGlyph />
               <EditableField
                 value={item.time || ""}
                 editable={editing}
                 maxLength={PROGRAM_ITEM_MAX.time}
                 onCommit={(value) => onCommitItem(index, "time", value)}
-                className="bs-event-time"
+                className="bs-event-field"
               />
             </p>
             <p className="bs-event-place">
+              <PlaceGlyph />
               <EditableField
                 value={item.description || ""}
                 editable={editing}
                 multiline
                 maxLength={PROGRAM_ITEM_MAX.description}
                 onCommit={(value) => onCommitItem(index, "description", value)}
-                className="bs-event-place"
+                className="bs-event-field"
               />
             </p>
+            <span className="bs-event-more">View details</span>
             {editing && cards.length > 1 ? (
               <button
                 type="button"

@@ -82,7 +82,7 @@ export default function RoyalReceptionInvitation({
         sealed ? " is-sealed" : ""
       }`}
     >
-      {chrome}
+      {sealed ? null : chrome}
 
       <RoyalReceptionOpening
         groomName={content.groomName || "Ibrahim"}

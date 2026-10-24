@@ -46,7 +46,6 @@ export default function VelvetHeritageInvitation({
     changeLoveStoryImage,
     changeGalleryImage,
     commitGalleryItem,
-    addGalleryItem,
     removeGalleryItem,
     setGalleryLayout,
     setCountdownLayout,
@@ -64,7 +63,7 @@ export default function VelvetHeritageInvitation({
   });
 
   const heroImageUrl = imageUrl(draft.images, "hero");
-  const envelopeImageUrl = imageUrl(draft.images, "envelope");
+  const venueImageUrl = imageUrl(draft.images, "venue") || imageUrl(draft.images, "story");
   const groomInitial = (content.groomName || "").trim().charAt(0) || "A";
   const brideInitial = (content.brideName || "").trim().charAt(0) || "M";
   const sealInitials = `${groomInitial}&${brideInitial}`;
@@ -91,7 +90,7 @@ export default function VelvetHeritageInvitation({
         sealed ? " is-sealed" : ""
       }`}
     >
-      {chrome}
+      {sealed ? null : chrome}
 
       <VelvetOpening
         brandLabel={field("hashtag", "vh-cap-title vh-intro-brand")}
@@ -100,9 +99,6 @@ export default function VelvetHeritageInvitation({
         openLabel="Open Invitation"
         skipLabel={content.skipLabel || "Skip →"}
         sealInitials={sealInitials}
-        envelopeSrc={envelopeImageUrl}
-        editable={editing}
-        onChangeEnvelope={(file) => changeImage(file, "envelope")}
         onCoverChange={onCoverChange}
       />
 
@@ -139,7 +135,6 @@ export default function VelvetHeritageInvitation({
             field={field}
             onLayoutChange={setGalleryLayout}
             onCommitItem={commitGalleryItem}
-            onAddItem={addGalleryItem}
             onRemoveItem={removeGalleryItem}
             onChangeImage={changeGalleryImage}
           />
@@ -165,8 +160,11 @@ export default function VelvetHeritageInvitation({
             editing={editing}
             venueName={venueName}
             mapsUrl={mapsUrl}
+            venueImageUrl={venueImageUrl}
+            directionsLabel={content.getDirectionsLabel || "Get Directions →"}
             field={field}
             onLayoutChange={setLocationLayout}
+            onChangeVenueImage={(file) => changeImage(file, "venue")}
           />
         ) : null}
 

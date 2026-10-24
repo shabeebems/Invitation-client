@@ -140,7 +140,7 @@ export default function AureliaNocturneInvitation({
         sealed ? " is-sealed" : ""
       }${!sealed ? " is-open" : ""}`}
     >
-      {chrome}
+      {sealed ? null : chrome}
       <AureliaGrain />
 
       <AureliaOpening

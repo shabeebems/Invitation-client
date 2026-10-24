@@ -111,6 +111,7 @@ export type TemplateContent = {
   brideBio?: string;
   brideDetail?: string;
   loveStoryTitle?: string;
+  loveStoryIntro?: string;
   /** journey | magazine | cards | path | album */
   loveStoryLayout?: string;
   loveStoryItems?: LoveStoryItem[];
@@ -199,6 +200,7 @@ export type ImageSlot =
   | "loveStory"
   | "envelope"
   | "story"
+  | "venue"
   | "parentsLeft"
   | "parentsRight";
 

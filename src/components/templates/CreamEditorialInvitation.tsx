@@ -231,7 +231,7 @@ export default function CreamEditorialInvitation({
         sealed ? " is-sealed" : ""
       }${!sealed ? " is-open" : ""}`}
     >
-      {chrome}
+      {sealed ? null : chrome}
       <CreamGrain />
 
       <CreamOpening

@@ -38,6 +38,10 @@ export default function LayoutPicker<T extends string>({
   title?: string;
   className?: string;
 }) {
+  if (options.length < 2) {
+    return null;
+  }
+
   const heading = title || `Choose ${section} layout`;
 
   return (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 type Phase = "idle" | "opening" | "done";
 
@@ -11,9 +11,6 @@ export default function VelvetOpening({
   openLabel,
   skipLabel,
   sealInitials,
-  envelopeSrc,
-  editable = false,
-  onChangeEnvelope,
   onCoverChange,
 }: {
   brandLabel?: ReactNode;
@@ -22,13 +19,9 @@ export default function VelvetOpening({
   openLabel?: string;
   skipLabel?: string;
   sealInitials: string;
-  envelopeSrc?: string;
-  editable?: boolean;
-  onChangeEnvelope?: (file: File) => void;
   onCoverChange?: (covering: boolean) => void;
 }) {
   const [phase, setPhase] = useState<Phase>("idle");
-  const fileRef = useRef<HTMLInputElement>(null);
   const covering = phase !== "done";
 
   useEffect(() => {
@@ -123,40 +116,11 @@ export default function VelvetOpening({
           }
         }}
       >
-        {envelopeSrc ? (
-          <img className="vh-envelope-img" src={envelopeSrc} alt="Invitation envelope" />
-        ) : (
-          <div className="vh-envelope-fallback" aria-hidden="true">
-            <span className="vh-cap-title">Velvet Envelope</span>
-          </div>
-        )}
+        <div className="vh-envelope-fallback" aria-hidden="true" />
         <div className="vh-wax-seal" aria-hidden="true">
           {sealInitials}
         </div>
       </div>
-
-      {editable ? (
-        <>
-          <button
-            type="button"
-            className="vh-cap-title vh-envelope-edit-btn"
-            onClick={() => fileRef.current?.click()}
-          >
-            Change envelope photo
-          </button>
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(event) => {
-              const file = event.target.files?.[0];
-              if (file) onChangeEnvelope?.(file);
-              event.target.value = "";
-            }}
-          />
-        </>
-      ) : null}
 
       <div className="vh-intro-captions">
         <div className="vh-cap-title vh-intro-tagline">{tagline || "A Journey of Two Hearts"}</div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from "react";
 import EditableField from "@/components/templates/EditableField";
 import LayoutPicker, { normalizeLayoutId } from "@/components/templates/shared/LayoutPicker";
 import { Reveal, VelvetFoliage, VelvetGoldOrnament } from "@/components/templates/velvet/VelvetDecor";
@@ -8,10 +8,15 @@ import {
   VELVET_GALLERY_LAYOUTS,
   type VelvetGalleryLayout,
 } from "@/components/templates/velvet/velvet-layouts";
-import { GALLERY_ITEM_MAX, MAX_GALLERY_ITEMS } from "@/lib/content-limits";
+import { GALLERY_ITEM_MAX } from "@/lib/content-limits";
 import type { GalleryItem } from "@/lib/api";
 
 const SLOT_CLASS = ["gal-left-tall", "gal-center-wide", "gal-right-top", "gal-right-bottom"] as const;
+const VELVET_GALLERY_MAX = 4;
+
+function stopCardClick(event: MouseEvent) {
+  event.stopPropagation();
+}
 
 export default function VelvetGallery({
   items,
@@ -20,7 +25,6 @@ export default function VelvetGallery({
   field,
   onLayoutChange,
   onCommitItem,
-  onAddItem,
   onRemoveItem,
   onChangeImage,
 }: {
@@ -30,7 +34,6 @@ export default function VelvetGallery({
   field: (key: string, className?: string, multiline?: boolean) => ReactNode;
   onLayoutChange: (layout: VelvetGalleryLayout) => void;
   onCommitItem: (index: number, key: "eyebrow" | "title" | "caption", value: string) => void;
-  onAddItem: () => void;
   onRemoveItem: (index: number) => void;
   onChangeImage: (index: number, file: File) => void;
 }) {
@@ -38,8 +41,8 @@ export default function VelvetGallery({
   const [uploadIndex, setUploadIndex] = useState(0);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const activeLayout = normalizeLayoutId(layout, VELVET_GALLERY_LAYOUTS, "mosaic");
-  const photos = items.length ? items : [];
-  const mosaic: GalleryItem[] = Array.from({ length: 4 }, (_, index) => {
+  const photos = items.slice(0, VELVET_GALLERY_MAX);
+  const mosaic: GalleryItem[] = Array.from({ length: VELVET_GALLERY_MAX }, (_, index) => {
     return (
       photos[index] || {
         eyebrow: "",
@@ -50,6 +53,8 @@ export default function VelvetGallery({
       }
     );
   });
+  const showQuote = activeLayout === "arch-rail" || activeLayout === "mosaic";
+  const showView = activeLayout !== "mosaic";
 
   useEffect(() => {
     if (activeIndex === null) return;
@@ -80,7 +85,96 @@ export default function VelvetGallery({
     if (photos[index]?.url) setActiveIndex(index);
   }
 
+  function openView(event: MouseEvent, index: number) {
+    event.preventDefault();
+    event.stopPropagation();
+    if (photos[index]?.url) setActiveIndex(index);
+    else if (editing) pickPhoto(index);
+  }
+
   const activePhoto = activeIndex !== null ? photos[activeIndex] : null;
+
+  const heading = (
+    <div className="vh-gal-head">
+      <Reveal>
+        <div className="vh-cap-title vh-gal-eyebrow">
+          {field("galleryEyebrow", "vh-cap-title vh-gal-eyebrow")}
+        </div>
+      </Reveal>
+      {activeLayout === "mosaic" ? (
+        <Reveal>
+          <VelvetGoldOrnament />
+        </Reveal>
+      ) : null}
+      <Reveal>
+        <h2 className="vh-script vh-gal-title">{field("galleryTitle", "vh-script vh-gal-title")}</h2>
+      </Reveal>
+      {showQuote ? (
+        <Reveal>
+          <p className="vh-gal-quote">{field("galleryIntro", "vh-gal-quote", true)}</p>
+        </Reveal>
+      ) : null}
+    </div>
+  );
+
+  const stage = (
+    <div className={`vh-gallery-stage is-${activeLayout}`}>
+      {mosaic.map((item, index) => (
+        <article
+          key={`vh-gal-${index}`}
+          className={`vh-gal-item is-${activeLayout}${
+            activeLayout === "mosaic" ? ` ${SLOT_CLASS[index]}` : ""
+          } tilt-${index}`}
+        >
+          <button
+            type="button"
+            className="vh-gal-photo"
+            aria-label={editing ? `Change gallery photo ${index + 1}` : `View photo ${index + 1}`}
+            onClick={() => openPhoto(index)}
+          >
+            {item.url ? (
+              <img src={item.url} alt={item.title || `Gallery ${index + 1}`} />
+            ) : (
+              <span className="vh-cap-title vh-photo-placeholder">Add photo</span>
+            )}
+          </button>
+
+          {showView && !editing ? (
+            <button
+              type="button"
+              className="vh-cap-title vh-gal-view"
+              onClick={(event) => openView(event, index)}
+            >
+              View <span aria-hidden="true">→</span>
+            </button>
+          ) : null}
+
+          {editing ? (
+            <div className="vh-gal-edit-meta" onClick={stopCardClick} onPointerDown={stopCardClick}>
+              <EditableField
+                value={item.title}
+                editable
+                className="vh-gal-edit-title"
+                maxLength={GALLERY_ITEM_MAX.title}
+                onCommit={(value) => onCommitItem(index, "title", value)}
+              />
+              {item.url || item.title ? (
+                <button
+                  type="button"
+                  className="vh-cap-title vh-gal-remove"
+                  onClick={() => onRemoveItem(index)}
+                >
+                  Remove
+                </button>
+              ) : null}
+            </div>
+          ) : activeLayout === "mosaic" && item.title ? (
+            <p className="vh-gal-caption">{item.title}</p>
+          ) : null}
+        </article>
+      ))}
+    </div>
+  );
 
   return (
     <section className="vh-gallery" id="gallery" data-layout={activeLayout}>
@@ -99,84 +193,22 @@ export default function VelvetGallery({
         />
       ) : null}
 
-      <Reveal>
-        <div className="vh-cap-title vh-gal-eyebrow">
-          {field("galleryEyebrow", "vh-cap-title vh-gal-eyebrow")}
+      {activeLayout === "arch-rail" ? (
+        <div className="vh-gal-split">
+          {heading}
+          <Reveal>{stage}</Reveal>
         </div>
-      </Reveal>
-      <Reveal>
-        <VelvetGoldOrnament />
-      </Reveal>
-      <Reveal>
-        <h2 className="vh-script vh-gal-title">
-          {field("galleryTitle", "vh-script vh-gal-title")}
-        </h2>
-      </Reveal>
-      <Reveal>
-        <p className="vh-gal-quote">{field("galleryIntro", "vh-gal-quote", true)}</p>
-      </Reveal>
-
-      <Reveal>
-        <div className="vh-gallery-grid-4">
-          {mosaic.map((item, index) => (
-            <div
-              key={`vh-gal-${index}`}
-              className={`vh-gal-item ${SLOT_CLASS[index]}`}
-              role="button"
-              tabIndex={0}
-              aria-label={editing ? `Change gallery photo ${index + 1}` : `View photo ${index + 1}`}
-              onClick={() => openPhoto(index)}
-              onKeyDown={(event) => {
-                if (event.key === "Enter" || event.key === " ") {
-                  event.preventDefault();
-                  openPhoto(index);
-                }
-              }}
-            >
-              {item.url ? (
-                <img src={item.url} alt={item.title || `Gallery ${index + 1}`} />
-              ) : (
-                <span className="vh-cap-title vh-photo-placeholder">Add photo</span>
-              )}
-              {editing ? (
-                <div className="vh-gal-edit-meta">
-                  <EditableField
-                    value={item.title}
-                    editable
-                    className="vh-gal-edit-title"
-                    maxLength={GALLERY_ITEM_MAX.title}
-                    onCommit={(value) => onCommitItem(index, "title", value)}
-                  />
-                  {photos.length > 1 ? (
-                    <button
-                      type="button"
-                      className="vh-cap-title vh-gal-remove"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        onRemoveItem(index);
-                      }}
-                    >
-                      Remove
-                    </button>
-                  ) : null}
-                </div>
-              ) : null}
-            </div>
-          ))}
-        </div>
-      </Reveal>
-
-      <div className="vh-gallery-bullets" aria-hidden="true">
-        <span className="is-active" />
-        <span />
-        <span />
-      </div>
-
-      {editing && photos.length < MAX_GALLERY_ITEMS ? (
-        <button type="button" className="vh-cap-title vh-gal-add" onClick={onAddItem}>
-          Add gallery photo
-        </button>
-      ) : null}
+      ) : (
+        <>
+          {heading}
+          <Reveal>{stage}</Reveal>
+          {activeLayout === "view-strip" || activeLayout === "polaroids" ? (
+            <Reveal>
+              <VelvetGoldOrnament />
+            </Reveal>
+          ) : null}
+        </>
+      )}
 
       <input
         ref={fileInputRef}

@@ -88,7 +88,7 @@ export default function PalaceParchmentInvitation({
         sealed ? " is-sealed" : ""
       }`}
     >
-      {chrome}
+      {sealed ? null : chrome}
 
       <PalaceOpening
         leftName={field("groomName", "pp-door-name")}
