@@ -16,7 +16,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${plusJakarta.variable} h-full antialiased`}>
+    <html
+      lang="en"
+      className={`${plusJakarta.variable} h-full antialiased`}
+      data-scroll-behavior="smooth"
+    >
       <body className="h-full font-sans">{children}</body>
     </html>
   );

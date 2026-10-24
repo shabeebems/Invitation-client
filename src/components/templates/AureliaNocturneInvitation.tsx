@@ -8,11 +8,9 @@ import AureliaHero from "@/components/templates/aurelia/AureliaHero";
 import AureliaCouple from "@/components/templates/aurelia/AureliaCouple";
 import AureliaGallery from "@/components/templates/aurelia/AureliaGallery";
 import AureliaStory from "@/components/templates/aurelia/AureliaStory";
-import AureliaEvents from "@/components/templates/aurelia/AureliaEvents";
-import AureliaLocation from "@/components/templates/aurelia/AureliaLocation";
+import AureliaVenue from "@/components/templates/aurelia/AureliaVenue";
 import AureliaCountdown from "@/components/templates/aurelia/AureliaCountdown";
 import AureliaDress from "@/components/templates/aurelia/AureliaDress";
-import AureliaRsvp from "@/components/templates/aurelia/AureliaRsvp";
 import AureliaFinal from "@/components/templates/aurelia/AureliaFinal";
 import AureliaFooter from "@/components/templates/aurelia/AureliaFooter";
 import { AureliaGrain } from "@/components/templates/aurelia/AureliaDecor";
@@ -61,13 +59,12 @@ export default function AureliaNocturneInvitation({
     setGalleryLayout,
     setCountdownLayout,
     setHeroLayout,
-    setProgramLayout,
     setMeetCoupleLayout,
     setLoveStoryLayout,
     setLocationLayout,
     setFooterLayout,
     setStoryLayout,
-    setQuoteLayout,
+    setDressColors,
     themeTitle,
     chrome,
   } = useInvitationEditor({
@@ -90,8 +87,12 @@ export default function AureliaNocturneInvitation({
     () => resolveEnabledSections("aurelia", content.enabledSections),
     [content.enabledSections]
   );
-  const mapsUrl = content.mapsUrl || content.googleMapsUrl || "";
-  const themeClass = /ivory|champagne/i.test(themeTitle) ? " palette-ivory" : " palette-nocturne";
+  const mapsUrl = (content.mapsUrl ?? content.googleMapsUrl) || "";
+  const themeClass = /emerald|jade|forest/i.test(themeTitle)
+    ? " palette-emerald"
+    : /blush|daybreak|dawn/i.test(themeTitle)
+      ? " palette-blush"
+      : " palette-nocturne";
 
   const brideInitial = (content.brideName || "").trim().charAt(0) || "E";
   const groomInitial = (content.groomName || "").trim().charAt(0) || "A";
@@ -104,12 +105,8 @@ export default function AureliaNocturneInvitation({
   const navLinks = [
     { href: "#hero", label: "Wedding" },
     ...(isSectionEnabled(enabled, "gallery") ? [{ href: "#gallery", label: "Story" }] : []),
-    ...(isSectionEnabled(enabled, "events") ? [{ href: "#events", label: "Events" }] : []),
-    ...(isSectionEnabled(enabled, "gallery") ? [{ href: "#gallery", label: "Gallery" }] : []),
-    ...(isSectionEnabled(enabled, "rsvp") ? [{ href: "#rsvp", label: "RSVP" }] : []),
-  ].filter(
-    (link, index, arr) => arr.findIndex((item) => item.href === link.href) === index
-  );
+    ...(isSectionEnabled(enabled, "venue") ? [{ href: "#venue", label: "Venue" }] : []),
+  ];
 
   function addProgram() {
     setDraft((prev) => {
@@ -221,30 +218,22 @@ export default function AureliaNocturneInvitation({
           />
         ) : null}
 
-        {isSectionEnabled(enabled, "events") ? (
-          <AureliaEvents
+        {isSectionEnabled(enabled, "venue") ? (
+          <AureliaVenue
             items={content.programItems || []}
-            layout={content.programLayout}
+            layout={content.locationLayout}
             editing={editing}
             dateLine={dateLine}
+            day={content.day || ""}
+            monthYear={content.monthYear || ""}
             venueName={content.venueName || ""}
             venueCity={content.venueCity || ""}
             mapsUrl={mapsUrl}
             field={field}
-            onLayoutChange={setProgramLayout}
+            onLayoutChange={setLocationLayout}
             onCommitItem={commitProgramItem}
             onAddItem={addProgram}
             onRemoveItem={removeProgram}
-          />
-        ) : null}
-
-        {isSectionEnabled(enabled, "location") ? (
-          <AureliaLocation
-            editing={editing}
-            layout={content.locationLayout}
-            mapsUrl={mapsUrl}
-            field={field}
-            onLayoutChange={setLocationLayout}
           />
         ) : null}
 
@@ -263,17 +252,10 @@ export default function AureliaNocturneInvitation({
           <AureliaDress
             editing={editing}
             layout={content.storyLayout}
+            colors={content.dressColors}
             field={field}
             onLayoutChange={setStoryLayout}
-          />
-        ) : null}
-
-        {isSectionEnabled(enabled, "rsvp") ? (
-          <AureliaRsvp
-            editing={editing}
-            layout={content.quoteLayout}
-            field={field}
-            onLayoutChange={setQuoteLayout}
+            onColorsChange={setDressColors}
           />
         ) : null}
 

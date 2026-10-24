@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useInvitationEditor } from "@/components/templates/useInvitationEditor";
 import BotanicalHero from "@/components/templates/botanical/BotanicalHero";
 import BotanicalStory from "@/components/templates/botanical/BotanicalStory";
@@ -11,6 +11,7 @@ import BotanicalItinerary from "@/components/templates/botanical/BotanicalItiner
 import BotanicalFamily from "@/components/templates/botanical/BotanicalFamily";
 import BotanicalLocation from "@/components/templates/botanical/BotanicalLocation";
 import BotanicalFooter from "@/components/templates/botanical/BotanicalFooter";
+import BotanicalOpening from "@/components/templates/botanical/BotanicalOpening";
 import { BotanicalSprigs } from "@/components/templates/botanical/BotanicalDecor";
 import {
   SiteAmbiance,
@@ -39,6 +40,8 @@ export default function BotanicalScriptInvitation({
     orderId?: string
   ) => Promise<string | undefined | void>;
 }) {
+  const [sealed, setSealed] = useState(true);
+  const onCoverChange = useCallback((covering: boolean) => setSealed(covering), []);
   const {
     draft,
     setDraft,
@@ -96,6 +99,8 @@ export default function BotanicalScriptInvitation({
   const groomInitial = (content.groomName || "").trim().charAt(0) || "A";
   const brideInitial = (content.brideName || "").trim().charAt(0) || "D";
   const monogram = content.hashtag || `${groomInitial}${brideInitial}`;
+  const coupleLine = [content.groomName, content.brideName].filter(Boolean).join(" & ") || "Aarav & Diya";
+  const openingDate = [content.day, content.monthYear].filter(Boolean).join(" ");
 
   const eyebrowText =
     content.hostLabel ||
@@ -129,131 +134,144 @@ export default function BotanicalScriptInvitation({
 
   return (
     <main
-      className={`botanical-script relative${themeClass}${editable ? " is-editing" : ""}`}
+      className={`botanical-script relative${themeClass}${editable ? " is-editing" : ""}${
+        sealed ? " is-sealed" : ""
+      }`}
     >
-      {chrome}
-      <BotanicalSprigs />
-      <SiteAmbiance effect={ambianceEffect} />
+      {sealed ? null : chrome}
 
-      <div className="bs-shell">
-        <header className="bs-nav">
-          <a className="bs-nav-mono" href="#home" aria-label="Home">
-            {monogram}
-          </a>
-          <nav className="bs-nav-links" aria-label="Invitation sections">
-            <a href="#home">Home</a>
-            {isSectionEnabled(enabled, "story") ? <a href="#story">Our Story</a> : null}
-            {isSectionEnabled(enabled, "events") ? <a href="#events">Events</a> : null}
-            {isSectionEnabled(enabled, "gallery") ? <a href="#gallery">Gallery</a> : null}
-            {isSectionEnabled(enabled, "location") ? <a href="#location">Location</a> : null}
-          </nav>
-        </header>
+      <BotanicalOpening
+        tagline={content.envelopeTagline || "Two hearts · One forever"}
+        coupleLine={coupleLine}
+        dateLine={openingDate}
+        skipLabel={content.skipLabel || undefined}
+        onCoverChange={onCoverChange}
+      />
 
-        {isSectionEnabled(enabled, "hero") ? (
-          <BotanicalHero
+      <div className="bs-site" aria-hidden={sealed || undefined} inert={sealed || undefined}>
+        <BotanicalSprigs />
+        <SiteAmbiance effect={ambianceEffect} />
+
+        <div className="bs-shell">
+          <header className="bs-nav">
+            <a className="bs-nav-mono" href="#home" aria-label="Home">
+              {monogram}
+            </a>
+            <nav className="bs-nav-links" aria-label="Invitation sections">
+              <a href="#home">Home</a>
+              {isSectionEnabled(enabled, "story") ? <a href="#story">Our Story</a> : null}
+              {isSectionEnabled(enabled, "events") ? <a href="#events">Events</a> : null}
+              {isSectionEnabled(enabled, "gallery") ? <a href="#gallery">Gallery</a> : null}
+              {isSectionEnabled(enabled, "location") ? <a href="#location">Location</a> : null}
+            </nav>
+          </header>
+
+          {isSectionEnabled(enabled, "hero") ? (
+            <BotanicalHero
+              editing={editing}
+              heroImageUrl={heroImageUrl}
+              layout={content.heroLayout}
+              eyebrowText={eyebrowText}
+              field={field}
+              onChangeImage={(file) => changeImage(file, "hero")}
+              onLayoutChange={setHeroLayout}
+            />
+          ) : null}
+
+          {isSectionEnabled(enabled, "story") ? (
+            <BotanicalStory
+              editing={editing}
+              storyImageUrl={storyImageUrl}
+              layout={content.storyLayout}
+              field={field}
+              onChangeImage={(file) => changeImage(file, "story")}
+              onLayoutChange={setStoryLayout}
+            />
+          ) : null}
+
+          {isSectionEnabled(enabled, "events") ? (
+            <BotanicalEvents
+              items={content.programItems || []}
+              layout={content.programLayout}
+              editing={editing}
+              field={field}
+              onLayoutChange={setProgramLayout}
+              onCommitItem={commitProgramItem}
+              onAddItem={addProgram}
+              onRemoveItem={removeProgram}
+            />
+          ) : null}
+
+          {isSectionEnabled(enabled, "quote") ? (
+            <BotanicalQuote
+              editing={editing}
+              layout={content.quoteLayout}
+              field={field}
+              onLayoutChange={setQuoteLayout}
+            />
+          ) : null}
+
+          {isSectionEnabled(enabled, "gallery") ? (
+            <BotanicalGallery
+              items={content.galleryItems || []}
+              layout={content.galleryLayout}
+              editing={editing}
+              field={field}
+              onLayoutChange={setGalleryLayout}
+              onCommitItem={commitGalleryItem}
+              onAddItem={addGalleryItem}
+              onRemoveItem={removeGalleryItem}
+              onChangeImage={changeGalleryImage}
+            />
+          ) : null}
+
+          {isSectionEnabled(enabled, "itinerary") ? (
+            <BotanicalItinerary
+              items={content.loveStoryItems || []}
+              layout={content.loveStoryLayout}
+              editing={editing}
+              field={field}
+              onLayoutChange={setLoveStoryLayout}
+              onCommitItem={commitLoveStoryItem}
+              onAddItem={addLoveStoryItem}
+              onRemoveItem={removeLoveStoryItem}
+            />
+          ) : null}
+
+          {isSectionEnabled(enabled, "family") ? (
+            <BotanicalFamily
+              editing={editing}
+              layout={content.meetCoupleLayout}
+              parentLeftUrl={parentLeftUrl}
+              parentRightUrl={parentRightUrl}
+              groomUrl={groomUrl}
+              brideUrl={brideUrl}
+              field={field}
+              onChangeImage={changeFamilyImage}
+              onLayoutChange={setMeetCoupleLayout}
+            />
+          ) : null}
+
+          {isSectionEnabled(enabled, "location") ? (
+            <BotanicalLocation
+              editing={editing}
+              layout={content.locationLayout}
+              mapsUrl={mapsUrl}
+              field={field}
+              onLayoutChange={setLocationLayout}
+            />
+          ) : null}
+        </div>
+
+        {isSectionEnabled(enabled, "footer") ? (
+          <BotanicalFooter
+            layout={content.footerLayout}
             editing={editing}
-            heroImageUrl={heroImageUrl}
-            layout={content.heroLayout}
-            eyebrowText={eyebrowText}
             field={field}
-            onChangeImage={(file) => changeImage(file, "hero")}
-            onLayoutChange={setHeroLayout}
-          />
-        ) : null}
-
-        {isSectionEnabled(enabled, "story") ? (
-          <BotanicalStory
-            editing={editing}
-            storyImageUrl={storyImageUrl}
-            layout={content.storyLayout}
-            field={field}
-            onChangeImage={(file) => changeImage(file, "story")}
-            onLayoutChange={setStoryLayout}
-          />
-        ) : null}
-
-        {isSectionEnabled(enabled, "events") ? (
-          <BotanicalEvents
-            items={content.programItems || []}
-            layout={content.programLayout}
-            editing={editing}
-            field={field}
-            onLayoutChange={setProgramLayout}
-            onCommitItem={commitProgramItem}
-            onAddItem={addProgram}
-            onRemoveItem={removeProgram}
-          />
-        ) : null}
-
-        {isSectionEnabled(enabled, "quote") ? (
-          <BotanicalQuote
-            editing={editing}
-            layout={content.quoteLayout}
-            field={field}
-            onLayoutChange={setQuoteLayout}
-          />
-        ) : null}
-
-        {isSectionEnabled(enabled, "gallery") ? (
-          <BotanicalGallery
-            items={content.galleryItems || []}
-            layout={content.galleryLayout}
-            editing={editing}
-            field={field}
-            onLayoutChange={setGalleryLayout}
-            onCommitItem={commitGalleryItem}
-            onAddItem={addGalleryItem}
-            onRemoveItem={removeGalleryItem}
-            onChangeImage={changeGalleryImage}
-          />
-        ) : null}
-
-        {isSectionEnabled(enabled, "itinerary") ? (
-          <BotanicalItinerary
-            items={content.loveStoryItems || []}
-            layout={content.loveStoryLayout}
-            editing={editing}
-            field={field}
-            onLayoutChange={setLoveStoryLayout}
-            onCommitItem={commitLoveStoryItem}
-            onAddItem={addLoveStoryItem}
-            onRemoveItem={removeLoveStoryItem}
-          />
-        ) : null}
-
-        {isSectionEnabled(enabled, "family") ? (
-          <BotanicalFamily
-            editing={editing}
-            layout={content.meetCoupleLayout}
-            parentLeftUrl={parentLeftUrl}
-            parentRightUrl={parentRightUrl}
-            groomUrl={groomUrl}
-            brideUrl={brideUrl}
-            field={field}
-            onChangeImage={changeFamilyImage}
-            onLayoutChange={setMeetCoupleLayout}
-          />
-        ) : null}
-
-        {isSectionEnabled(enabled, "location") ? (
-          <BotanicalLocation
-            editing={editing}
-            layout={content.locationLayout}
-            mapsUrl={mapsUrl}
-            field={field}
-            onLayoutChange={setLocationLayout}
+            onLayoutChange={setFooterLayout}
           />
         ) : null}
       </div>
-
-      {isSectionEnabled(enabled, "footer") ? (
-        <BotanicalFooter
-          layout={content.footerLayout}
-          editing={editing}
-          field={field}
-          onLayoutChange={setFooterLayout}
-        />
-      ) : null}
     </main>
   );
 }

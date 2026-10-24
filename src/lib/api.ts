@@ -55,6 +55,7 @@ export type TemplateContent = {
   eventEndIso?: string;
   countdownHeading?: string;
   countdownLiveLabel?: string;
+  countdownSubtitle?: string;
   /** classic | ornate | rings | ribbon | minimal */
   countdownLayout?: string;
   /** classic | stacked | compact | split */
@@ -70,6 +71,7 @@ export type TemplateContent = {
   galleryEyebrow?: string;
   galleryTitle?: string;
   galleryIntro?: string;
+  galleryCtaLabel?: string;
   /** Royal/wedding gallery layout id */
   galleryLayout?: string;
   galleryItems?: GalleryItem[];
@@ -97,6 +99,8 @@ export type TemplateContent = {
   googleCalendarLabel?: string;
   icsCalendarLabel?: string;
   dressCode?: string;
+  dressColors?: string;
+  dressPaletteLabel?: string;
   rsvpNote?: string;
   storyTitle?: string;
   storyText?: string;
@@ -133,6 +137,7 @@ export type ProgramItem = {
   time: string;
   title: string;
   description: string;
+  mapsUrl?: string;
 };
 
 export type GalleryItem = {

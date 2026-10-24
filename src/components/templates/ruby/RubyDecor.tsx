@@ -13,7 +13,7 @@ export function RubyOrnament() {
 export function RubyDiya() {
   return (
     <svg className="rb-diya" viewBox="0 0 70 60" aria-hidden="true">
-      <path d="M8 34Q35 66 62 34Z" fill="#d4a94f" />
+      <path d="M8 34Q35 66 62 34Z" fill="var(--rb-gold)" />
       <path className="rb-fire" d="M35 8Q46 22 35 32Q24 22 35 8Z" fill="#ffb83a" />
     </svg>
   );

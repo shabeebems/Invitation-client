@@ -65,6 +65,9 @@ function clampContent(content: TemplateContent): TemplateContent {
       time: clampText(item.time || "", PROGRAM_ITEM_MAX.time),
       title: clampText(item.title || "", PROGRAM_ITEM_MAX.title),
       description: clampText(item.description || "", PROGRAM_ITEM_MAX.description),
+      ...(typeof item.mapsUrl === "string"
+        ? { mapsUrl: clampText(item.mapsUrl, PROGRAM_ITEM_MAX.mapsUrl) }
+        : {}),
     }));
   }
 
@@ -499,6 +502,10 @@ export function useInvitationEditor({
     });
   }
 
+  function setDressColors(colors: string[]) {
+    commit("dressColors", colors.join(","));
+  }
+
   function setQuoteLayout(layout: string) {
     setDraft((prev) => {
       const nextContent = { ...prev.content, quoteLayout: layout };
@@ -664,10 +671,13 @@ export function useInvitationEditor({
 
   function field(key: ContentTextKey, className = "", multiline = false) {
     const raw = draft.content[key];
+    const isBlank = !raw || typeof raw !== "string" || !raw.trim();
     const defaultValue =
-      key === "getDirectionsLabel" && (!raw || typeof raw !== "string" || !raw.trim())
+      key === "getDirectionsLabel" && isBlank
         ? "Get Directions →"
-        : "";
+        : key === "galleryCtaLabel" && isBlank
+          ? "View full gallery"
+          : "";
     const value = typeof raw === "string" && raw.trim().length > 0 ? raw : defaultValue;
     return (
       <EditableField
@@ -792,6 +802,7 @@ export function useInvitationEditor({
     setFooterLayout,
     setStoryLayout,
     setQuoteLayout,
+    setDressColors,
     commitLocationItem,
     addLocationItem,
     removeLocationItem,

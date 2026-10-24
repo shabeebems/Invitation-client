@@ -39,6 +39,7 @@ export const CONTENT_FIELD_MAX: Record<string, number> = {
   eventDateIso: 48,
   eventEndIso: 48,
   countdownHeading: 80,
+  countdownSubtitle: 80,
   countdownLiveLabel: 80,
   countdownLayout: 32,
   heroLayout: 32,
@@ -50,6 +51,7 @@ export const CONTENT_FIELD_MAX: Record<string, number> = {
   galleryEyebrow: 40,
   galleryTitle: 80,
   galleryIntro: 280,
+  galleryCtaLabel: 40,
   galleryLayout: 32,
   viewPhotoLabel: 40,
   locationEyebrow: 40,
@@ -73,6 +75,8 @@ export const CONTENT_FIELD_MAX: Record<string, number> = {
   googleCalendarLabel: 40,
   icsCalendarLabel: 40,
   dressCode: 80,
+  dressColors: 320,
+  dressPaletteLabel: 40,
   rsvpNote: 200,
   storyTitle: 80,
   storyText: 600,
@@ -103,6 +107,7 @@ export const PROGRAM_ITEM_MAX = {
   time: 40,
   title: 80,
   description: 280,
+  mapsUrl: 500,
 } as const;
 
 export const GALLERY_ITEM_MAX = {

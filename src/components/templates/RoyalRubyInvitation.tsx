@@ -5,11 +5,12 @@ import { useInvitationEditor } from "@/components/templates/useInvitationEditor"
 import RubyOpening from "@/components/templates/ruby/RubyOpening";
 import RubyHero from "@/components/templates/ruby/RubyHero";
 import RubyMarquee from "@/components/templates/ruby/RubyMarquee";
+import RubyCouple from "@/components/templates/ruby/RubyCouple";
 import RubyBlessings from "@/components/templates/ruby/RubyBlessings";
 import RubyCountdown from "@/components/templates/ruby/RubyCountdown";
 import RubyEvents from "@/components/templates/ruby/RubyEvents";
 import RubyLocation from "@/components/templates/ruby/RubyLocation";
-import RubyRsvp from "@/components/templates/ruby/RubyRsvp";
+import RubyGallery from "@/components/templates/ruby/RubyGallery";
 import RubyFooter from "@/components/templates/ruby/RubyFooter";
 import {
   SiteAmbiance,
@@ -18,7 +19,7 @@ import {
 import { normalizeAmbianceEffect } from "@/lib/template-ambiance";
 import { isSectionEnabled, resolveEnabledSections } from "@/lib/template-sections";
 import { MAX_PROGRAM_ITEMS } from "@/lib/content-limits";
-import { type InvitationTemplate, type PendingImage } from "@/lib/api";
+import { imageUrl, type InvitationTemplate, type PendingImage } from "@/lib/api";
 
 export default function RoyalRubyInvitation({
   template,
@@ -37,11 +38,14 @@ export default function RoyalRubyInvitation({
   const onCoverChange = useCallback((covering: boolean) => setSealed(covering), []);
 
   const {
+    draft,
     setDraft,
     content,
     editing,
     field,
     persist,
+    changeImage,
+    setStoryLayout,
     commitEventDate,
     commitProgramItem,
     setCountdownLayout,
@@ -50,7 +54,11 @@ export default function RoyalRubyInvitation({
     setMeetCoupleLayout,
     setLocationLayout,
     setFooterLayout,
-    setQuoteLayout,
+    changeGalleryImage,
+    commitGalleryItem,
+    addGalleryItem,
+    removeGalleryItem,
+    setGalleryLayout,
     themeTitle,
     chrome,
   } = useInvitationEditor({
@@ -68,12 +76,19 @@ export default function RoyalRubyInvitation({
     () => resolveEnabledSections("ruby", content.enabledSections),
     [content.enabledSections]
   );
-  const mapsUrl = content.mapsUrl || content.googleMapsUrl || "";
-  const themeClass = /ember|crimson/i.test(themeTitle) ? " palette-ember" : " palette-ruby";
+  const mapsUrl =
+    typeof content.mapsUrl === "string" ? content.mapsUrl : content.googleMapsUrl || "";
+  const themeClass = /ros[eé]|ivory|blush/i.test(themeTitle)
+    ? " palette-rose"
+    : /sapphire|midnight|navy/i.test(themeTitle)
+      ? " palette-sapphire"
+      : " palette-ruby";
 
   const brideInitial = (content.brideName || "").trim().charAt(0) || "A";
-  const dateLine =
-    [content.day, content.monthYear].filter(Boolean).join(" ") || content.monthYear || "";
+  const groomInitial = (content.groomName || "").trim().charAt(0) || "A";
+  const coupleLine =
+    [content.brideName, content.groomName].filter(Boolean).join(" & ") || "Ananya & Arjun";
+  const openingDate = [content.day, content.monthYear].filter(Boolean).join(" · ");
   const marqueeDate =
     [content.day, content.monthYear].filter(Boolean).join(" ") || "Save the date";
   const marqueePlace = content.venueCity || "";
@@ -127,17 +142,16 @@ export default function RoyalRubyInvitation({
       <div className="rb-progress" id="rb-bar" aria-hidden="true" />
 
       <RubyOpening
-        hostLabel={field("hostLabel", "rb-env-small")}
-        names={
-          <>
-            {field("brideName", "rb-gv")}
-            <span> &amp; </span>
-            {field("groomName", "rb-gv")}
-          </>
-        }
-        dateLine={dateLine}
-        sealInitial={brideInitial}
-        tapHint={content.skipLabel || "TAP THE SEAL"}
+        tagline={field("envelopeTagline", "rb-mc rb-open-tagline")}
+        title={field("openHint", "rb-gv rb-open-title")}
+        cardLine={field("inviteLine", "rb-gv rb-open-card-line", true)}
+        hint={field("skipLabel", "rb-open-hint-text")}
+        monogram={[brideInitial, groomInitial]}
+        saveLabel={content.hashtag || "Save the Date"}
+        hostLine={content.hostLabel || ""}
+        coupleLine={coupleLine}
+        dateLine={openingDate}
+        placeLine={content.venueCity || ""}
         editable={editing}
         onCoverChange={onCoverChange}
       />
@@ -161,12 +175,14 @@ export default function RoyalRubyInvitation({
           placeLabel={marqueePlace}
         />
 
-        {isSectionEnabled(enabled, "blessings") ? (
-          <RubyBlessings
+        {isSectionEnabled(enabled, "story") ? (
+          <RubyCouple
             editing={editing}
-            layout={content.meetCoupleLayout}
+            layout={content.storyLayout}
+            photoUrl={imageUrl(draft.images, "story")}
             field={field}
-            onLayoutChange={setMeetCoupleLayout}
+            onChangeImage={(file) => changeImage(file, "story")}
+            onLayoutChange={setStoryLayout}
           />
         ) : null}
 
@@ -178,6 +194,18 @@ export default function RoyalRubyInvitation({
             field={field}
             onLayoutChange={setCountdownLayout}
             onEventDateChange={(value) => commitEventDate(value, "wedding")}
+          />
+        ) : null}
+
+        {isSectionEnabled(enabled, "blessings") ? (
+          <RubyBlessings
+            editing={editing}
+            layout={content.meetCoupleLayout}
+            brideParentsUrl={imageUrl(draft.images, "parentsLeft")}
+            groomParentsUrl={imageUrl(draft.images, "parentsRight")}
+            field={field}
+            onChangeImage={(slot, file) => changeImage(file, slot)}
+            onLayoutChange={setMeetCoupleLayout}
           />
         ) : null}
 
@@ -199,18 +227,25 @@ export default function RoyalRubyInvitation({
             editing={editing}
             layout={content.locationLayout}
             mapsUrl={mapsUrl}
+            venueName={content.venueName || ""}
+            venueCity={content.venueCity || ""}
+            addressFull={content.addressFull || ""}
             field={field}
             onLayoutChange={setLocationLayout}
           />
         ) : null}
 
-        {isSectionEnabled(enabled, "rsvp") ? (
-          <RubyRsvp
+        {isSectionEnabled(enabled, "gallery") ? (
+          <RubyGallery
+            items={content.galleryItems || []}
+            layout={content.galleryLayout}
             editing={editing}
-            layout={content.quoteLayout}
-            shareText={content.shareText || ""}
             field={field}
-            onLayoutChange={setQuoteLayout}
+            onLayoutChange={setGalleryLayout}
+            onCommitItem={commitGalleryItem}
+            onAddItem={addGalleryItem}
+            onRemoveItem={removeGalleryItem}
+            onChangeImage={changeGalleryImage}
           />
         ) : null}
 

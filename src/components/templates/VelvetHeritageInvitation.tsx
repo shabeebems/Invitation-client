@@ -64,9 +64,10 @@ export default function VelvetHeritageInvitation({
 
   const heroImageUrl = imageUrl(draft.images, "hero");
   const venueImageUrl = imageUrl(draft.images, "venue") || imageUrl(draft.images, "story");
-  const groomInitial = (content.groomName || "").trim().charAt(0) || "A";
-  const brideInitial = (content.brideName || "").trim().charAt(0) || "M";
-  const sealInitials = `${groomInitial}&${brideInitial}`;
+  const coupleLine = [content.groomName, content.brideName].filter(Boolean).join(" & ") || "Arjun & Meera";
+  const openingDate = [content.weekday, [content.day, content.monthYear].filter(Boolean).join(" ")]
+    .filter(Boolean)
+    .join(" · ");
   const shareText = encodeURIComponent(content.shareText || "");
   // Persist via velvet catalog; SiteAmbiance reuses the royal particle renderer.
   const ambianceEffect = normalizeRoyalAmbiance(
@@ -93,12 +94,11 @@ export default function VelvetHeritageInvitation({
       {sealed ? null : chrome}
 
       <VelvetOpening
-        brandLabel={field("hashtag", "vh-cap-title vh-intro-brand")}
         tagline={field("envelopeTagline", "vh-cap-title vh-intro-tagline")}
-        scriptLine={field("openHint", "vh-script")}
-        openLabel="Open Invitation"
-        skipLabel={content.skipLabel || "Skip →"}
-        sealInitials={sealInitials}
+        scriptLine={field("openHint", "vh-script vh-intro-script")}
+        coupleLine={coupleLine}
+        dateLine={openingDate}
+        placeLine={[content.venueName, content.venueCity].filter(Boolean).join(" · ")}
         onCoverChange={onCoverChange}
       />
 

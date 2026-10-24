@@ -1,27 +1,82 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
-type Phase = "idle" | "opening" | "done";
+type Phase = "idle" | "opening" | "revealing" | "done";
+
+const OPEN_MS = 3300;
+const REVEAL_MS = 1000;
+
+function Filigree({ side }: { side: "left" | "right" }) {
+  return (
+    <svg
+      className={`vh-scroll-filigree is-${side}`}
+      viewBox="0 0 120 80"
+      fill="none"
+      stroke="currentColor"
+      aria-hidden="true"
+    >
+      <path d="M8 40 C 22 40, 30 30, 30 20 C 30 12, 22 9, 17 14 C 13 18, 16 25, 22 24" strokeWidth="1.3" />
+      <path d="M8 40 C 22 40, 30 50, 30 60 C 30 68, 22 71, 17 66 C 13 62, 16 55, 22 56" strokeWidth="1.3" />
+      <path d="M8 40 H 64" strokeWidth="1.1" />
+      <path d="M40 40 C 50 26, 64 22, 76 26" strokeWidth="1.1" />
+      <path d="M40 40 C 50 54, 64 58, 76 54" strokeWidth="1.1" />
+      <path d="M64 40 C 74 34, 84 34, 92 40 C 84 46, 74 46, 64 40 Z" fill="currentColor" fillOpacity="0.35" strokeWidth="1" />
+      <path d="M76 26 C 82 20, 90 20, 94 24 C 89 28, 82 28, 76 26 Z" fill="currentColor" fillOpacity="0.3" strokeWidth="0.9" />
+      <path d="M76 54 C 82 60, 90 60, 94 56 C 89 52, 82 52, 76 54 Z" fill="currentColor" fillOpacity="0.3" strokeWidth="0.9" />
+      <circle cx="98" cy="40" r="2.2" fill="currentColor" />
+      <circle cx="46" cy="30" r="1.4" fill="currentColor" />
+      <circle cx="46" cy="50" r="1.4" fill="currentColor" />
+    </svg>
+  );
+}
+
+function SealSprig() {
+  return (
+    <svg className="vh-scroll-seal-sprig" viewBox="0 0 24 32" aria-hidden="true">
+      <path d="M12 30 V8" fill="none" strokeLinecap="round" strokeWidth="1.3" />
+      {[24, 19, 14, 9].map((y) => (
+        <g key={y}>
+          <path d={`M12 ${y} C 8 ${y - 1}, 6 ${y - 4}, 7 ${y - 7} C 10 ${y - 6}, 12 ${y - 3}, 12 ${y} Z`} />
+          <path d={`M12 ${y} C 16 ${y - 1}, 18 ${y - 4}, 17 ${y - 7} C 14 ${y - 6}, 12 ${y - 3}, 12 ${y} Z`} />
+        </g>
+      ))}
+      <path d="M12 8 C 10 6, 10 3, 12 1.5 C 14 3, 14 6, 12 8 Z" />
+    </svg>
+  );
+}
+
+function Rod({ className }: { className: string }) {
+  return (
+    <span className={`vh-rod ${className}`} aria-hidden="true">
+      <span className="vh-rod-cap is-left" />
+      <span className="vh-rod-cap is-right" />
+    </span>
+  );
+}
 
 export default function VelvetOpening({
-  brandLabel,
   tagline,
   scriptLine,
-  openLabel,
+  coupleLine,
+  dateLine,
+  placeLine,
+  hint,
   skipLabel,
-  sealInitials,
   onCoverChange,
 }: {
-  brandLabel?: ReactNode;
   tagline?: ReactNode;
   scriptLine?: ReactNode;
-  openLabel?: string;
+  coupleLine: string;
+  dateLine?: string;
+  placeLine?: string;
+  hint?: string;
   skipLabel?: string;
-  sealInitials: string;
   onCoverChange?: (covering: boolean) => void;
 }) {
   const [phase, setPhase] = useState<Phase>("idle");
+  const [unrolled, setUnrolled] = useState(false);
+  const timers = useRef<number[]>([]);
   const covering = phase !== "done";
 
   useEffect(() => {
@@ -42,8 +97,19 @@ export default function VelvetOpening({
     };
   }, [covering]);
 
+  useEffect(() => {
+    const pending = timers.current;
+    return () => pending.forEach((id) => window.clearTimeout(id));
+  }, []);
+
   function finish() {
     setPhase("done");
+    window.scrollTo({ top: 0 });
+  }
+
+  function reveal() {
+    setPhase("revealing");
+    timers.current.push(window.setTimeout(finish, REVEAL_MS));
   }
 
   function beginOpen() {
@@ -52,23 +118,26 @@ export default function VelvetOpening({
       finish();
       return;
     }
+    setUnrolled(true);
     setPhase("opening");
-    window.setTimeout(finish, 1000);
+    timers.current.push(window.setTimeout(reveal, OPEN_MS));
+  }
+
+  function skip() {
+    if (phase === "done" || phase === "revealing") return;
+    timers.current.forEach((id) => window.clearTimeout(id));
+    timers.current = [];
+    reveal();
   }
 
   useEffect(() => {
+    if (!covering) return;
     function onKey(event: KeyboardEvent) {
-      if (phase === "done") return;
-      if (event.key === "Escape") setPhase("done");
+      if (event.key === "Escape") skip();
     }
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [phase]);
-
-  function skip() {
-    if (phase === "done") return;
-    finish();
-  }
+  });
 
   if (!covering) {
     return null;
@@ -76,58 +145,91 @@ export default function VelvetOpening({
 
   return (
     <div
-      className={`vh-intro${phase === "opening" ? " is-opening" : ""}`}
+      className={`vh-intro is-${phase}${unrolled ? " is-unrolled" : ""}`}
       role="dialog"
       aria-modal="true"
       aria-label="Wedding invitation opening"
     >
-      <div className="vh-intro-topbar">
-        <span className="vh-cap-title vh-intro-brand">{brandLabel || "Our Wedding"}</span>
-        <button type="button" className="vh-cap-title vh-skip-btn" onClick={skip}>
-          {skipLabel || "Skip →"}
-        </button>
-      </div>
-
       <div className="vh-petals" aria-hidden="true">
-        {Array.from({ length: 16 }).map((_, index) => (
+        {Array.from({ length: 12 }).map((_, index) => (
           <span
             key={index}
             className="vh-petal"
             style={{
-              left: `${(index * 6.2) % 100}%`,
-              animationDuration: `${7 + (index % 5)}s`,
-              animationDelay: `-${(index % 10) * 0.7}s`,
-              transform: `scale(${0.5 + (index % 7) * 0.08})`,
+              left: `${(index * 8.3 + 3) % 100}%`,
+              animationDuration: `${8 + (index % 5)}s`,
+              animationDelay: `-${(index % 10) * 0.8}s`,
+              transform: `scale(${0.45 + (index % 6) * 0.08})`,
             }}
           />
         ))}
       </div>
 
-      <div
-        className={`vh-envelope-wrap${phase === "opening" ? " is-opening" : ""}`}
-        role="button"
-        tabIndex={0}
-        aria-label="Open the wedding invitation"
-        onClick={beginOpen}
-        onKeyDown={(event) => {
-          if (event.key === "Enter" || event.key === " ") {
-            event.preventDefault();
-            beginOpen();
-          }
-        }}
-      >
-        <div className="vh-envelope-fallback" aria-hidden="true" />
-        <div className="vh-wax-seal" aria-hidden="true">
-          {sealInitials}
+      <div className="vh-intro-stage">
+        <div className="vh-intro-head">
+          <div className="vh-cap-title vh-intro-tagline">{tagline || "A Journey of Two Hearts"}</div>
+          <div className="vh-script vh-intro-script">{scriptLine || "Together Forever"}</div>
+          <div className="vh-intro-rule" aria-hidden="true">
+            <span>♥</span>
+          </div>
         </div>
-      </div>
 
-      <div className="vh-intro-captions">
-        <div className="vh-cap-title vh-intro-tagline">{tagline || "A Journey of Two Hearts"}</div>
-        <div className="vh-script">{scriptLine || "Together Forever"}</div>
-        <button type="button" className="vh-cap-title vh-open-btn" onClick={beginOpen}>
-          {openLabel || "Open Invitation"}
-        </button>
+        <div
+          className="vh-scroll"
+          role="button"
+          tabIndex={0}
+          aria-label="Open the wedding invitation scroll"
+          onClick={beginOpen}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              beginOpen();
+            }
+          }}
+        >
+          <span className="vh-scroll-glow" aria-hidden="true" />
+
+          <div className="vh-scroll-sheet" aria-hidden="true">
+            <div className="vh-scroll-sheet-inner">
+              <span className="vh-scroll-kicker">Together with their families</span>
+              <span className="vh-scroll-names">{coupleLine}</span>
+              <span className="vh-scroll-line">invite you to celebrate their wedding</span>
+              <span className="vh-scroll-ornament">
+                <span>❖</span>
+              </span>
+              {dateLine ? <span className="vh-scroll-date">{dateLine}</span> : null}
+              {placeLine ? <span className="vh-scroll-place">{placeLine}</span> : null}
+            </div>
+          </div>
+
+          <Rod className="is-top" />
+          <Rod className="is-bottom" />
+
+          <div className="vh-scroll-roll" aria-hidden="true">
+            <span className="vh-rod-cap is-left" />
+            <span className="vh-rod-cap is-right" />
+            <Filigree side="left" />
+            <Filigree side="right" />
+          </div>
+
+          <span className="vh-scroll-tail is-left" aria-hidden="true" />
+          <span className="vh-scroll-tail is-right" aria-hidden="true" />
+          <span className="vh-scroll-band" aria-hidden="true" />
+          <span className="vh-scroll-seal" aria-hidden="true">
+            <span className="vh-scroll-seal-face">
+              <SealSprig />
+            </span>
+          </span>
+        </div>
+
+        <div className="vh-intro-actions">
+          <button type="button" className="vh-intro-hint" onClick={beginOpen}>
+            <span aria-hidden="true">→</span> {hint || "Tap the scroll to open your invitation"}
+          </button>
+          <button type="button" className="vh-intro-skip" onClick={skip}>
+            {skipLabel || "Skip animation & enter"}
+          </button>
+        </div>
       </div>
     </div>
   );
