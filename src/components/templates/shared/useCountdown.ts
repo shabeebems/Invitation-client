@@ -11,9 +11,10 @@ export type CountdownState = {
 };
 
 export function useCountdown(isoDate?: string): CountdownState {
-  const [now, setNow] = useState(() => Date.now());
+  const [now, setNow] = useState<number | null>(null);
 
   useEffect(() => {
+    setNow(Date.now());
     const timer = window.setInterval(() => setNow(Date.now()), 1000);
     return () => window.clearInterval(timer);
   }, []);
@@ -25,6 +26,10 @@ export function useCountdown(isoDate?: string): CountdownState {
   const target = new Date(isoDate).getTime();
   if (Number.isNaN(target)) {
     return { days: 0, hours: 0, minutes: 0, seconds: 0, isLive: true };
+  }
+
+  if (now === null) {
+    return { days: 0, hours: 0, minutes: 0, seconds: 0, isLive: false };
   }
 
   const diff = Math.max(0, target - now);

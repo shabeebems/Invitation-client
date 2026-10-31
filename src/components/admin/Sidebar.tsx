@@ -5,6 +5,9 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { API_URL } from "@/lib/api";
 import { useAdmin } from "./AdminContext";
+import BrandMark from "@/components/brand/BrandMark";
+import BrandWordmark from "@/components/brand/BrandWordmark";
+import { BRAND_NAME } from "@/lib/brand";
 import {
   CategoriesIcon,
   DashboardIcon,
@@ -75,9 +78,12 @@ export default function Sidebar() {
 
   return (
     <aside className="flex h-full w-[248px] shrink-0 flex-col border-r border-[#e6e8ec] bg-white px-4 py-6 text-[#1c1f24]">
-      <Link href="/admin/dashboard" className="px-2">
-        <p className="text-[22px] font-semibold tracking-[0.16em] text-[#111827] uppercase">Inviteo</p>
-        <p className="mt-1 text-[11px] font-medium tracking-[0.18em] text-zinc-400 uppercase">Admin</p>
+      <Link href="/admin/dashboard" className="flex items-center gap-3 px-2">
+        <BrandMark priority className="h-9 w-auto shrink-0" />
+        <span className="min-w-0" aria-label={`${BRAND_NAME} admin`}>
+          <BrandWordmark className="text-[1.45rem]" />
+          <span className="mt-1.5 block text-[10px] font-medium tracking-[0.22em] text-zinc-400 uppercase">Admin</span>
+        </span>
       </Link>
 
       <div className="mt-7 flex items-center gap-3 rounded-2xl bg-[#f4f5f7] px-3 py-3">

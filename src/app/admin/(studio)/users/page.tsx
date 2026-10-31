@@ -38,7 +38,7 @@ export default function UsersPage() {
       <PageHeader
         eyebrow="Access"
         title="Users"
-        description="Everyone with an Inviteo account. Customers publish under Works; admins manage the studio."
+        description="Everyone with a Save the Kath account. Customers publish under Works; admins manage the studio."
         meta={`${counts.total} accounts · ${counts.admins} admin · ${counts.customers} customer`}
       />
 

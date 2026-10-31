@@ -8,6 +8,7 @@ import {
   type PaymentOrder,
 } from "@/lib/api";
 import { loadRazorpayScript } from "@/lib/useRazorpay";
+import { BRAND_MARK_SRC } from "@/lib/brand";
 
 type ModalStep = "loading" | "ready" | "paying" | "verifying" | "publishing" | "success" | "error";
 
@@ -113,7 +114,8 @@ export default function PublishPaymentModal({
         key: order.keyId,
         amount: order.amount,
         currency: order.currency,
-        name: "Inviteo",
+        name: "Save the Kath",
+        image: `${window.location.origin}${BRAND_MARK_SRC}`,
         description: `Publish ${invitationName || "Invitation"}`,
         order_id: order.gatewayOrderId,
         prefill: {

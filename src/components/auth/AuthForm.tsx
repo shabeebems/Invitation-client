@@ -4,7 +4,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { API_URL } from "@/lib/api";
+import { cormorant } from "@/lib/fonts";
 import { loginHref, safeNextPath, signupHref } from "@/lib/session";
+import AuthField from "./AuthField";
+import { ArrowIcon, EyeIcon, GoogleMark, LockIcon, MailIcon, UserIcon } from "./auth-icons";
 
 declare global {
   interface Window {
@@ -14,7 +17,6 @@ declare global {
           initialize: (config: {
             client_id: string;
             callback: (response: { credential: string }) => void;
-            use_fedcm_for_prompt?: boolean;
           }) => void;
           renderButton: (
             parent: HTMLElement,
@@ -45,31 +47,7 @@ type Fields = {
 
 type Errors = Partial<Record<keyof Fields, string>>;
 
-const inputClass =
-  "mt-1.5 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 outline-none transition focus:border-accent";
-
-const passwordInputClass =
-  "w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 pr-12 text-sm text-zinc-900 outline-none transition focus:border-accent";
-
-function EyeIcon({ open }: { open: boolean }) {
-  if (open) {
-    return (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-        <path d="M3 3l18 18" />
-        <path d="M10.6 10.6A2 2 0 0 0 12 14a2 2 0 0 0 1.4-.6" />
-        <path d="M9.9 5.2A10.8 10.8 0 0 1 12 5c5.5 0 9.5 4.2 11 7-1 1.8-2.4 3.5-4.2 4.7" />
-        <path d="M6.1 6.1C4.2 7.4 2.7 9.2 1.5 12c1.5 2.8 5.5 7 10.5 7 1.2 0 2.3-.2 3.3-.6" />
-      </svg>
-    );
-  }
-
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" />
-      <circle cx="12" cy="12" r="3" />
-    </svg>
-  );
-}
+const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 
 let googleInitialized = false;
 
@@ -87,8 +65,10 @@ export default function AuthForm({ mode }: { mode: Mode }) {
   const [submitting, setSubmitting] = useState(false);
   const nextPathRef = useRef("");
   const [nextPath, setNextPath] = useState("");
-  const googleButtonRef = useRef<HTMLDivElement>(null);
   const onGoogleCredential = useRef<(credential: string) => void>(() => {});
+  const googleButtonRef = useRef<HTMLDivElement>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
     const path = safeNextPath(new URLSearchParams(window.location.search).get("next"));
@@ -139,16 +119,13 @@ export default function AuthForm({ mode }: { mode: Mode }) {
   };
 
   useEffect(() => {
-    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-    const parent = googleButtonRef.current;
-
-    if (!clientId || !parent) {
+    if (!GOOGLE_CLIENT_ID) {
       return;
     }
 
     let cancelled = false;
 
-    function renderGoogleButton() {
+    function ready() {
       const host = googleButtonRef.current;
 
       if (cancelled || !host || !window.google?.accounts?.id) {
@@ -157,11 +134,10 @@ export default function AuthForm({ mode }: { mode: Mode }) {
 
       if (!googleInitialized) {
         window.google.accounts.id.initialize({
-          client_id: clientId!,
+          client_id: GOOGLE_CLIENT_ID!,
           callback: (response) => {
             void onGoogleCredential.current(response.credential);
           },
-          use_fedcm_for_prompt: true,
         });
         googleInitialized = true;
       }
@@ -173,13 +149,13 @@ export default function AuthForm({ mode }: { mode: Mode }) {
         size: "large",
         text: "continue_with",
         shape: "pill",
-        width: Math.min(Math.max(host.offsetWidth, 280), 400),
+        width: Math.min(Math.max(host.offsetWidth || host.parentElement?.clientWidth || 280, 240), 400),
         logo_alignment: "center",
       });
     }
 
     if (window.google?.accounts?.id) {
-      renderGoogleButton();
+      ready();
       return () => {
         cancelled = true;
       };
@@ -195,16 +171,13 @@ export default function AuthForm({ mode }: { mode: Mode }) {
       document.body.appendChild(script);
     }
 
-    script.addEventListener("load", renderGoogleButton);
+    script.addEventListener("load", ready);
 
     return () => {
       cancelled = true;
-      script?.removeEventListener("load", renderGoogleButton);
+      script?.removeEventListener("load", ready);
     };
   }, []);
-
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   function update(key: keyof Fields, value: string) {
     setFields((current) => ({ ...current, [key]: value }));
@@ -277,129 +250,118 @@ export default function AuthForm({ mode }: { mode: Mode }) {
   }
 
   return (
-    <div className="rounded-[28px] bg-white px-8 py-10 shadow-sm">
-      <h1 className="text-3xl font-extrabold tracking-tight text-zinc-900">
+    <div className="auth-panel">
+      <h1 className={`auth-title ${cormorant.className}`}>
         {isSignup ? "Create your account" : "Welcome back"}
       </h1>
-      <p className="mt-2 text-sm text-zinc-500">
+      <p className="auth-lead">
         {isSignup
           ? "Start an invitation you can share with one link."
           : "Log in to open the invitations you have made."}
       </p>
 
-      <div ref={googleButtonRef} className="mt-8 flex min-h-11 w-full justify-center [&>div]:w-full" />
+      {GOOGLE_CLIENT_ID ? (
+        <div className="auth-google">
+          <span className="auth-google-face" aria-hidden="true">
+            <GoogleMark />
+            Continue with Google
+          </span>
+          <div ref={googleButtonRef} className="auth-google-host" />
+        </div>
+      ) : null}
 
-      <div className="my-6 flex items-center gap-3 text-xs font-semibold tracking-wide text-zinc-400 uppercase">
-        <span className="h-px flex-1 bg-zinc-200" />
-        or
-        <span className="h-px flex-1 bg-zinc-200" />
-      </div>
+      {GOOGLE_CLIENT_ID ? <div className="auth-rule">or</div> : null}
 
-      <form onSubmit={onSubmit} noValidate className="flex flex-col gap-4">
+      <form onSubmit={onSubmit} noValidate className="auth-form">
         {isSignup ? (
-          <label className="text-sm font-semibold text-zinc-800">
-            Name
-            <input
-              type="text"
-              name="name"
-              autoComplete="name"
-              value={fields.name}
-              onChange={(event) => update("name", event.target.value)}
-              className={inputClass}
-            />
-            {errors.name ? <span className="mt-1 block text-xs font-medium text-accent">{errors.name}</span> : null}
-          </label>
+          <AuthField
+            label="Name"
+            name="name"
+            autoComplete="name"
+            icon={<UserIcon />}
+            value={fields.name}
+            placeholder="Enter your name"
+            error={errors.name}
+            onChange={(value) => update("name", value)}
+          />
         ) : null}
 
-        <label className="text-sm font-semibold text-zinc-800">
-          Email
-          <input
-            type="email"
-            name="email"
-            autoComplete="email"
-            value={fields.email}
-            onChange={(event) => update("email", event.target.value)}
-            className={inputClass}
-          />
-          {errors.email ? <span className="mt-1 block text-xs font-medium text-accent">{errors.email}</span> : null}
-        </label>
+        <AuthField
+          label="Email"
+          type="email"
+          name="email"
+          autoComplete="email"
+          icon={<MailIcon />}
+          value={fields.email}
+          placeholder="Enter your email"
+          error={errors.email}
+          onChange={(value) => update("email", value)}
+        />
 
-        <label className="text-sm font-semibold text-zinc-800">
-          Password
-          <span className="relative mt-1.5 block">
-            <input
-              type={showPassword ? "text" : "password"}
-              name="password"
-              autoComplete={isSignup ? "new-password" : "current-password"}
-              value={fields.password}
-              onChange={(event) => update("password", event.target.value)}
-              className={passwordInputClass}
-            />
+        <AuthField
+          label="Password"
+          type={showPassword ? "text" : "password"}
+          name="password"
+          autoComplete={isSignup ? "new-password" : "current-password"}
+          icon={<LockIcon />}
+          value={fields.password}
+          placeholder={isSignup ? "Create a password" : "Enter your password"}
+          error={errors.password}
+          onChange={(value) => update("password", value)}
+          trailing={
             <button
               type="button"
               onClick={() => setShowPassword((current) => !current)}
               aria-label={showPassword ? "Hide password" : "Show password"}
-              className="absolute top-1/2 right-3 -translate-y-1/2 text-zinc-500 hover:text-zinc-800"
+              className="auth-eye"
             >
               <EyeIcon open={showPassword} />
             </button>
-          </span>
-          {errors.password ? (
-            <span className="mt-1 block text-xs font-medium text-accent">{errors.password}</span>
-          ) : null}
-        </label>
+          }
+        />
 
         {isSignup ? (
-          <label className="text-sm font-semibold text-zinc-800">
-            Confirm password
-            <span className="relative mt-1.5 block">
-              <input
-                type={showConfirmPassword ? "text" : "password"}
-                name="confirmPassword"
-                autoComplete="new-password"
-                value={fields.confirmPassword}
-                onChange={(event) => update("confirmPassword", event.target.value)}
-                className={passwordInputClass}
-              />
+          <AuthField
+            label="Confirm password"
+            type={showConfirmPassword ? "text" : "password"}
+            name="confirmPassword"
+            autoComplete="new-password"
+            icon={<LockIcon />}
+            value={fields.confirmPassword}
+            placeholder="Confirm your password"
+            error={errors.confirmPassword}
+            onChange={(value) => update("confirmPassword", value)}
+            trailing={
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword((current) => !current)}
                 aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
-                className="absolute top-1/2 right-3 -translate-y-1/2 text-zinc-500 hover:text-zinc-800"
+                className="auth-eye"
               >
                 <EyeIcon open={showConfirmPassword} />
               </button>
-            </span>
-            {errors.confirmPassword ? (
-              <span className="mt-1 block text-xs font-medium text-accent">{errors.confirmPassword}</span>
-            ) : null}
-          </label>
-        ) : null}
+            }
+          />
+        ) : (
+          <div className="auth-forgot">
+            <Link href="/forgot-password" className="auth-link">
+              Forgot password?
+            </Link>
+          </div>
+        )}
 
-        {!isSignup ? (
-          <Link href="/forgot-password" className="text-sm font-semibold text-accent hover:text-accent-hover">
-            Forgot password
-          </Link>
-        ) : null}
+        {formError ? <p className="auth-error">{formError}</p> : null}
 
-        {formError ? <p className="text-sm font-medium text-accent">{formError}</p> : null}
-
-        <button
-          type="submit"
-          disabled={submitting}
-          className="mt-2 rounded-full bg-accent px-4 py-3 text-sm font-semibold text-white hover:bg-accent-hover disabled:opacity-60"
-        >
-          {submitting ? "Please wait" : isSignup ? "Signup" : "Login"}
+        <button type="submit" disabled={submitting} className="auth-submit">
+          <span>{submitting ? "Please wait" : isSignup ? "Sign Up" : "Log In"}</span>
+          {submitting ? null : <ArrowIcon />}
         </button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-zinc-500">
+      <p className="auth-note">
         {isSignup ? "Already have an account?" : "Need an account?"}{" "}
-        <Link
-          href={isSignup ? loginHref(nextPath) : signupHref(nextPath)}
-          className="font-semibold text-accent hover:text-accent-hover"
-        >
-          {isSignup ? "Login" : "Signup"}
+        <Link href={isSignup ? loginHref(nextPath) : signupHref(nextPath)} className="auth-link">
+          {isSignup ? "Log In" : "Sign Up"}
         </Link>
       </p>
     </div>

@@ -14,7 +14,6 @@ import CreamLocation from "@/components/templates/cream/CreamLocation";
 import CreamCountdown from "@/components/templates/cream/CreamCountdown";
 import CreamDress from "@/components/templates/cream/CreamDress";
 import CreamFaq from "@/components/templates/cream/CreamFaq";
-import CreamRsvp from "@/components/templates/cream/CreamRsvp";
 import CreamFinal from "@/components/templates/cream/CreamFinal";
 import CreamFooter from "@/components/templates/cream/CreamFooter";
 import { CreamGrain } from "@/components/templates/cream/CreamDecor";
@@ -57,13 +56,12 @@ export default function CreamEditorialInvitation({
     commitProgramItem,
     commitLoveStoryItem,
     removeLoveStoryItem,
+    changeLoveStoryImage,
+    changeProgramImage,
     changeGalleryImage,
     commitGalleryItem,
     addGalleryItem,
     removeGalleryItem,
-    commitLocationItem,
-    addLocationItem,
-    removeLocationItem,
     setGalleryLayout,
     setCountdownLayout,
     setHeroLayout,
@@ -73,7 +71,7 @@ export default function CreamEditorialInvitation({
     setLocationLayout,
     setFooterLayout,
     setStoryLayout,
-    setQuoteLayout,
+    setDressColors,
     themeTitle,
     chrome,
   } = useInvitationEditor({
@@ -85,9 +83,13 @@ export default function CreamEditorialInvitation({
   });
 
   const heroImageUrl = imageUrl(draft.images, "hero");
+  const heroAltImageUrl = imageUrl(draft.images, "heroAlt");
   const brideUrl = imageUrl(draft.images, "bride");
   const groomUrl = imageUrl(draft.images, "groom");
+  const coupleUrl = imageUrl(draft.images, "couple");
+  const storyFeatureUrl = imageUrl(draft.images, "storyFeature");
   const venueImageUrl = imageUrl(draft.images, "story");
+  const countdownImageUrl = imageUrl(draft.images, "countdown");
 
   const ambianceEffect = normalizeRoyalAmbiance(
     normalizeAmbianceEffect(content.ambianceEffect, "cream")
@@ -96,7 +98,7 @@ export default function CreamEditorialInvitation({
     () => resolveEnabledSections("cream", content.enabledSections),
     [content.enabledSections]
   );
-  const mapsUrl = content.mapsUrl || content.googleMapsUrl || "";
+  const mapsUrl = typeof content.mapsUrl === "string" ? content.mapsUrl : content.googleMapsUrl || "";
   const themeClass = /sage|garden/i.test(themeTitle) ? " palette-sage" : " palette-ivory";
 
   const brideInitial = (content.brideName || "").trim().charAt(0) || "I";
@@ -140,7 +142,6 @@ export default function CreamEditorialInvitation({
     ...(isSectionEnabled(enabled, "location") ? [{ href: "#venue", label: "Venue" }] : []),
     ...(isSectionEnabled(enabled, "dress") ? [{ href: "#dress", label: "Dress code" }] : []),
     ...(isSectionEnabled(enabled, "faq") ? [{ href: "#faq", label: "FAQ" }] : []),
-    ...(isSectionEnabled(enabled, "rsvp") ? [{ href: "#rsvp", label: "RSVP" }] : []),
   ];
 
   function setWelcomeLayout(layout: string) {
@@ -273,9 +274,11 @@ export default function CreamEditorialInvitation({
           <CreamHero
             editing={editing}
             layout={content.heroLayout}
+            introLine={content.introLine}
             heroImageUrl={heroImageUrl}
+            heroAltImageUrl={heroAltImageUrl}
             field={field}
-            onChangeImage={(file) => changeImage(file, "hero")}
+            onChangeImage={(slot, file) => changeImage(file, slot)}
             onLayoutChange={setHeroLayout}
           />
         ) : null}
@@ -293,8 +296,12 @@ export default function CreamEditorialInvitation({
           <CreamCouple
             editing={editing}
             layout={content.meetCoupleLayout}
+            title={content.storyTitle}
+            brideName={content.brideName}
+            groomName={content.groomName}
             brideUrl={brideUrl}
             groomUrl={groomUrl}
+            coupleUrl={coupleUrl}
             field={field}
             onChangeImage={(slot, file) => changeImage(file, slot)}
             onLayoutChange={setMeetCoupleLayout}
@@ -311,8 +318,11 @@ export default function CreamEditorialInvitation({
             onCommitItem={(index, key, value) =>
               commitLoveStoryItem(storyGlobalIndex(index), key, value)
             }
+            featureUrl={storyFeatureUrl}
             onAddItem={addStoryMilestone}
             onRemoveItem={(index) => removeLoveStoryItem(storyGlobalIndex(index))}
+            onChangeItemImage={(index, file) => changeLoveStoryImage(storyGlobalIndex(index), file)}
+            onChangeFeature={(file) => changeImage(file, "storyFeature")}
           />
         ) : null}
 
@@ -333,7 +343,6 @@ export default function CreamEditorialInvitation({
         {isSectionEnabled(enabled, "events") ? (
           <CreamEvents
             items={content.programItems || []}
-            scheduleItems={content.locationItems || []}
             layout={content.programLayout}
             editing={editing}
             field={field}
@@ -341,9 +350,7 @@ export default function CreamEditorialInvitation({
             onCommitItem={commitProgramItem}
             onAddItem={addProgram}
             onRemoveItem={removeProgram}
-            onCommitSchedule={commitLocationItem}
-            onAddSchedule={addLocationItem}
-            onRemoveSchedule={removeLocationItem}
+            onChangeImage={changeProgramImage}
           />
         ) : null}
 
@@ -353,6 +360,7 @@ export default function CreamEditorialInvitation({
             layout={content.locationLayout}
             venueImageUrl={venueImageUrl}
             mapsUrl={mapsUrl}
+            mapQuery={[content.venueName, content.venueCity].filter(Boolean).join(", ")}
             field={field}
             onChangeImage={(file) => changeImage(file, "story")}
             onLayoutChange={setLocationLayout}
@@ -364,9 +372,11 @@ export default function CreamEditorialInvitation({
             editing={editing}
             layout={content.countdownLayout}
             eventDateIso={content.eventDateIso}
+            imageUrl={countdownImageUrl}
             field={field}
             onLayoutChange={setCountdownLayout}
             onEventDateChange={(value) => commitEventDate(value, "wedding")}
+            onChangeImage={(file) => changeImage(file, "countdown")}
           />
         ) : null}
 
@@ -374,8 +384,10 @@ export default function CreamEditorialInvitation({
           <CreamDress
             editing={editing}
             layout={content.storyLayout}
+            colors={content.dressColors}
             field={field}
             onLayoutChange={setStoryLayout}
+            onColorsChange={setDressColors}
           />
         ) : null}
 
@@ -391,15 +403,6 @@ export default function CreamEditorialInvitation({
             }
             onAddItem={addFaqItem}
             onRemoveItem={(index) => removeLoveStoryItem(faqGlobalIndex(index))}
-          />
-        ) : null}
-
-        {isSectionEnabled(enabled, "rsvp") ? (
-          <CreamRsvp
-            editing={editing}
-            layout={content.quoteLayout}
-            field={field}
-            onLayoutChange={setQuoteLayout}
           />
         ) : null}
 

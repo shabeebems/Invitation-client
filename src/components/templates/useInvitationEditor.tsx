@@ -68,6 +68,8 @@ function clampContent(content: TemplateContent): TemplateContent {
       ...(typeof item.mapsUrl === "string"
         ? { mapsUrl: clampText(item.mapsUrl, PROGRAM_ITEM_MAX.mapsUrl) }
         : {}),
+      ...(item.url ? { url: item.url } : {}),
+      ...(item.publicId ? { publicId: item.publicId } : {}),
     }));
   }
 
@@ -130,6 +132,7 @@ type SaveImage = {
   slot?: ImageSlot;
   galleryIndex?: number;
   loveStoryIndex?: number;
+  programIndex?: number;
 };
 
 const emptyLoveStoryItem = (): LoveStoryItem => ({
@@ -201,6 +204,7 @@ export function useInvitationEditor({
           slot: image.slot || "hero",
           galleryIndex: image.galleryIndex,
           loveStoryIndex: image.loveStoryIndex,
+          programIndex: image.programIndex,
         });
       }
       return true;
@@ -220,6 +224,9 @@ export function useInvitationEditor({
       }
       if (image.slot === "loveStory" && image.loveStoryIndex !== undefined) {
         body.append("loveStoryIndex", String(image.loveStoryIndex));
+      }
+      if (image.slot === "program" && image.programIndex !== undefined) {
+        body.append("programIndex", String(image.programIndex));
       }
     }
 
@@ -552,6 +559,31 @@ export function useInvitationEditor({
     persistLocations((draft.content.locationItems || []).filter((_, itemIndex) => itemIndex !== index));
   }
 
+  function changeProgramImage(index: number, file: File) {
+    const previousItems = draftRef.current.content.programItems || [];
+    const preview = URL.createObjectURL(file);
+    lastSaveOk.current = false;
+    setStatus("saving");
+    setStatusMessage("Uploading photo…");
+    setDraft((prev) => {
+      const items = [...(prev.content.programItems || [])];
+      if (!items[index]) return prev;
+      items[index] = { ...items[index], url: preview };
+      const nextContent = { ...prev.content, programItems: items };
+      void persist(nextContent, { file, slot: "program", programIndex: index }).then((ok) => {
+        URL.revokeObjectURL(preview);
+        if (!ok) {
+          setDraft((current) => ({
+            ...current,
+            content: { ...current.content, programItems: previousItems },
+          }));
+          setStatusMessage("Photo not saved — try again");
+        }
+      });
+      return { ...prev, content: nextContent };
+    });
+  }
+
   function commitProgramItem(index: number, key: keyof ProgramItem, value: string) {
     const safeValue = clampText(value, PROGRAM_ITEM_MAX[key]);
     setDraft((prev) => {
@@ -741,7 +773,6 @@ export function useInvitationEditor({
         sectionFamily === "royal" ||
         sectionFamily === "house" ||
         sectionFamily === "velvet" ||
-        sectionFamily === "palace" ||
         sectionFamily === "botanical" ||
         sectionFamily === "ruby" ||
         sectionFamily === "aurelia" ||
@@ -753,7 +784,6 @@ export function useInvitationEditor({
         sectionFamily === "royal" ||
         sectionFamily === "house" ||
         sectionFamily === "velvet" ||
-        sectionFamily === "palace" ||
         sectionFamily === "botanical" ||
         sectionFamily === "ruby" ||
         sectionFamily === "aurelia" ||
@@ -811,6 +841,7 @@ export function useInvitationEditor({
     addLoveStoryItem,
     removeLoveStoryItem,
     changeLoveStoryImage,
+    changeProgramImage,
     themeTitle,
     chrome,
   };

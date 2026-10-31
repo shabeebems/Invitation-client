@@ -1,11 +1,8 @@
 import Link from "next/link";
-import { Playfair_Display } from "next/font/google";
 import type { Category } from "@/lib/api";
-
-const display = Playfair_Display({
-  subsets: ["latin"],
-  weight: ["500", "600", "700"],
-});
+import BrandMark from "@/components/brand/BrandMark";
+import BrandWordmark from "@/components/brand/BrandWordmark";
+import { BRAND_NAME } from "@/lib/brand";
 
 const keyFeatures = [
   "Live text editor",
@@ -16,15 +13,7 @@ const keyFeatures = [
 ];
 
 export default function SiteFooter({ categories = [] }: { categories?: Category[] }) {
-  // Use existing categories or fallback to reference occasions
-  const occasionLinks =
-    categories.length > 0
-      ? categories.slice(0, 4)
-      : [
-          { id: "iftar", name: "Iftar" },
-          { id: "house-warming", name: "House Warming" },
-          { id: "wedding", name: "Wedding" },
-        ];
+  const occasionLinks = categories.slice(0, 4);
 
   return (
     <footer className="relative w-full overflow-hidden bg-[#031B13] text-[#F7F0DE]">
@@ -39,14 +28,14 @@ export default function SiteFooter({ categories = [] }: { categories?: Category[
             <div>
               {/* Circular badge + Brand Name */}
               <div className="flex items-center gap-3.5">
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-[17px] font-bold text-[#071B13] shadow-sm">
-                  In
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#F7F0DE] shadow-sm">
+                  <BrandMark className="h-6 w-auto" />
                 </span>
                 <div>
-                  <p className={`${display.className} text-[1.45rem] font-medium tracking-tight text-[#F7F0DE]`}>
-                    Inviteo
+                  <p aria-label={BRAND_NAME}>
+                    <BrandWordmark tone="light" className="text-[1.8rem]" />
                   </p>
-                  <p className="text-[10px] font-semibold tracking-[0.24em] text-[#D9C18C] uppercase">
+                  <p className="mt-1.5 text-[10px] font-semibold tracking-[0.24em] text-[#D9C18C] uppercase">
                     Digital Invitations
                   </p>
                 </div>
@@ -198,7 +187,7 @@ export default function SiteFooter({ categories = [] }: { categories?: Category[
         <div className="mt-14 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#D2D8CE]/75">
           {/* Left: Copyright */}
           <p className="whitespace-nowrap">
-            © 2026 Inviteo. All rights reserved.
+            © 2026 {BRAND_NAME}. All rights reserved.
           </p>
 
           {/* Center: Thin horizontal divider with central leaf motif */}

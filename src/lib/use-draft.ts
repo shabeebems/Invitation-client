@@ -6,7 +6,7 @@ export type UseDraft = {
 };
 
 function key(slug: string) {
-  return `inviteo-use:${slug}`;
+  return `save-the-kath-use:${slug}`;
 }
 
 export function saveUseDraft(slug: string, draft: UseDraft) {

@@ -77,7 +77,16 @@ export const CONTENT_FIELD_MAX: Record<string, number> = {
   dressCode: 80,
   dressColors: 320,
   dressPaletteLabel: 40,
-  rsvpNote: 200,
+  heroScript: 40,
+  heroSideNote: 60,
+  heroCtaLabel: 40,
+  coupleTagline: 90,
+  storySideNote: 48,
+  storyScriptNote: 40,
+  galleryLead: 140,
+  galleryScript: 40,
+  gallerySideNote: 48,
+  eventsLead: 120,
   storyTitle: 80,
   storyText: 600,
   meetCoupleTitle: 80,
@@ -108,6 +117,8 @@ export const PROGRAM_ITEM_MAX = {
   title: 80,
   description: 280,
   mapsUrl: 500,
+  url: 500,
+  publicId: 200,
 } as const;
 
 export const GALLERY_ITEM_MAX = {

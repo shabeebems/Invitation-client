@@ -1,10 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { API_URL, type AdminUser } from "@/lib/api";
-import { homeFor } from "@/lib/session";
 
 function ProfileIcon() {
   return (
@@ -20,7 +18,7 @@ export default function ProfileMenu({
   variant = "default",
 }: {
   user: AdminUser;
-  variant?: "default" | "sage";
+  variant?: "default" | "brand";
 }) {
   const router = useRouter();
   const menuRef = useRef<HTMLDivElement>(null);
@@ -78,8 +76,8 @@ export default function ProfileMenu({
         aria-label={`${user.name} account menu`}
         onClick={() => setOpen((current) => !current)}
         className={
-          variant === "sage"
-            ? "flex h-9 w-9 items-center justify-center rounded-full bg-[#183C2C] text-white hover:bg-[#224C38] transition shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#183C2C]"
+          variant === "brand"
+            ? "flex h-8 w-8 items-center justify-center rounded-full bg-[#173A2C] text-[#FBF6EA] hover:bg-[#245440] transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#A8844F]"
             : "flex h-10 w-10 items-center justify-center rounded-full bg-accent text-white hover:bg-accent-hover"
         }
       >
@@ -89,29 +87,11 @@ export default function ProfileMenu({
         <div
           role="menu"
           className={
-            variant === "sage"
-              ? "absolute top-12 right-0 z-30 w-44 overflow-hidden rounded-2xl bg-[#f7f9f3] py-1.5 shadow-xl ring-1 ring-[#c5d3ba]/70"
+            variant === "brand"
+              ? "absolute top-12 right-0 z-30 w-44 overflow-hidden rounded-2xl bg-[#FFFDF8] py-1.5 shadow-xl ring-1 ring-[#E7DCC8]"
               : "absolute top-12 right-0 z-30 w-44 overflow-hidden rounded-2xl bg-white py-1.5 shadow-lg ring-1 ring-black/5"
           }
         >
-          <Link
-            href={homeFor(user)}
-            role="menuitem"
-            onClick={() => setOpen(false)}
-            className="block px-4 py-2.5 text-sm font-semibold text-zinc-800 hover:bg-zinc-50"
-          >
-            {user.role === "admin" ? "Dashboard" : "My invitations"}
-          </Link>
-          {user.role !== "admin" ? (
-            <Link
-              href="/user/profile"
-              role="menuitem"
-              onClick={() => setOpen(false)}
-              className="block px-4 py-2.5 text-sm font-semibold text-zinc-800 hover:bg-zinc-50"
-            >
-              Profile
-            </Link>
-          ) : null}
           <button
             type="button"
             role="menuitem"

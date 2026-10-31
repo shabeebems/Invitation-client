@@ -53,7 +53,7 @@ export default function GuestOnly({ children }: { children: React.ReactNode }) {
 
   if (!ready) {
     return (
-      <div className="flex min-h-full items-center justify-center bg-page text-sm">
+      <div className="flex min-h-[40vh] items-center justify-center text-sm text-[#5A5F57]">
         Checking access…
       </div>
     );

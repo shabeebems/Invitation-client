@@ -36,7 +36,7 @@ export default async function TemplatePreviewPage({
 
   return (
     <>
-      <UseTemplateBar slug={template.slug} name={template.name} />
+      <UseTemplateBar slug={template.slug} />
       <InvitationView template={template} />
     </>
   );

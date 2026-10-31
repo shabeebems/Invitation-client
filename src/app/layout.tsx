@@ -10,8 +10,14 @@ const plusJakarta = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Inviteo",
-  description: "Invitation admin dashboard",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
+  title: "Save the Kath",
+  applicationName: "Save the Kath",
+  description: "Elegant digital invitations for weddings, housewarmings and celebrations.",
+  openGraph: {
+    siteName: "Save the Kath",
+    type: "website",
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

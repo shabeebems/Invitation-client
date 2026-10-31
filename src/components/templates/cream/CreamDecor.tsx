@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 export function CreamGrain() {
   return <div className="ce-grain" aria-hidden="true" />;
@@ -17,6 +17,15 @@ export function CreamOrnament() {
   );
 }
 
+export function DiamondRule({ className }: { className: string }) {
+  return (
+    <svg className={className} viewBox="0 0 72 10" aria-hidden="true">
+      <path d="M0 5h29M43 5h29" stroke="currentColor" strokeWidth="1" />
+      <path d="M36 1.4L39.6 5 36 8.6 32.4 5Z" fill="currentColor" />
+    </svg>
+  );
+}
+
 export function Reveal({
   children,
   className = "",
@@ -27,33 +36,28 @@ export function Reveal({
   delay?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
+  const [shown, setShown] = useState(false);
 
   useEffect(() => {
     const node = ref.current;
-    if (!node) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      node.classList.add("in");
-      return;
-    }
+    if (!node || shown) return;
     const io = new IntersectionObserver(
       (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("in");
-            io.unobserve(entry.target);
-          }
-        });
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setShown(true);
+          io.disconnect();
+        }
       },
       { threshold: 0.15 }
     );
     io.observe(node);
     return () => io.disconnect();
-  }, []);
+  }, [shown]);
 
   return (
     <div
       ref={ref}
-      className={`ce-rv ${className}`.trim()}
+      className={`ce-rv${shown ? " in" : ""} ${className}`.trim()}
       style={delay ? { ["--d" as string]: delay } : undefined}
     >
       {children}

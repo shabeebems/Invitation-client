@@ -101,7 +101,16 @@ export type TemplateContent = {
   dressCode?: string;
   dressColors?: string;
   dressPaletteLabel?: string;
-  rsvpNote?: string;
+  heroScript?: string;
+  heroSideNote?: string;
+  heroCtaLabel?: string;
+  coupleTagline?: string;
+  storySideNote?: string;
+  storyScriptNote?: string;
+  galleryLead?: string;
+  galleryScript?: string;
+  gallerySideNote?: string;
+  eventsLead?: string;
   storyTitle?: string;
   storyText?: string;
   meetCoupleTitle?: string;
@@ -138,6 +147,8 @@ export type ProgramItem = {
   title: string;
   description: string;
   mapsUrl?: string;
+  url?: string;
+  publicId?: string;
 };
 
 export type GalleryItem = {
@@ -199,6 +210,11 @@ export function withImageUrl(
 
 export type ImageSlot =
   | "hero"
+  | "heroAlt"
+  | "couple"
+  | "storyFeature"
+  | "countdown"
+  | "program"
   | "gallery"
   | "groom"
   | "bride"
@@ -214,6 +230,7 @@ export type PendingImage = {
   slot: ImageSlot;
   galleryIndex?: number;
   loveStoryIndex?: number;
+  programIndex?: number;
 };
 
 export function rememberPendingImage(current: PendingImage[], next: PendingImage): PendingImage[] {
@@ -221,6 +238,9 @@ export function rememberPendingImage(current: PendingImage[], next: PendingImage
     ...current.filter((item) => {
       if (next.slot === "gallery") {
         return !(item.slot === "gallery" && item.galleryIndex === next.galleryIndex);
+      }
+      if (next.slot === "program") {
+        return !(item.slot === "program" && item.programIndex === next.programIndex);
       }
       if (next.slot === "loveStory") {
         return !(item.slot === "loveStory" && item.loveStoryIndex === next.loveStoryIndex);
@@ -239,6 +259,10 @@ export type InvitationTemplate = {
   name: string;
   description: string;
   isActive: boolean;
+  isPublished?: boolean;
+  publishedAt?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
   source?: InvitationSource;
   images: TemplateImage[];
   categoryId: string;
@@ -455,6 +479,9 @@ export async function updateWork(
     }
     if (image.loveStoryIndex !== undefined) {
       body.append("loveStoryIndex", String(image.loveStoryIndex));
+    }
+    if (image.programIndex !== undefined) {
+      body.append("programIndex", String(image.programIndex));
     }
   }
 

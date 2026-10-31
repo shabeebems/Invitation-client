@@ -26,9 +26,10 @@ type Countdown = { days: number; hours: number; minutes: number; seconds: number
 type Unit = { label: string; value: number };
 
 function useCountdown(iso: string): Countdown {
-  const [now, setNow] = useState(() => Date.now());
+  const [now, setNow] = useState<number | null>(null);
 
   useEffect(() => {
+    setNow(Date.now());
     const timer = window.setInterval(() => setNow(Date.now()), 1000);
     return () => window.clearInterval(timer);
   }, []);
@@ -36,6 +37,10 @@ function useCountdown(iso: string): Countdown {
   const target = new Date(iso).getTime();
   if (!iso || Number.isNaN(target)) {
     return { days: 0, hours: 0, minutes: 0, seconds: 0, live: true };
+  }
+
+  if (now === null) {
+    return { days: 0, hours: 0, minutes: 0, seconds: 0, live: false };
   }
 
   const diff = Math.max(0, target - now);

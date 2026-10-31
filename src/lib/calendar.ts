@@ -55,11 +55,11 @@ export function downloadIcsFile({
   const icsLines = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//Inviteo//Wedding Invitation//EN",
+    "PRODID:-//Save the Kath//Wedding Invitation//EN",
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
     "BEGIN:VEVENT",
-    `UID:${Date.now()}@inviteo.app`,
+    `UID:${Date.now()}@savethekath.app`,
     `DTSTAMP:${now}`,
     `DTSTART:${start}`,
     `DTEND:${end}`,

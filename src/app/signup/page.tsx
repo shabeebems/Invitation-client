@@ -1,21 +1,18 @@
 import type { Metadata } from "next";
 import AuthForm from "@/components/auth/AuthForm";
+import AuthShell from "@/components/auth/AuthShell";
 import GuestOnly from "@/components/auth/GuestOnly";
-import SiteNav from "@/components/landing/SiteNav";
 
 export const metadata: Metadata = {
-  title: "Signup — Inviteo",
+  title: "Signup — Save the Kath",
 };
 
 export default function SignupPage() {
   return (
-    <GuestOnly>
-      <div className="min-h-full bg-page">
-        <SiteNav />
-        <main className="mx-auto max-w-md px-5 py-16">
-          <AuthForm mode="signup" />
-        </main>
-      </div>
-    </GuestOnly>
+    <AuthShell>
+      <GuestOnly>
+        <AuthForm mode="signup" />
+      </GuestOnly>
+    </AuthShell>
   );
 }

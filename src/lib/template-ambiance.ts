@@ -20,7 +20,6 @@ export type AmbianceFamily =
   | "royal"
   | "house"
   | "velvet"
-  | "palace"
   | "botanical"
   | "ruby"
   | "aurelia"
@@ -48,16 +47,6 @@ export const VELVET_AMBIANCE_EFFECTS: LayoutOption<AmbianceEffect>[] = [
   { id: "petals", label: "Petals" },
   { id: "hearts", label: "Hearts" },
   { id: "sparkles", label: "Sparkles" },
-  { id: "stars", label: "Stars" },
-  { id: "butterflies", label: "Butterflies" },
-  { id: "none", label: "None" },
-];
-
-/** Palace Parchment — rose petals + golden sparkles from the reference. */
-export const PALACE_AMBIANCE_EFFECTS: LayoutOption<AmbianceEffect>[] = [
-  { id: "petals", label: "Petals" },
-  { id: "sparkles", label: "Sparkles" },
-  { id: "hearts", label: "Hearts" },
   { id: "stars", label: "Stars" },
   { id: "butterflies", label: "Butterflies" },
   { id: "none", label: "None" },
@@ -124,7 +113,6 @@ const HOUSE_ALIASES: Record<string, AmbianceEffect> = {
 export function ambianceEffectsForFamily(family: AmbianceFamily): LayoutOption<AmbianceEffect>[] {
   if (family === "house") return HOUSE_AMBIANCE_EFFECTS;
   if (family === "velvet") return VELVET_AMBIANCE_EFFECTS;
-  if (family === "palace") return PALACE_AMBIANCE_EFFECTS;
   if (family === "botanical") return BOTANICAL_AMBIANCE_EFFECTS;
   if (family === "ruby") return RUBY_AMBIANCE_EFFECTS;
   if (family === "aurelia") return AURELIA_AMBIANCE_EFFECTS;
