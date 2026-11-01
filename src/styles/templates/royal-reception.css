@@ -107,24 +107,6 @@ body:has(.royal-invitation.palette-emerald) {
   background: var(--night);
 }
 
-/* Fixed edit chrome / theme picker (outside invitation tree, inherits html tokens) */
-.rr-edit-chrome {
-  background: color-mix(in srgb, var(--night) 91%, transparent) !important;
-  border-color: color-mix(in srgb, var(--gold-light) 35%, transparent) !important;
-  color: var(--gold-pale) !important;
-}
-
-.rr-edit-chrome-select {
-  background: var(--night) !important;
-  border-color: color-mix(in srgb, var(--gold-light) 45%, transparent) !important;
-  color: var(--gold-light) !important;
-}
-
-.rr-edit-chrome-publish {
-  background: var(--gold-light) !important;
-  color: var(--night) !important;
-}
-
 .rr-crop-modal {
   background: var(--night) !important;
   border-color: color-mix(in srgb, var(--gold-light) 35%, transparent) !important;

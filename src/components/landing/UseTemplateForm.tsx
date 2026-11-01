@@ -1,94 +1,112 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Playfair_Display } from "next/font/google";
 import { type InvitationTemplate, type TemplateContent } from "@/lib/api";
+import { cormorant } from "@/lib/fonts";
 import {
   EVENT_DATE_TOO_SOON_MESSAGE,
   isEventDateAllowed,
   minDatetimeLocal,
   partsFromEventDate,
-  toDatetimeLocal,
 } from "@/lib/event-date";
 import { saveUseDraft } from "@/lib/use-draft";
-
-const display = Playfair_Display({
-  subsets: ["latin"],
-  weight: ["500", "600", "700"],
-});
 
 type DetailField = {
   key: keyof TemplateContent;
   label: string;
   required?: boolean;
-  type?: "text" | "datetime-local";
+  type?: "text" | "datetime-local" | "tel";
   readOnly?: boolean;
   hint?: string;
+  placeholder?: string;
+};
+
+const PHONE_FIELD: DetailField = {
+  key: "contactPhone",
+  label: "Mobile number",
+  type: "tel",
+  required: true,
+  placeholder: "e.g. +91 98765 43210",
+};
+
+function isValidPhone(value: string) {
+  const digits = value.replace(/\D/g, "");
+  return /^\+?[\d\s()-]+$/.test(value) && digits.length >= 7 && digits.length <= 15;
+}
+
+const WEEKDAY_FIELD: DetailField = {
+  key: "weekday",
+  label: "Weekday",
+  readOnly: true,
+  placeholder: "Filled from the date",
+};
+
+const DATE_FIELD: DetailField = {
+  key: "eventDateIso",
+  label: "Event date and time",
+  type: "datetime-local",
+  required: true,
 };
 
 function detailFieldsFor(categoryName: string): DetailField[] {
   if (/house\s*warm/i.test(categoryName)) {
     return [
-      { key: "hostNames", label: "Host names", required: true },
-      { key: "houseName", label: "House name", required: true },
-      { key: "eventDateIso", label: "Event date and time", type: "datetime-local", required: true },
-      { key: "weekday", label: "Weekday", readOnly: true, hint: "Filled from the date" },
-      { key: "addressFull", label: "Full address" },
-      { key: "venueCity", label: "City" },
+      { key: "hostNames", label: "Host names", required: true, placeholder: "e.g. Rahul & Priya" },
+      { key: "houseName", label: "House name", required: true, placeholder: "e.g. Parambil House" },
+      DATE_FIELD,
+      WEEKDAY_FIELD,
+      { key: "addressFull", label: "Full address", placeholder: "House, street and area" },
+      { key: "venueCity", label: "City", placeholder: "e.g. Kozhikode" },
+      PHONE_FIELD,
     ];
   }
 
   if (/wedding|nikah|engag/i.test(categoryName)) {
     return [
-      { key: "groomName", label: "Groom name", required: true },
-      { key: "brideName", label: "Bride name", required: true },
-      { key: "eventDateIso", label: "Event date and time", type: "datetime-local", required: true },
-      { key: "weekday", label: "Weekday", readOnly: true, hint: "Filled from the date" },
-      { key: "venueName", label: "Venue" },
-      { key: "venueCity", label: "City" },
+      { key: "groomName", label: "Groom name", required: true, placeholder: "Enter groom's name" },
+      { key: "brideName", label: "Bride name", required: true, placeholder: "Enter bride's name" },
+      {
+        key: "hostNames",
+        label: "Groom's parents",
+        required: true,
+        placeholder: "e.g. Mr. Abdul Rahman & Mrs. Amina",
+      },
+      {
+        key: "brideParents",
+        label: "Bride's parents",
+        required: true,
+        placeholder: "e.g. Mr. Nizar Ahmed & Mrs. Suhara",
+      },
+      DATE_FIELD,
+      WEEKDAY_FIELD,
+      { key: "venueName", label: "Venue", required: true, placeholder: "e.g. Grand Palace Hall" },
+      { key: "venueCity", label: "City", placeholder: "e.g. Kozhikode" },
+      PHONE_FIELD,
     ];
   }
 
   return [
-    { key: "hostNames", label: "Host / celebrant names", required: true },
-    { key: "eventDateIso", label: "Event date and time", type: "datetime-local", required: true },
-    { key: "weekday", label: "Weekday", readOnly: true, hint: "Filled from the date" },
-    { key: "venueName", label: "Venue" },
-    { key: "venueCity", label: "City" },
+    { key: "hostNames", label: "Host / celebrant names", required: true, placeholder: "Enter names" },
+    DATE_FIELD,
+    WEEKDAY_FIELD,
+    { key: "venueName", label: "Venue", required: true, placeholder: "e.g. Grand Palace Hall" },
+    { key: "venueCity", label: "City", placeholder: "e.g. Kozhikode" },
+    PHONE_FIELD,
   ];
 }
 
 const inputClass =
-  "mt-2 w-full rounded-2xl border border-[#e0d5c6] bg-[#fcfbf9] px-4 py-3.5 text-sm font-medium text-[#143027] outline-none transition placeholder:text-zinc-400 focus:border-[#c4a574] focus:bg-white focus:shadow-[0_0_0_4px_rgba(196,165,116,0.15)]";
+  "mt-1.5 h-10 w-full rounded-md border border-[#ddd1bb] bg-[#fffdf8] px-3 text-sm text-[#173a2c] outline-none transition-[border-color,box-shadow] placeholder:text-[#b7b9b1] focus:border-[#173a2c] focus:shadow-[0_0_0_3px_rgba(23,58,44,0.1)]";
 
 export default function UseTemplateForm({ template }: { template: InvitationTemplate }) {
   const router = useRouter();
   const categoryName = template.categoryName || "";
   const fields = useMemo(() => detailFieldsFor(categoryName), [categoryName]);
-  const [name, setName] = useState(template.name);
+  const [name, setName] = useState("");
   const [details, setDetails] = useState<Record<string, string>>({});
   const [error, setError] = useState("");
-
-  useEffect(() => {
-    const next: Record<string, string> = {};
-
-    for (const field of fields) {
-      const value = template.content[field.key];
-      next[field.key] =
-        field.type === "datetime-local"
-          ? toDatetimeLocal(typeof value === "string" ? value : "")
-          : typeof value === "string"
-            ? value
-            : "";
-    }
-
-    const derived = partsFromEventDate(next.eventDateIso || "", categoryName);
-    next.weekday = derived.weekday || next.weekday || "";
-
-    setDetails(next);
-  }, [categoryName, fields, template.content]);
 
   function setEventDate(value: string) {
     if (value && !isEventDateAllowed(value)) {
@@ -122,6 +140,11 @@ export default function UseTemplateForm({ template }: { template: InvitationTemp
 
     if (details.eventDateIso && !isEventDateAllowed(details.eventDateIso)) {
       setError(EVENT_DATE_TOO_SOON_MESSAGE);
+      return;
+    }
+
+    if (!isValidPhone(String(details.contactPhone || "").trim())) {
+      setError("Enter a valid mobile number");
       return;
     }
 
@@ -161,43 +184,21 @@ export default function UseTemplateForm({ template }: { template: InvitationTemp
   }
 
   return (
-    <form
-      onSubmit={(event) => void onSubmit(event)}
-      className="overflow-hidden rounded-[32px] border border-[#e8dfd0] bg-[#faf6ee] shadow-[0_24px_60px_rgba(20,48,39,0.08)]"
-    >
-      <div className="border-b border-[#ebe3d6] bg-[#143027] px-6 py-7 text-white sm:px-8">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="rounded-full bg-[#d6c4a2]/20 px-3 py-1 text-[10px] font-semibold tracking-[0.18em] text-[#d6c4a2] uppercase">
-            {template.categoryName || "Invitation"}
-          </span>
-          <span className="rounded-full bg-white/10 px-3 py-1 text-[10px] font-semibold tracking-[0.18em] text-white/70 uppercase">
-            Step 1 of 2
-          </span>
-        </div>
-        <h1 className={`${display.className} mt-4 text-3xl font-medium tracking-tight sm:text-4xl`}>
-          A few details first
-        </h1>
-        <p className="mt-3 max-w-xl text-sm leading-7 text-white/65">
-          These go onto <span className="font-semibold text-[#d6c4a2]">{template.name}</span>. Next opens
-          the invitation so you can edit every detail, then publish when you are ready.
-        </p>
-      </div>
+    <form onSubmit={(event) => void onSubmit(event)} noValidate>
+      <p className="text-xs font-medium text-[#8d8f87]">
+        Step 1 of 2 · {template.categoryName || "Invitation"}
+      </p>
+      <h1 className={`${cormorant.className} mt-1.5 text-[2.1rem] leading-tight font-semibold text-[#173a2c]`}>
+        A few details first
+      </h1>
+      <p className="mt-2 text-sm leading-6 text-[#686d65]">
+        These go onto <span className="font-semibold text-[#173a2c]">{template.name}</span>. Next, you can edit
+        every detail and publish when ready.
+      </p>
 
-      <div className="px-6 py-7 sm:px-8">
-        <div className="mb-7 flex items-center gap-3 text-xs font-semibold tracking-[0.14em] text-zinc-400 uppercase">
-          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#143027] text-[11px] text-[#f3ead8]">
-            1
-          </span>
-          Details
-          <span className="h-px flex-1 bg-[#e8dfd0]" />
-          <span className="flex h-7 w-7 items-center justify-center rounded-full border border-[#e0d5c6] text-[11px] text-zinc-400">
-            2
-          </span>
-          Edit & publish
-        </div>
-
-        <label className="block text-sm font-semibold text-[#143027]">
-          Invitation title
+      <div className="mt-7 border-t border-[#e5dac7] pt-6">
+        <label className="block text-[13px] font-medium text-[#3a4a40]">
+          Invitation title<span className="text-[#8a2c33]"> *</span>
           <input
             required
             value={name}
@@ -207,29 +208,29 @@ export default function UseTemplateForm({ template }: { template: InvitationTemp
           />
         </label>
 
-        <div className="mt-5 grid gap-5 sm:grid-cols-2">
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
           {fields.map((field) => (
             <label
               key={field.key}
-              className={`block text-sm font-semibold text-[#143027] ${
+              className={`block text-[13px] font-medium text-[#3a4a40] ${
                 field.key === "addressFull" ? "sm:col-span-2" : ""
               }`}
             >
-              <span className="flex items-center justify-between gap-2">
+              <span className="flex items-baseline justify-between gap-2">
                 <span>
                   {field.label}
-                  {field.required ? <span className="text-[#8a7048]"> *</span> : null}
+                  {field.required ? <span className="text-[#8a2c33]"> *</span> : null}
                 </span>
-                {field.hint ? (
-                  <span className="text-[11px] font-medium tracking-normal text-zinc-400 normal-case">
-                    {field.hint}
-                  </span>
-                ) : null}
+                {field.hint ? <span className="text-[11px] font-normal text-[#8d8f87]">{field.hint}</span> : null}
               </span>
               <input
                 required={field.required}
                 readOnly={field.readOnly}
                 type={field.type || "text"}
+                inputMode={field.type === "tel" ? "tel" : undefined}
+                autoComplete={field.type === "tel" ? "tel" : undefined}
+                maxLength={field.type === "tel" ? 20 : undefined}
+                placeholder={field.placeholder}
                 min={field.type === "datetime-local" ? minDatetimeLocal() : undefined}
                 value={details[field.key] || ""}
                 onChange={(event) => {
@@ -244,7 +245,7 @@ export default function UseTemplateForm({ template }: { template: InvitationTemp
                   }));
                 }}
                 className={`${inputClass} ${
-                  field.readOnly ? "cursor-default bg-[#f0ebe3] text-zinc-600 focus:shadow-none" : ""
+                  field.readOnly ? "cursor-default border-[#e5dac7] bg-[#efe8da] text-[#686d65] focus:border-[#e5dac7] focus:shadow-none" : ""
                 }`}
               />
             </label>
@@ -252,25 +253,25 @@ export default function UseTemplateForm({ template }: { template: InvitationTemp
         </div>
 
         {error ? (
-          <p className="mt-5 rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+          <p className="mt-4 text-[13px] text-[#8a2c33]" role="alert">
             {error}
           </p>
         ) : null}
+      </div>
 
-        <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <Link
-            href={`/#templates`}
-            className="order-2 text-center text-sm font-semibold text-zinc-500 hover:text-[#143027] sm:order-1 sm:text-left"
-          >
-            ← Back to templates
-          </Link>
-          <button
-            type="submit"
-            className="order-1 rounded-full bg-[#143027] px-8 py-3.5 text-sm font-semibold text-[#f3ead8] shadow-[0_12px_28px_rgba(20,48,39,0.22)] transition hover:bg-[#1c4034] sm:order-2"
-          >
-            Continue to editor
-          </button>
-        </div>
+      <div className="mt-7 flex flex-col-reverse gap-4 border-t border-[#e5dac7] pt-5 sm:flex-row sm:items-center sm:justify-between">
+        <Link
+          href="/#templates"
+          className="text-center text-[13px] font-semibold text-[#686d65] underline-offset-4 hover:text-[#173a2c] hover:underline sm:text-left"
+        >
+          Back to templates
+        </Link>
+        <button
+          type="submit"
+          className="h-10 rounded-md bg-[#173a2c] px-5 text-[13px] font-semibold text-[#fbf6ea] transition-colors hover:bg-[#245440]"
+        >
+          Continue to editor
+        </button>
       </div>
     </form>
   );

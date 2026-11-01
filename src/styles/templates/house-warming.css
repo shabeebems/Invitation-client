@@ -662,10 +662,3 @@ body:has(.house-warming.palette-sage.is-sealed) {
     opacity: 0;
   }
 }
-
-.hw-edit-bar select,
-.hw-edit-bar select option {
-  background-color: #ffffff !important;
-  color: #221c18 !important;
-}
-

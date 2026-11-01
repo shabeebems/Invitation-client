@@ -65,7 +65,6 @@ export default function RoyalRubyInvitation({
     template,
     editable,
     onPublish,
-    variant: "invite",
     sectionFamily: "ruby",
   });
 

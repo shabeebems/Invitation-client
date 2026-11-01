@@ -78,7 +78,6 @@ export default function CreamEditorialInvitation({
     template,
     editable,
     onPublish,
-    variant: "invite",
     sectionFamily: "cream",
   });
 

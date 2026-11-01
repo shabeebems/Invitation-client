@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import SiteNav from "@/components/landing/SiteNav";
+import RequireVerifiedEmail from "@/components/auth/RequireVerifiedEmail";
+import LandingNav from "@/components/landing/LandingNav";
 import UseTemplateForm from "@/components/landing/UseTemplateForm";
-import { fetchTemplate } from "@/lib/api";
+import { fetchTemplate, fetchTemplates } from "@/lib/api";
 
 export async function generateMetadata({
   params,
@@ -23,18 +24,23 @@ export default async function UseTemplatePage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const template = await fetchTemplate(slug);
+  const [template, templates] = await Promise.all([
+    fetchTemplate(slug),
+    fetchTemplates().then((items) => items.filter((item) => item.isActive)),
+  ]);
 
   if (!template) {
     notFound();
   }
 
   return (
-    <div className="min-h-full bg-[#f5efe4]">
-      <SiteNav />
-      <main className="mx-auto w-full max-w-2xl px-5 py-10 md:py-14">
-        <UseTemplateForm template={template} />
-      </main>
+    <div className="min-h-full bg-[#F7F2E8]">
+      <LandingNav templates={templates} />
+      <RequireVerifiedEmail>
+        <main className="mx-auto w-full max-w-xl px-5 py-10 md:py-14">
+          <UseTemplateForm template={template} />
+        </main>
+      </RequireVerifiedEmail>
     </div>
   );
 }

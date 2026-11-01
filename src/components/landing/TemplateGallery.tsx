@@ -55,7 +55,7 @@ const SPRIG_LEAVES: [number, number, number, number, string][] = [
 ];
 
 function LeafSprig({ className }: { className?: string }) {
-  return (
+    return (
     <svg viewBox="0 0 48 48" className={className} fill="none" aria-hidden="true">
       <path d="M5 45C14 36 24 24 40 7" stroke="#6F8A68" strokeWidth="1.2" strokeLinecap="round" />
       {SPRIG_LEAVES.map(([x, y, rotate, scale, fill]) => (
@@ -67,9 +67,9 @@ function LeafSprig({ className }: { className?: string }) {
           fillOpacity="0.92"
         />
       ))}
-    </svg>
-  );
-}
+      </svg>
+    );
+  }
 
 const GARDEN_LEAVES: [number, number, number, number, string][] = [
   [56, 152, -142, 1.7, "#6F8C69"],
@@ -100,7 +100,7 @@ const EUCALYPTUS: [number, number, number][] = [
 ];
 
 function Bloom({ x, y, scale, rotate }: { x: number; y: number; scale: number; rotate: number }) {
-  return (
+    return (
     <g transform={`translate(${x} ${y}) rotate(${rotate}) scale(${scale})`}>
       {[0, 72, 144, 216, 288].map((angle) => (
         <path
@@ -119,7 +119,7 @@ function Bloom({ x, y, scale, rotate }: { x: number; y: number; scale: number; r
 }
 
 function GardenSprig({ className }: { className?: string }) {
-  return (
+    return (
     <svg viewBox="0 0 120 170" className={className} fill="none" aria-hidden="true">
       <g stroke="#5F7A59" strokeWidth="1.4" strokeLinecap="round">
         <path d="M58 168C52 130 60 95 48 60C42 40 46 20 56 4" />
@@ -153,16 +153,16 @@ function GardenSprig({ className }: { className?: string }) {
       <Bloom x={60} y={38} scale={0.62} rotate={22} />
       <ellipse cx="90" cy="14" rx="3" ry="4.4" transform="rotate(35 90 14)" fill="#F6EFE0" stroke="#E2D7C3" strokeWidth="0.7" />
       <ellipse cx="108" cy="84" rx="2.8" ry="4" transform="rotate(70 108 84)" fill="#F6EFE0" stroke="#E2D7C3" strokeWidth="0.7" />
-    </svg>
-  );
-}
+      </svg>
+    );
+  }
 
 function HeartIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="1.7" aria-hidden="true">
       <path
         d="M12 20.3s-7.6-4.6-9.2-9.4C1.7 7.5 3.8 4.4 7.1 4.4c2 0 3.6 1.1 4.9 2.9 1.3-1.8 2.9-2.9 4.9-2.9 3.3 0 5.4 3.1 4.3 6.5-1.6 4.8-9.2 9.4-9.2 9.4Z"
-        strokeLinejoin="round"
+      strokeLinejoin="round"
       />
     </svg>
   );
@@ -227,10 +227,10 @@ export default function TemplateGallery({
           </div>
 
           <div className="tg-cats" role="group" aria-label="Filter templates by occasion">
-            <button
-              type="button"
+          <button
+            type="button"
               aria-pressed={selectedId === "all"}
-              onClick={() => setSelectedId("all")}
+            onClick={() => setSelectedId("all")}
               className={`tg-cat${selectedId === "all" ? " is-active" : ""}`}
             >
               <span className="tg-cat-photo tg-cat-photo--all" aria-hidden="true">
@@ -242,17 +242,17 @@ export default function TemplateGallery({
                 </svg>
               </span>
               <span className="tg-cat-name">All</span>
-            </button>
+          </button>
 
-            {chips.map((category) => {
-              const active = selectedId === category.id;
+          {chips.map((category) => {
+            const active = selectedId === category.id;
 
-              return (
-                <button
-                  key={category.id}
-                  type="button"
+            return (
+              <button
+                key={category.id}
+                type="button"
                   aria-pressed={active}
-                  onClick={() => setSelectedId(category.id)}
+                onClick={() => setSelectedId(category.id)}
                   className={`tg-cat${active ? " is-active" : ""}`}
                 >
                   <span className="tg-cat-photo" aria-hidden="true">
@@ -265,10 +265,10 @@ export default function TemplateGallery({
                     )}
                   </span>
                   <span className="tg-cat-name">{category.name}</span>
-                </button>
-              );
-            })}
-          </div>
+              </button>
+            );
+          })}
+        </div>
         </div>
 
         <p className="sr-only" aria-live="polite">
@@ -308,13 +308,13 @@ export default function TemplateGallery({
                       </span>
                       <LeafSprig className="tg-sprig tg-sprig--left" />
                       <LeafSprig className="tg-sprig tg-sprig--right" />
-                    </div>
+                  </div>
 
                     <div className="tg-body">
                       <span className="tg-tag">{template.categoryName || "Invitation"}</span>
                       <h3 className={`tg-name ${cormorant.className}`}>
                         <Link href={href} className="tg-link">
-                          {template.name}
+                        {template.name}
                         </Link>
                       </h3>
                       <p className="tg-desc">{tagline(template.description)}</p>
@@ -328,8 +328,8 @@ export default function TemplateGallery({
                       </div>
                     </div>
 
-                    <Link
-                      href={`/user/use/${template.slug}`}
+                      <Link
+                        href={`/user/use/${template.slug}`}
                       className="tg-use"
                       aria-label={`Use ${template.name}`}
                       title="Use this template"
@@ -337,9 +337,9 @@ export default function TemplateGallery({
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                         <path d="M12 20h9" />
                         <path d="M16.4 3.6a2.1 2.1 0 0 1 3 3L7.5 18.5 3.5 19.5l1-4Z" />
-                      </svg>
-                    </Link>
-                  </article>
+                        </svg>
+                      </Link>
+                </article>
                 </li>
               );
             })}

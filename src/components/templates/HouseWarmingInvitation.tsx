@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import HouseHero from "@/components/templates/house/HouseHero";
 import HouseCountdown from "@/components/templates/house/HouseCountdown";
 import HouseFooter from "@/components/templates/house/HouseFooter";
@@ -14,7 +14,6 @@ import {
   type InvitationTemplate,
   type PendingImage,
   type ProgramItem,
-  type TemplateContent,
   imageUrl,
 } from "@/lib/api";
 import {
@@ -22,59 +21,9 @@ import {
   PROGRAM_ITEM_MAX,
   clampText,
 } from "@/lib/content-limits";
+import { buildHouseShareMessage } from "@/lib/share-message";
+import { useShareMessage } from "@/components/templates/shared/useShareMessage";
 import { isSectionEnabled, resolveEnabledSections } from "@/lib/template-sections";
-
-function buildHouseShareMessage(content: TemplateContent, url?: string): string {
-  const parts: string[] = [];
-
-  if (content.bismillah?.trim()) {
-    parts.push(content.bismillah.trim());
-  }
-
-  const houseName = content.houseName?.trim();
-  const hostNames = content.hostNames?.trim();
-  const familyLine = content.familyLine?.trim();
-
-  const titleLines: string[] = [];
-  if (houseName) {
-    titleLines.push(`🏡 *${houseName}*`);
-  }
-  if (hostNames) {
-    titleLines.push(
-      `Warm Welcome to the New Home of\n*${hostNames}*${familyLine ? `\n_${familyLine}_` : ""}`
-    );
-  }
-  if (titleLines.length > 0) {
-    parts.push(titleLines.join("\n\n"));
-  }
-
-  // Event date and time
-  const dateStr = [
-    content.weekday?.trim(),
-    [content.day?.trim(), content.monthYear?.trim()].filter(Boolean).join(" "),
-  ]
-    .filter(Boolean)
-    .join(", ");
-  const timeStr = content.time?.trim();
-  const dateTime = [dateStr, timeStr].filter(Boolean).join(" · ");
-  if (dateTime) {
-    parts.push(`🗓 *Event Date & Time:*\n*${dateTime}*`);
-  }
-
-  // Full address
-  const fullAddress =
-    content.addressFull?.trim() ||
-    [content.venueName?.trim(), content.venueCity?.trim()].filter(Boolean).join(", ");
-  if (fullAddress) {
-    parts.push(`📍 *Address:*\n${fullAddress}`);
-  }
-
-  if (url) {
-    parts.push(`🔗 *View Invitation:*\n${url}`);
-  }
-
-  return parts.join("\n\n");
-}
 
 export default function HouseWarmingInvitation({
   template,
@@ -98,6 +47,7 @@ export default function HouseWarmingInvitation({
     payOpen,
     persist,
     field,
+    commitText,
     commitEventDate,
     themeTitle,
     chrome,
@@ -109,37 +59,18 @@ export default function HouseWarmingInvitation({
     template,
     editable,
     onPublish,
-    variant: "house",
     sectionFamily: "house",
   });
   const ambianceEffect = normalizeAmbianceEffect(content.ambianceEffect, "house");
   const [opened, setOpened] = useState(false);
   const heroSrc = imageUrl(draft.images, "hero");
 
-  const shareMessage = useMemo(() => {
-    const currentUrl = typeof window !== "undefined" ? window.location.href : "";
-    return buildHouseShareMessage(content, currentUrl);
-  }, [
-    content.bismillah,
-    content.houseName,
-    content.hostNames,
-    content.familyLine,
-    content.weekday,
-    content.day,
-    content.monthYear,
-    content.time,
-    content.addressFull,
-    content.venueName,
-    content.venueCity,
-  ]);
-
-  function handleWhatsAppClick(e: React.MouseEvent<HTMLAnchorElement>) {
-    e.preventDefault();
-    const currentUrl = typeof window !== "undefined" ? window.location.href : "";
-    const msg = buildHouseShareMessage(content, currentUrl);
-    const waUrl = `https://wa.me/?text=${encodeURIComponent(msg)}`;
-    window.open(waUrl, "_blank", "noopener,noreferrer");
-  }
+  const share = useShareMessage({
+    draft,
+    builtMessage: buildHouseShareMessage(content),
+    editing,
+    onSave: (message) => commitText("shareMessage", message),
+  });
 
   const program = content.programItems || [];
 
@@ -287,12 +218,12 @@ export default function HouseWarmingInvitation({
           ) : null}
 
           <a
-            className={`hw-wa fixed right-6 z-[10060] inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/40 text-white no-underline shadow-lg transition-transform hover:scale-105 ${editable ? "bottom-24" : "bottom-6"} ${previewing || payOpen ? "pointer-events-none invisible" : ""}`}
-            href={`https://wa.me/?text=${encodeURIComponent(shareMessage)}`}
-            onClick={handleWhatsAppClick}
+            className={`hw-wa fixed right-6 z-[10060] inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/40 text-white no-underline shadow-lg transition-transform hover:scale-105 ${editable ? "bottom-[calc(max(14px,env(safe-area-inset-bottom,0px))+6.5rem)]" : "bottom-6"} ${previewing || payOpen ? "pointer-events-none invisible" : ""}`}
+            href={share.href}
+            onClick={share.onClick}
             target="_blank"
             rel="noopener noreferrer"
-            aria-label="Share invitation via WhatsApp"
+            aria-label={share.label}
             aria-hidden={previewing || payOpen}
           >
             <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
@@ -302,6 +233,7 @@ export default function HouseWarmingInvitation({
               />
             </svg>
           </a>
+          {share.modal}
         </>
       ) : null}
     </main>

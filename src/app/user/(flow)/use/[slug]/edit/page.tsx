@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import RequireVerifiedEmail from "@/components/auth/RequireVerifiedEmail";
 import DraftInvitation from "@/components/landing/DraftInvitation";
 import { fetchTemplate } from "@/lib/api";
 
@@ -28,5 +29,9 @@ export default async function UseEditPage({
     notFound();
   }
 
-  return <DraftInvitation template={template} />;
+  return (
+    <RequireVerifiedEmail>
+      <DraftInvitation template={template} />
+    </RequireVerifiedEmail>
+  );
 }

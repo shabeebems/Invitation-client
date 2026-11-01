@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { fetchWork } from "@/lib/api";
+import RequireVerifiedEmail from "@/components/auth/RequireVerifiedEmail";
 import InvitationView from "@/components/templates/InvitationView";
 
 export async function generateMetadata({
@@ -29,5 +30,9 @@ export default async function UserWorkEditPage({
     notFound();
   }
 
-  return <InvitationView template={work} editable />;
+  return (
+    <RequireVerifiedEmail>
+      <InvitationView template={work} editable />
+    </RequireVerifiedEmail>
+  );
 }

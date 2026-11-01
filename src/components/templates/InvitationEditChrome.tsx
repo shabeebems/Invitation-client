@@ -1,68 +1,18 @@
 "use client";
 
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
-import ThemePicker from "@/components/templates/ThemePicker";
 import PublishPaymentModal from "@/components/landing/PublishPaymentModal";
 import type { LayoutOption } from "@/components/templates/shared/LayoutPicker";
 import { normalizeLayoutId } from "@/components/templates/shared/LayoutPicker";
-import {
-  ROYAL_AMBIANCE_EFFECTS,
-  type AmbianceEffect,
-} from "@/lib/template-ambiance";
-import SectionPicker from "@/components/templates/shared/SectionPicker";
+import { ROYAL_AMBIANCE_EFFECTS, type AmbianceEffect } from "@/lib/template-ambiance";
 import type { SectionDef } from "@/lib/template-sections";
-import type { InvitationSource, InvitationTheme } from "@/lib/api";
+import { saveInvitationTheme, type InvitationSource, type InvitationTheme } from "@/lib/api";
+import "./shared/edit-dock.css";
 
 export type EditChromeStatus = "idle" | "saving" | "saved" | "error";
-export type EditChromeVariant = "invite" | "house" | "party";
 
-const styles = {
-  invite: {
-    bar: "rr-edit-chrome fixed bottom-[max(12px,env(safe-area-inset-bottom))] left-1/2 z-[10050] flex w-[min(98vw,1100px)] -translate-x-1/2 items-center gap-3 overflow-x-auto rounded-full border px-3 py-2 whitespace-nowrap shadow-[0_10px_28px_rgba(0,0,0,0.45)] backdrop-blur-sm",
-    publishBar:
-      "rr-edit-chrome fixed bottom-[max(12px,env(safe-area-inset-bottom))] left-1/2 z-[10080] flex w-[min(96vw,420px)] -translate-x-1/2 items-center justify-center gap-3 rounded-full border px-3 py-2 whitespace-nowrap shadow-[0_10px_28px_rgba(0,0,0,0.45)] backdrop-blur-sm",
-    back: "rr-edit-chrome font-caps fixed top-[max(12px,env(safe-area-inset-top))] left-[max(12px,env(safe-area-inset-left))] z-[10070] rounded-full border px-4 py-2 text-[10px] tracking-[1.4px] uppercase shadow-[0_10px_28px_rgba(0,0,0,0.45)] backdrop-blur-sm",
-    action:
-      "font-caps shrink-0 rounded-full border border-[color:color-mix(in_srgb,var(--gold-light)_45%,transparent)] px-3 py-1 text-[10px] tracking-[1.4px] text-[color:var(--gold-light)] uppercase hover:border-[color:var(--gold-light)] hover:text-[color:var(--gold-pale)]",
-    done: "font-caps shrink-0 rounded-full border border-[color:color-mix(in_srgb,var(--gold-light)_45%,transparent)] px-3 py-1 text-[10px] tracking-[1.4px] text-[color:var(--gold-light)] uppercase no-underline hover:border-[color:var(--gold-light)] hover:text-[color:var(--gold-pale)]",
-    status:
-      "font-caps min-w-0 max-w-[42vw] shrink text-[9px] tracking-[1.2px] text-[color:color-mix(in_srgb,var(--gold-light)_70%,transparent)] uppercase truncate sm:max-w-[280px]",
-    hint: "font-invite-sans m-0 hidden text-[11px] text-[color:color-mix(in_srgb,var(--gold-pale)_60%,transparent)] sm:block",
-    publish: "rr-edit-chrome-publish font-caps shrink-0 rounded-full px-5 py-1.5 text-[10px] tracking-[1.4px] uppercase disabled:opacity-60",
-    error: "font-caps text-[9px] tracking-[1.4px] text-[color:var(--gold-pale)] uppercase",
-    hintText: "",
-  },
-  house: {
-    bar: "hw-edit-bar fixed bottom-[max(12px,env(safe-area-inset-bottom))] left-1/2 z-[10050] flex w-[min(96vw,760px)] -translate-x-1/2 items-center gap-3 overflow-x-auto rounded-full border border-[var(--color-linen-border)] bg-[var(--color-linen-nav)] px-3 py-2 text-[#221c18] whitespace-nowrap shadow-[0_10px_28px_rgba(34,28,24,0.12)] backdrop-blur-sm",
-    publishBar:
-      "hw-edit-bar fixed bottom-[max(12px,env(safe-area-inset-bottom))] left-1/2 z-[10080] flex w-[min(96vw,420px)] -translate-x-1/2 items-center justify-center gap-3 rounded-full border border-[var(--color-linen-border)] bg-[var(--color-linen-nav)] px-3 py-2 text-[#221c18] whitespace-nowrap shadow-[0_10px_28px_rgba(34,28,24,0.12)] backdrop-blur-sm",
-    back: "hw-edit-bar fixed top-[max(12px,env(safe-area-inset-top))] left-[max(12px,env(safe-area-inset-left))] z-[10070] rounded-full border border-[#ab4f3166] bg-[var(--color-linen-nav)] px-4 py-2 text-[10px] font-semibold tracking-[1.4px] text-[#87361b] uppercase shadow-[0_10px_28px_rgba(34,28,24,0.12)] backdrop-blur-sm hover:bg-[#ab4f31] hover:text-white",
-    action:
-      "shrink-0 rounded-full border border-[#ab4f3166] px-3 py-1 text-[10px] font-semibold tracking-[1.4px] text-[#87361b] uppercase hover:bg-[#ab4f31] hover:text-white",
-    done: "shrink-0 rounded-full border border-[#ab4f3166] px-3 py-1 text-[10px] font-semibold tracking-[1.4px] text-[#87361b] uppercase no-underline hover:bg-[#ab4f31] hover:text-white",
-    status: "shrink-0 text-[9px] tracking-[1.4px] text-[#796e65] uppercase",
-    hint: "m-0 hidden text-[11px] text-[#796e65] sm:block",
-    publish:
-      "shrink-0 rounded-full bg-[#ab4f31] px-5 py-1.5 text-[10px] font-semibold tracking-[1.4px] text-white uppercase disabled:opacity-60",
-    error: "text-[9px] font-semibold tracking-[1.4px] text-[#87361b] uppercase",
-    hintText: "",
-  },
-  party: {
-    bar: "fixed bottom-[max(12px,env(safe-area-inset-bottom))] left-1/2 z-[10050] flex w-[min(96vw,760px)] -translate-x-1/2 items-center gap-3 overflow-x-auto rounded-full border border-[#e8d5a859] bg-[#070b14e8] px-3 py-2 text-[#f4e6c4] whitespace-nowrap shadow-[0_10px_28px_rgba(7,11,20,0.5)] backdrop-blur-sm",
-    publishBar:
-      "fixed bottom-[max(12px,env(safe-area-inset-bottom))] left-1/2 z-[10080] flex w-[min(96vw,420px)] -translate-x-1/2 items-center justify-center gap-3 rounded-full border border-[#e8d5a859] bg-[#070b14e8] px-3 py-2 text-[#f4e6c4] whitespace-nowrap shadow-[0_10px_28px_rgba(7,11,20,0.5)] backdrop-blur-sm",
-    back: "bd-sans fixed top-[max(12px,env(safe-area-inset-top))] left-[max(12px,env(safe-area-inset-left))] z-[10070] rounded-full border border-[#e8d5a873] bg-[#070b14e8] px-4 py-2 text-[10px] font-semibold tracking-[1.4px] text-[#e8d5a8] uppercase shadow-[0_10px_28px_rgba(7,11,20,0.5)] backdrop-blur-sm hover:border-[#e8d5a8] hover:text-[#f4e6c4]",
-    action:
-      "bd-sans shrink-0 rounded-full border border-[#e8d5a873] px-3 py-1 text-[10px] font-semibold tracking-[1.4px] text-[#e8d5a8] uppercase hover:border-[#e8d5a8] hover:text-[#f4e6c4]",
-    done: "bd-sans shrink-0 rounded-full border border-[#e8d5a873] px-3 py-1 text-[10px] font-semibold tracking-[1.4px] text-[#e8d5a8] uppercase no-underline hover:border-[#e8d5a8] hover:text-[#f4e6c4]",
-    status: "bd-sans shrink-0 text-[9px] tracking-[1.4px] text-[#e8d5a8b3] uppercase",
-    hint: "bd-sans m-0 hidden text-[11px] text-[#f4e6c499] sm:block",
-    publish:
-      "bd-sans shrink-0 rounded-full bg-[#e8d5a8] px-5 py-1.5 text-[10px] font-semibold tracking-[1.4px] text-[#070b14] uppercase disabled:opacity-60",
-    error: "bd-sans text-[9px] font-semibold tracking-[1.4px] text-[#f4e6c4] uppercase",
-    hintText: "",
-  },
-} as const;
+type Panel = "theme" | "sections" | "effects";
 
 function statusLabel(status: EditChromeStatus, statusMessage?: string) {
   if (statusMessage) {
@@ -75,13 +25,101 @@ function statusLabel(status: EditChromeStatus, statusMessage?: string) {
     return "Saved";
   }
   if (status === "error") {
-    return "Could not save";
+    return "Not saved";
   }
-  return "Editing";
+  return "";
+}
+
+function PaletteIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
+      <path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.7-.8 1.7-1.7 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-.9.8-1.7 1.7-1.7h2a4.6 4.6 0 0 0 4.6-4.6C21 6.4 17 3 12 3Z" />
+      <circle cx="7.5" cy="11" r="1.2" fill="currentColor" stroke="none" />
+      <circle cx="10" cy="7.3" r="1.2" fill="currentColor" stroke="none" />
+      <circle cx="14.6" cy="7.3" r="1.2" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+function SectionsIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
+      <rect x="4" y="4" width="6.5" height="6.5" rx="1.6" />
+      <rect x="13.5" y="4" width="6.5" height="6.5" rx="1.6" />
+      <rect x="4" y="13.5" width="6.5" height="6.5" rx="1.6" />
+      <rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.6" />
+    </svg>
+  );
+}
+
+function SparkleIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" aria-hidden="true">
+      <path d="M10 4.5 11.4 8.6 15.5 10 11.4 11.4 10 15.5 8.6 11.4 4.5 10 8.6 8.6Z" />
+      <path d="M17.5 3v3M16 4.5h3M17 15.5v4M15 17.5h4" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function CheckIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="m8.4 12.3 2.4 2.4 4.8-5" />
+    </svg>
+  );
+}
+
+function DockItem({
+  icon,
+  label,
+  meta,
+  active,
+  primary,
+  disabled,
+  onClick,
+  href,
+}: {
+  icon: ReactNode;
+  label: string;
+  meta?: string;
+  active?: boolean;
+  primary?: boolean;
+  disabled?: boolean;
+  onClick?: () => void;
+  href?: string;
+}) {
+  const className = `ed-item${active ? " is-active" : ""}${primary ? " is-primary" : ""}`;
+  const content = (
+    <>
+      <span className="ed-item-icon">{icon}</span>
+      <span className="ed-item-label">{label}</span>
+      {meta ? <span className="ed-item-meta">{meta}</span> : null}
+    </>
+  );
+
+  if (href) {
+    return (
+      <Link href={href} className={className}>
+        {content}
+      </Link>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      className={className}
+      onClick={onClick}
+      disabled={disabled}
+      aria-expanded={primary ? undefined : active}
+    >
+      {content}
+    </button>
+  );
 }
 
 export default function InvitationEditChrome({
-  variant,
   editing,
   previewing,
   status,
@@ -110,7 +148,6 @@ export default function InvitationEditChrome({
   enabledSections,
   onSectionToggle,
 }: {
-  variant: EditChromeVariant;
   editing: boolean;
   previewing: boolean;
   status: EditChromeStatus;
@@ -139,117 +176,199 @@ export default function InvitationEditChrome({
   enabledSections?: string[];
   onSectionToggle?: (sectionId: string, on: boolean) => void;
 }) {
-  const ui = styles[variant];
-  const barStatus = statusLabel(status, statusMessage);
+  const [panel, setPanel] = useState<Panel | null>(null);
+  const [themeSaving, setThemeSaving] = useState(false);
+  const [themeError, setThemeError] = useState("");
+  const dockRef = useRef<HTMLDivElement>(null);
+
   const effectFallback = ambianceEffects[0]?.id ?? "none";
   const effectValue = normalizeLayoutId(ambianceEffect, ambianceEffects, effectFallback);
-  const showEffectPicker = Boolean(onAmbianceEffectChange);
-  const showSectionPicker =
+  const showThemes = themes.length > 0;
+  const showSections =
     Boolean(sectionCatalog?.length) && Boolean(onSectionToggle) && Array.isArray(enabledSections);
+  const showEffects = Boolean(onAmbianceEffectChange);
+  const saveState = statusLabel(status, statusMessage);
+
+  useEffect(() => {
+    if (!panel) {
+      return;
+    }
+
+    function onPointer(event: MouseEvent) {
+      if (!dockRef.current?.contains(event.target as Node)) {
+        setPanel(null);
+      }
+    }
+
+    function onKey(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setPanel(null);
+      }
+    }
+
+    document.addEventListener("mousedown", onPointer);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onPointer);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [panel]);
+
+  function toggle(next: Panel) {
+    setPanel((current) => (current === next ? null : next));
+  }
+
+  async function selectTheme(themeId: string) {
+    if (themeId === selectedThemeId) {
+      return;
+    }
+
+    if (canPublish) {
+      onThemeChange(themeId, themes);
+      return;
+    }
+
+    setThemeSaving(true);
+    setThemeError("");
+
+    try {
+      const saved = await saveInvitationTheme({ slug, source }, themeId);
+      onThemeChange(saved.selectedThemeId, saved.themes || themes);
+    } catch (error) {
+      setThemeError(error instanceof Error ? error.message : "Could not change theme");
+    } finally {
+      setThemeSaving(false);
+    }
+  }
 
   return (
     <>
       {editing ? (
-        <div className={ui.bar}>
-          <ThemePicker
-            slug={slug}
-            selectedThemeId={selectedThemeId}
-            themes={themes}
-            source={source}
-            variant={variant}
-            inline
-            localOnly={canPublish}
-            onChange={onThemeChange}
-          />
-          {showSectionPicker ? (
-            <SectionPicker
-              sections={sectionCatalog!}
-              enabled={enabledSections!}
-              onToggle={onSectionToggle!}
-              variant={variant === "party" ? "party" : variant}
-            />
-          ) : null}
-          {showEffectPicker ? (
-            <div className="flex shrink-0 items-center gap-2">
-              <label
-                htmlFor="invitation-ambiance-effect"
-                className={
-                  variant === "invite"
-                    ? "font-caps shrink-0 text-[9px] tracking-[1.4px] text-[color:color-mix(in_srgb,var(--gold-light)_70%,transparent)] uppercase"
-                    : variant === "house"
-                      ? "shrink-0 text-[9px] font-semibold tracking-[1.4px] text-[#796e65] uppercase"
-                      : "bd-sans shrink-0 text-[9px] font-semibold tracking-[1.4px] text-[#e8d5a8b3] uppercase"
-                }
-              >
-                Effect
-              </label>
-              <select
-                id="invitation-ambiance-effect"
-                value={effectValue}
-                onChange={(event) =>
-                  onAmbianceEffectChange?.(
-                    normalizeLayoutId(event.target.value, ambianceEffects, effectFallback)
-                  )
-                }
-                className={
-                  variant === "invite"
-                    ? "rr-edit-chrome-select font-caps rounded-full border px-3 py-1.5 text-[10px] tracking-[1.2px] uppercase"
-                    : variant === "house"
-                      ? "rounded-full border border-[#e8dccd] bg-white px-3 py-1.5 text-[11px] font-medium tracking-[0.4px] text-[#221c18]"
-                      : "bd-sans rounded-full border border-[#e8d5a873] bg-[#070b14] px-3 py-1.5 text-[11px] font-medium tracking-[0.4px] text-[#e8d5a8]"
-                }
-              >
-                {ambianceEffects.map((effect) => (
-                  <option key={effect.id} value={effect.id} className="bg-white text-[#221c18]">
-                    {effect.label}
-                  </option>
-                ))}
-              </select>
+        <div ref={dockRef} className="ed-root ed-dock" role="toolbar" aria-label="Edit invitation">
+          {panel === "theme" ? (
+            <div className="ed-panel" role="dialog" aria-label="Theme">
+              <p className="ed-panel-title">Theme</p>
+              {themes.map((theme) => {
+                const selected = theme.id === selectedThemeId;
+                return (
+                  <button
+                    key={theme.id}
+                    type="button"
+                    className={`ed-option${selected ? " is-selected" : ""}`}
+                    disabled={themeSaving}
+                    onClick={() => void selectTheme(theme.id)}
+                    aria-pressed={selected}
+                  >
+                    <span>{theme.title}</span>
+                    <span className="ed-option-mark" aria-hidden="true" />
+                  </button>
+                );
+              })}
+              {themeError ? <p className="ed-panel-error">{themeError}</p> : null}
             </div>
           ) : null}
-          <span
-            className={`${ui.status} ${status === "error" || statusMessage ? ui.error : ""}`.trim()}
-            title={barStatus}
-          >
-            {barStatus}
-          </span>
-          {ui.hintText && !statusMessage ? <p className={ui.hint}>{ui.hintText}</p> : null}
-          {canPublish ? (
-            <button type="button" onClick={onEnterPreview} className={`${ui.action} ml-auto`}>
-              Save
-            </button>
-          ) : onDone ? (
-            <button
-              type="button"
-              disabled={status === "saving"}
-              onClick={() => void onDone()}
-              className={`${ui.done} ml-auto`}
-            >
-              {status === "saving" ? "Saving…" : "Done"}
-            </button>
-          ) : (
-            <Link href={doneHref} className={`${ui.done} ml-auto`}>
-              Done
-            </Link>
-          )}
+
+          {panel === "sections" && showSections ? (
+            <div className="ed-panel" role="dialog" aria-label="Sections">
+              <p className="ed-panel-title">Sections</p>
+              {sectionCatalog!.map((section) => {
+                const on = enabledSections!.includes(section.id);
+                return (
+                  <label key={section.id} className={`ed-option ed-option--check${section.required ? " is-locked" : ""}`}>
+                    <span>
+                      {section.label}
+                      {section.required ? <span className="ed-option-note">Required</span> : null}
+                    </span>
+                    <input
+                      type="checkbox"
+                      checked={on}
+                      disabled={Boolean(section.required)}
+                      onChange={(event) => onSectionToggle!(section.id, event.target.checked)}
+                    />
+                    <span className="ed-switch" aria-hidden="true" />
+                  </label>
+                );
+              })}
+            </div>
+          ) : null}
+
+          {panel === "effects" && showEffects ? (
+            <div className="ed-panel" role="dialog" aria-label="Effects">
+              <p className="ed-panel-title">Background effect</p>
+              {ambianceEffects.map((effect) => {
+                const selected = effect.id === effectValue;
+                return (
+                  <button
+                    key={effect.id}
+                    type="button"
+                    className={`ed-option${selected ? " is-selected" : ""}`}
+                    onClick={() =>
+                      onAmbianceEffectChange?.(normalizeLayoutId(effect.id, ambianceEffects, effectFallback))
+                    }
+                    aria-pressed={selected}
+                  >
+                    <span>{effect.label}</span>
+                    <span className="ed-option-mark" aria-hidden="true" />
+                  </button>
+                );
+              })}
+            </div>
+          ) : null}
+
+          <div className="ed-bar">
+            {showThemes ? (
+              <DockItem
+                icon={<PaletteIcon />}
+                label="Theme"
+                active={panel === "theme"}
+                onClick={() => toggle("theme")}
+              />
+            ) : null}
+            {showSections ? (
+              <DockItem
+                icon={<SectionsIcon />}
+                label="Sections"
+                meta={`${enabledSections!.length}/${sectionCatalog!.length}`}
+                active={panel === "sections"}
+                onClick={() => toggle("sections")}
+              />
+            ) : null}
+            {showEffects ? (
+              <DockItem
+                icon={<SparkleIcon />}
+                label="Effects"
+                active={panel === "effects"}
+                onClick={() => toggle("effects")}
+              />
+            ) : null}
+            {canPublish ? (
+              <DockItem icon={<CheckIcon />} label="Save" meta={saveState} primary onClick={onEnterPreview} />
+            ) : onDone ? (
+              <DockItem
+                icon={<CheckIcon />}
+                label={status === "saving" ? "Saving…" : "Done"}
+                meta={status === "saving" ? undefined : saveState}
+                primary
+                disabled={status === "saving"}
+                onClick={() => void onDone()}
+              />
+            ) : (
+              <DockItem icon={<CheckIcon />} label="Done" meta={saveState} primary href={doneHref} />
+            )}
+          </div>
         </div>
       ) : null}
 
       {previewing ? (
         <>
-          <button type="button" onClick={onBackToEdit} className={ui.back}>
-            Back to edit
+          <button type="button" onClick={onBackToEdit} className="ed-root ed-back">
+            ← Back to edit
           </button>
-          <div className={ui.publishBar}>
-            <button
-              type="button"
-              disabled={publishing}
-              onClick={onOpenPay}
-              className={ui.publish}
-            >
+          <div className="ed-root ed-publish">
+            <button type="button" disabled={publishing} onClick={onOpenPay} className="ed-publish-button">
               {publishing ? "Publishing…" : "Publish"}
             </button>
-            {status === "error" ? <span className={ui.error}>Could not publish</span> : null}
+            {status === "error" ? <span className="ed-publish-error">Could not publish</span> : null}
           </div>
         </>
       ) : null}

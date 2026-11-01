@@ -71,7 +71,6 @@ export default function AureliaNocturneInvitation({
     template,
     editable,
     onPublish,
-    variant: "invite",
     sectionFamily: "aurelia",
   });
 

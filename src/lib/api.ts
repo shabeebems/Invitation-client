@@ -37,12 +37,15 @@ export type TemplateContent = {
   venueName?: string;
   venueHall?: string;
   venueCity?: string;
+  contactPhone?: string;
   mapsUrl?: string;
   hashtag?: string;
   blessing?: string;
   inviteLine?: string;
   footer?: string;
   shareText?: string;
+  /** Owner-edited WhatsApp message; empty means it is built from the invitation details. */
+  shareMessage?: string;
   envelopeTagline?: string;
   skipLabel?: string;
   openHint?: string;
@@ -280,6 +283,31 @@ export type InvitationTemplate = {
 export function invitationApiBase(template: Pick<InvitationTemplate, "slug" | "source">) {
   const kind = template.source === "work" ? "works" : "templates";
   return `${API_URL}/api/${kind}/${template.slug}`;
+}
+
+export async function saveInvitationTheme(
+  invitation: Pick<InvitationTemplate, "slug" | "source">,
+  selectedThemeId: string
+): Promise<{ selectedThemeId: string; themes?: InvitationTheme[] }> {
+  const response = await fetch(`${invitationApiBase(invitation)}/theme`, {
+    method: "PUT",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ selectedThemeId }),
+  });
+  const data = (await response.json()) as {
+    success?: boolean;
+    message?: string;
+    template?: Pick<InvitationTemplate, "selectedThemeId" | "themes">;
+    work?: Pick<InvitationTemplate, "selectedThemeId" | "themes">;
+  };
+
+  if (!response.ok || !data.success) {
+    throw new Error(data.message || "Could not change theme");
+  }
+
+  const saved = data.template || data.work;
+  return { selectedThemeId: saved?.selectedThemeId || selectedThemeId, themes: saved?.themes };
 }
 
 export function invitationDoneHref(

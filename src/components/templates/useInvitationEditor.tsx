@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import EditableField from "@/components/templates/EditableField";
-import InvitationEditChrome, { type EditChromeVariant } from "@/components/templates/InvitationEditChrome";
+import InvitationEditChrome from "@/components/templates/InvitationEditChrome";
 import {
   invitationApiBase,
   invitationDoneHref,
@@ -148,7 +148,6 @@ export function useInvitationEditor({
   template,
   editable = false,
   onPublish,
-  variant,
   sectionFamily,
 }: {
   template: InvitationTemplate;
@@ -158,7 +157,6 @@ export function useInvitationEditor({
     images: PendingImage[],
     orderId?: string
   ) => Promise<string | undefined | void>;
-  variant: EditChromeVariant;
   /** Enables section add/remove in the bottom edit bar for this template family. */
   sectionFamily?: TemplateSectionFamily;
 }) {
@@ -730,7 +728,6 @@ export function useInvitationEditor({
 
   const chrome = (
     <InvitationEditChrome
-      variant={variant}
       editing={editing}
       previewing={previewing}
       status={status}
@@ -815,6 +812,7 @@ export function useInvitationEditor({
     payOpen,
     persist,
     field,
+    commitText: commit,
     commitEventDate,
     changeImage,
     changeGalleryImage,

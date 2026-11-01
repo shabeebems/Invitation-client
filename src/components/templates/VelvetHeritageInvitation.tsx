@@ -16,6 +16,10 @@ import {
 import { normalizeAmbianceEffect } from "@/lib/template-ambiance";
 import { isSectionEnabled, resolveEnabledSections } from "@/lib/template-sections";
 import { type InvitationTemplate, type PendingImage, imageUrl } from "@/lib/api";
+import { buildWeddingShareMessage } from "@/lib/share-message";
+import { useShareMessage } from "@/components/templates/shared/useShareMessage";
+
+const SHARE_OPTIONS = { occasion: "wedding", closing: "We would be honored to have you with us." };
 
 export default function VelvetHeritageInvitation({
   template,
@@ -38,6 +42,7 @@ export default function VelvetHeritageInvitation({
     content,
     editing,
     field,
+    commitText,
     commitEventDate,
     changeImage,
     commitLoveStoryItem,
@@ -58,7 +63,6 @@ export default function VelvetHeritageInvitation({
     template,
     editable,
     onPublish,
-    variant: "invite",
     sectionFamily: "velvet",
   });
 
@@ -68,7 +72,12 @@ export default function VelvetHeritageInvitation({
   const openingDate = [content.weekday, [content.day, content.monthYear].filter(Boolean).join(" ")]
     .filter(Boolean)
     .join(" · ");
-  const shareText = encodeURIComponent(content.shareText || "");
+  const share = useShareMessage({
+    draft,
+    builtMessage: buildWeddingShareMessage(content, SHARE_OPTIONS),
+    editing,
+    onSave: (message) => commitText("shareMessage", message),
+  });
   // Persist via velvet catalog; SiteAmbiance reuses the royal particle renderer.
   const ambianceEffect = normalizeRoyalAmbiance(
     normalizeAmbianceEffect(content.ambianceEffect, "velvet")
@@ -179,13 +188,15 @@ export default function VelvetHeritageInvitation({
 
         <a
           className={`vh-share vh-cap-title${editable ? " is-editing" : ""}`}
-          href={`https://wa.me/?text=${shareText}`}
+          href={share.href}
+          onClick={share.onClick}
           target="_blank"
           rel="noopener noreferrer"
-          aria-label="Share invitation on WhatsApp"
+          aria-label={share.label}
         >
           Share
         </a>
+        {share.modal}
       </div>
     </main>
   );

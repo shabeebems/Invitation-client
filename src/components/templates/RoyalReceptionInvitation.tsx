@@ -14,6 +14,10 @@ import RoyalFooter from "@/components/templates/royal/RoyalFooter";
 import { normalizeAmbianceEffect, SiteAmbiance } from "@/components/templates/royal/AmbianceEffects";
 import { isSectionEnabled, resolveEnabledSections } from "@/lib/template-sections";
 import { type InvitationTemplate, type PendingImage, imageUrl } from "@/lib/api";
+import { buildWeddingShareMessage } from "@/lib/share-message";
+import { useShareMessage } from "@/components/templates/shared/useShareMessage";
+
+const SHARE_OPTIONS = { occasion: "wedding reception", closing: "Please join us with your duas 🤲" };
 
 export default function RoyalReceptionInvitation({
   template,
@@ -35,6 +39,7 @@ export default function RoyalReceptionInvitation({
     content,
     editing,
     field,
+    commitText,
     commitEventDate,
     changeImage,
     commitLoveStoryItem,
@@ -59,7 +64,6 @@ export default function RoyalReceptionInvitation({
     template,
     editable,
     onPublish,
-    variant: "invite",
     sectionFamily: "royal",
   });
 
@@ -68,7 +72,12 @@ export default function RoyalReceptionInvitation({
   const brideImageUrl = imageUrl(draft.images, "bride");
   const groomsInitial = (content.groomName || "").trim().charAt(0) || "I";
   const bridesInitial = (content.brideName || "").trim().charAt(0) || "A";
-  const shareText = encodeURIComponent(content.shareText || "");
+  const share = useShareMessage({
+    draft,
+    builtMessage: buildWeddingShareMessage(content, SHARE_OPTIONS),
+    editing,
+    onSave: (message) => commitText("shareMessage", message),
+  });
   const themeClass = /emerald/i.test(themeTitle) ? " palette-emerald" : " palette-velvet";
   const ambianceEffect = normalizeAmbianceEffect(content.ambianceEffect);
   const enabled = useMemo(
@@ -201,11 +210,12 @@ export default function RoyalReceptionInvitation({
         {isSectionEnabled(enabled, "footer") ? <RoyalFooter editable={editable} field={field} /> : null}
 
       <a
-        className={`invite-share font-caps fixed right-[max(14px,env(safe-area-inset-right,0px))] z-[10060] inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-[#f3e8cd73] px-4 py-3 text-[10px] tracking-[2px] text-[#e7d3a4] uppercase no-underline ${editable ? "bottom-[4.75rem]" : "bottom-[max(18px,env(safe-area-inset-bottom,0px))]"}`}
-        href={`https://wa.me/?text=${shareText}`}
+        className={`invite-share font-caps fixed right-[max(14px,env(safe-area-inset-right,0px))] z-[10060] inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-[#f3e8cd73] px-4 py-3 text-[10px] tracking-[2px] text-[#e7d3a4] uppercase no-underline ${editable ? "bottom-[calc(max(14px,env(safe-area-inset-bottom,0px))+6.5rem)]" : "bottom-[max(18px,env(safe-area-inset-bottom,0px))]"}`}
+        href={share.href}
+        onClick={share.onClick}
         target="_blank"
         rel="noopener noreferrer"
-        aria-label="Share invitation on WhatsApp"
+        aria-label={share.label}
       >
         <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
           <path
@@ -215,6 +225,7 @@ export default function RoyalReceptionInvitation({
         </svg>
         <span className="max-sm:sr-only">Share</span>
       </a>
+      {share.modal}
       </div>
     </main>
   );

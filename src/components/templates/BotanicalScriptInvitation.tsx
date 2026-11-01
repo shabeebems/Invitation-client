@@ -73,7 +73,6 @@ export default function BotanicalScriptInvitation({
     template,
     editable,
     onPublish,
-    variant: "invite",
     sectionFamily: "botanical",
   });
 
