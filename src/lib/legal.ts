@@ -1,4 +1,4 @@
-export const SUPPORT_EMAIL = "savethekath@gmail.com";
+export const SUPPORT_EMAIL = "support@savethekath.com";
 export const LEGAL_UPDATED = "2 November 2026";
 
 export const LEGAL_LINKS = [
