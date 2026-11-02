@@ -364,6 +364,18 @@ export default function AuthForm({ mode }: { mode: Mode }) {
           {isSignup ? "Log In" : "Sign Up"}
         </Link>
       </p>
+
+      <p className="auth-legal">
+        By continuing, you agree to our{" "}
+        <Link href="/terms" className="auth-link">
+          Terms
+        </Link>{" "}
+        and{" "}
+        <Link href="/privacy" className="auth-link">
+          Privacy Policy
+        </Link>
+        .
+      </p>
     </div>
   );
 }

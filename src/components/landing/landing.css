@@ -906,6 +906,18 @@
   text-align: center;
 }
 
+.auth-legal {
+  margin: 14px 0 0;
+  color: #8d8f87;
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.auth-legal .auth-link {
+  font-size: 12px;
+}
+
 @media (min-width: 480px) {
   .auth-main {
     padding-top: 24px;

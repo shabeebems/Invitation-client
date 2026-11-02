@@ -3,6 +3,7 @@ import type { Category } from "@/lib/api";
 import BrandMark from "@/components/brand/BrandMark";
 import BrandWordmark from "@/components/brand/BrandWordmark";
 import { BRAND_NAME } from "@/lib/brand";
+import { LEGAL_LINKS, SUPPORT_EMAIL } from "@/lib/legal";
 
 const keyFeatures = [
   "Live text editor",
@@ -166,17 +167,29 @@ export default function SiteFooter({ categories = [] }: { categories?: Category[
                 Support
               </h3>
               <p className="mt-4 text-[13px] leading-[1.68] text-[#D2D8CE] sm:text-[13.5px]">
-                Sign in to save drafts, publish invitations, and manage every celebration from your
-                account.
+                Questions, payment issues or refunds? Write to us at{" "}
+                <a href={`mailto:${SUPPORT_EMAIL}`} className="text-[#F7F0DE] underline-offset-2 hover:underline">
+                  {SUPPORT_EMAIL}
+                </a>
+                .
               </p>
+              <ul className="mt-4 space-y-2 text-[13.5px] text-[#D2D8CE]">
+                {LEGAL_LINKS.map((link) => (
+                  <li key={link.href}>
+                    <Link href={link.href} className="transition hover:text-[#F7F0DE]">
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
             </div>
             <div className="mt-5">
-              <Link
-                href="/login"
+              <a
+                href={`mailto:${SUPPORT_EMAIL}`}
                 className="inline-flex items-center justify-center rounded-full border border-[#D9C18C]/60 bg-transparent px-6 py-2.5 text-[13px] font-semibold text-[#F7F0DE] transition hover:border-[#F5E6C7] hover:bg-white/5 hover:text-[#F5E6C7]"
               >
                 Get Support →
-              </Link>
+              </a>
             </div>
           </div>
         </div>

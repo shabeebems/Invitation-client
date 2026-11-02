@@ -302,6 +302,17 @@ export default function PublishPaymentModal({
                 <span>•</span>
                 <span>UPI / Cards / NetBanking</span>
               </div>
+              <p className="text-center text-[11px] leading-relaxed text-stone-500">
+                By paying, you agree to our{" "}
+                <a href="/terms" target="_blank" rel="noreferrer" className="underline underline-offset-2 hover:text-stone-700">
+                  Terms
+                </a>{" "}
+                and{" "}
+                <a href="/refund" target="_blank" rel="noreferrer" className="underline underline-offset-2 hover:text-stone-700">
+                  Refund Policy
+                </a>
+                .
+              </p>
             </div>
           </div>
         )}
