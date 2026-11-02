@@ -41,6 +41,35 @@ function tagline(description: string) {
   return `${first}.`;
 }
 
+const RUPEES = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 });
+
+function TemplatePrice({ template }: { template: InvitationTemplate }) {
+  const offer = template.offerPrice;
+  const actual = template.actualPrice;
+
+  if (typeof offer !== "number") {
+    return <span />;
+  }
+
+  const discounted = typeof actual === "number" && actual > offer;
+  const percentOff = discounted ? Math.round(((actual - offer) / actual) * 100) : 0;
+
+  return (
+    <p className="tg-price">
+      <span className="tg-price-offer">{RUPEES.format(offer)}</span>
+      {discounted ? (
+        <>
+          <s className="tg-price-actual">
+            <span className="sr-only">Was </span>
+            {RUPEES.format(actual)}
+          </s>
+          <span className="tg-price-off">{percentOff}% off</span>
+        </>
+      ) : null}
+    </p>
+  );
+}
+
 const LEAF = "M0 0C3-4.6 9.6-6.2 16-3.7C11 1.7 4.6 2.5 0 0Z";
 
 const SPRIG_LEAVES: [number, number, number, number, string][] = [
@@ -318,9 +347,9 @@ export default function TemplateGallery({
                         </Link>
                       </h3>
                       <p className="tg-desc">{tagline(template.description)}</p>
-                      <div className="tg-foot" aria-hidden="true">
-                        <LeafSprig className="tg-foot-leaf" />
-                        <span className="tg-go">
+                      <div className="tg-foot">
+                        <TemplatePrice template={template} />
+                        <span className="tg-go" aria-hidden="true">
                           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M5 12h14M13 6l6 6-6 6" />
                           </svg>

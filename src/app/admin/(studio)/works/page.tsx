@@ -10,7 +10,6 @@ import {
   imageUrl,
   invitationEditHref,
   invitationLiveHref,
-  invitationPreviewHref,
   type Category,
   type InvitationTemplate,
 } from "@/lib/api";
@@ -107,7 +106,7 @@ export default function WorksPage() {
       <PageHeader
         eyebrow="Studio"
         title="Works"
-        description="Published invitations. Open one to preview, edit, or view the live link."
+        description="Published invitations. Edit one or open the live guest link."
         meta={`${works.length} live`}
         action={
           <PrimaryButton
@@ -153,14 +152,8 @@ export default function WorksPage() {
                   </p>
                   <div className="mt-4 flex flex-wrap gap-2">
                     <Link
-                      href={invitationPreviewHref(work, "admin")}
-                      className="inline-flex rounded-full bg-[#111827] px-4 py-2 text-sm font-semibold text-white hover:bg-black"
-                    >
-                      Preview
-                    </Link>
-                    <Link
                       href={invitationEditHref(work, "admin")}
-                      className="inline-flex rounded-full border border-[#e6e8ec] px-4 py-2 text-sm font-semibold text-[#111827] hover:border-[#111827]"
+                      className="inline-flex rounded-full bg-[#111827] px-4 py-2 text-sm font-semibold text-white hover:bg-black"
                     >
                       Edit
                     </Link>

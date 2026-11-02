@@ -7,7 +7,7 @@ import {
   fetchTemplates,
   fetchWorks,
   imageUrl,
-  invitationPreviewHref,
+  invitationLiveHref,
   type Category,
   type InvitationTemplate,
 } from "@/lib/api";
@@ -96,7 +96,7 @@ export default function AdminDashboard() {
               ) : (
                 <div className="flex flex-col gap-3">
                   {works.slice(0, 4).map((work) => (
-                    <Link key={work.id} href={invitationPreviewHref(work, "admin")}>
+                    <Link key={work.id} href={invitationLiveHref(work)}>
                       <Panel className="flex items-center gap-4 p-3 transition hover:border-[#cfd3d8]">
                         <Thumb src={imageUrl(work.images, "hero")} alt={work.name} />
                         <div className="min-w-0">

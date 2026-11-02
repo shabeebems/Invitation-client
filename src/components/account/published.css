@@ -1,0 +1,126 @@
+.pb {
+  --pb-ink: #173a2c;
+  --pb-ink-soft: #3a4a40;
+  --pb-text: #686d65;
+  --pb-muted: #8d8f87;
+  --pb-line: #e5dac7;
+  max-width: 640px;
+  color: var(--pb-ink);
+}
+
+.pb-title {
+  margin: 0;
+  font-size: clamp(1.85rem, 1.5rem + 1.4vw, 2.4rem);
+  font-weight: 600;
+  line-height: 1.08;
+  letter-spacing: -0.015em;
+}
+
+.pb-note {
+  margin: 8px 0 0;
+  color: var(--pb-muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.pb-details {
+  margin: 22px 0 0;
+  border-top: 1px solid var(--pb-line);
+}
+
+.pb-details > div {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  gap: 10px 12px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--pb-line);
+}
+
+.pb-details > div:last-child {
+  border-bottom: 0;
+}
+
+.pb-details dt {
+  color: var(--pb-muted);
+  font-size: 13px;
+}
+
+.pb-details dd {
+  min-width: 0;
+  margin: 0;
+  color: var(--pb-ink);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.pb-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 22px;
+}
+
+.pb-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 38px;
+  padding: 0 14px;
+  border: 1px solid var(--pb-line);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--pb-ink);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color 0.15s,
+    border-color 0.15s;
+}
+
+.pb-btn:hover {
+  border-color: color-mix(in srgb, var(--pb-ink) 28%, var(--pb-line));
+  background: rgb(255 253 248 / 0.75);
+}
+
+.pb-btn--primary {
+  border-color: var(--pb-ink);
+  background: var(--pb-ink);
+  color: #fbf6ea;
+}
+
+.pb-btn--primary:hover {
+  background: #245440;
+  border-color: #245440;
+}
+
+.pb-state {
+  margin: 22px 0 0;
+  color: var(--pb-text);
+  font-size: 14px;
+}
+
+.pb-state--error {
+  color: #8a2c33;
+}
+
+@media (max-width: 520px) {
+  .pb-details > div {
+    grid-template-columns: 1fr;
+    gap: 3px;
+    padding: 10px 0;
+  }
+
+  .pb-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .pb-btn--primary {
+    grid-column: 1 / -1;
+  }
+}

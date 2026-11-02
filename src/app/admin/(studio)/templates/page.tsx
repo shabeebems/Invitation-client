@@ -1,6 +1,7 @@
 import { fetchTemplates, imageUrl } from "@/lib/api";
 import Link from "next/link";
 import ThemePicker from "@/components/templates/ThemePicker";
+import TemplatePricingForm from "@/components/admin/TemplatePricingForm";
 import { EmptyState, PageHeader, Panel } from "@/components/admin/ui";
 
 export default async function TemplatesPage() {
@@ -51,6 +52,11 @@ export default async function TemplatesPage() {
                       Edit
                     </Link>
                   </div>
+                  <TemplatePricingForm
+                    slug={template.slug}
+                    actualPrice={template.actualPrice}
+                    offerPrice={template.offerPrice}
+                  />
                   <ThemePicker
                     slug={template.slug}
                     selectedThemeId={template.selectedThemeId}

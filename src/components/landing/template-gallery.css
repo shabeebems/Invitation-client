@@ -471,14 +471,47 @@
   -webkit-line-clamp: 2;
 }
 
+.tg-desc,
 .tg-foot {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
+  grid-column: 1 / -1;
 }
 
-.tg-foot-leaf {
-  display: none;
+.tg-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.tg-price {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 6px;
+  row-gap: 2px;
+  min-width: 0;
+  margin: 0;
+}
+
+.tg-price-offer {
+  color: var(--tg-ink);
+  font-size: 15px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.tg-price-actual {
+  color: var(--tg-soft);
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.tg-price-off {
+  color: #7a2636;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }
 
 .tg-go {
@@ -634,11 +667,8 @@
     padding-top: 10px;
   }
 
-  .tg-foot-leaf {
-    display: block;
-    width: 22px;
-    margin: 0 0 -2px -4px;
-    opacity: 0.75;
+  .tg-price-offer {
+    font-size: 16px;
   }
 
   .tg-go {

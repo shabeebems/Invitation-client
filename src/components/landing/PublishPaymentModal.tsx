@@ -23,6 +23,26 @@ interface PublishPaymentModalProps {
 
 const emptySubscribe = () => () => {};
 
+function razorpayLogoUrl(): string | undefined {
+  if (typeof window === "undefined") {
+    return undefined;
+  }
+
+  const host = window.location.hostname;
+  const isLoopback =
+    host === "localhost" ||
+    host === "127.0.0.1" ||
+    host === "[::1]" ||
+    host.endsWith(".local") ||
+    /^(10|127|169\.254|192\.168|172\.(1[6-9]|2\d|3[0-1]))\./.test(host);
+
+  if (isLoopback) {
+    return undefined;
+  }
+
+  return `${window.location.origin}${BRAND_MARK_SRC}`;
+}
+
 export default function PublishPaymentModal({
   open,
   templateId = "",
@@ -105,19 +125,26 @@ export default function PublishPaymentModal({
     setError("");
 
     try {
+      if (order.gatewayOrderId.startsWith("order_mock_") && !order.isMock) {
+        setStep("loading");
+        setRetryCount((count) => count + 1);
+        return;
+      }
+
       const loaded = await loadRazorpayScript();
       if (!loaded || !window.Razorpay) {
         throw new Error("Could not load Razorpay payment SDK. Please check your internet connection.");
       }
 
+      const logo = razorpayLogoUrl();
       const rzp = new window.Razorpay({
         key: order.keyId,
         amount: order.amount,
         currency: order.currency,
         name: "Save the Kath",
-        image: `${window.location.origin}${BRAND_MARK_SRC}`,
         description: `Publish ${invitationName || "Invitation"}`,
         order_id: order.gatewayOrderId,
+        ...(logo ? { image: logo } : {}),
         prefill: {
           name: order.customerName || "Customer",
           email: order.customerEmail || "",
@@ -128,9 +155,9 @@ export default function PublishPaymentModal({
           try {
             await verifyPayment({
               orderId: order.orderId,
-              razorpayOrderId: res.razorpay_order_id,
-              razorpayPaymentId: res.razorpay_payment_id,
-              razorpaySignature: res.razorpay_signature,
+              razorpayOrderId: res.razorpay_order_id || order.gatewayOrderId,
+              razorpayPaymentId: res.razorpay_payment_id || `pay_mock_${Date.now()}`,
+              razorpaySignature: order.isMock ? "mock_signature" : res.razorpay_signature,
             });
 
             setStep("publishing");
@@ -153,32 +180,16 @@ export default function PublishPaymentModal({
         },
       });
 
+      rzp.on("payment.failed", (response) => {
+        const failed = response as { error?: { description?: string } };
+        setError(failed.error?.description || "Payment failed");
+        setStep("error");
+      });
+
       rzp.open();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to open payment gateway");
       setStep("ready");
-    }
-  }
-
-  async function handleSimulateSuccess() {
-    if (!order) return;
-    setStep("verifying");
-    setError("");
-
-    try {
-      await verifyPayment({
-        orderId: order.orderId,
-        razorpayOrderId: order.gatewayOrderId,
-        razorpayPaymentId: `pay_mock_${Date.now()}`,
-        razorpaySignature: "mock_signature",
-      });
-
-      setStep("publishing");
-      await onSuccess(order.orderId);
-      setStep("success");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Simulation verification failed");
-      setStep("error");
     }
   }
 
@@ -252,10 +263,10 @@ export default function PublishPaymentModal({
               </div>
               <ul className="mt-3 space-y-1.5 text-xs text-stone-600">
                 <li className="flex items-center gap-2">
-                  <span className="text-[#183C2C]">✓</span> Lifetime digital hosting & dedicated link
+                  <span className="text-[#183C2C]">✓</span> Unlimited guest visits with zero watermark
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="text-[#183C2C]">✓</span> Unlimited guest visits with zero watermark
+                  <span className="text-[#183C2C]">✓</span> WhatsApp sharing with a custom message
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="text-[#183C2C]">✓</span> Integrated Google Maps & Calendar (.ics)
@@ -269,64 +280,29 @@ export default function PublishPaymentModal({
                 <p className="text-xs font-medium text-[#183C2C]/80">Total Amount</p>
                 <p className="text-xs text-stone-500">One-time payment • All features included</p>
               </div>
-              <p className="text-2xl font-bold tracking-tight text-[#183C2C]">
-                {order.displayAmount}
-              </p>
+              <div className="text-right">
+                <p className="text-2xl font-bold tracking-tight text-[#183C2C]">{order.displayAmount}</p>
+                {order.actualDisplayAmount ? (
+                  <s className="text-xs text-stone-500">{order.actualDisplayAmount}</s>
+                ) : null}
+              </div>
             </div>
 
-            {/* Mode: Mock Sandbox vs Real Razorpay */}
-            {order.isMock ? (
-              <div className="rounded-2xl border border-amber-300 bg-amber-50/70 p-4 text-xs text-amber-900">
-                <div className="flex items-center gap-1.5 font-bold uppercase tracking-wider text-amber-800">
-                  <span>🧪</span> Sandbox Simulation Mode
-                </div>
-                <p className="mt-1 leading-relaxed text-amber-800/90">
-                  Razorpay credentials are currently in placeholder mode. You can simulate the complete
-                  publish flow now. When production keys are added to .env, this will open the real Razorpay UPI/Cards modal.
-                </p>
-                <div className="mt-3 flex flex-col gap-2">
-                  <button
-                    type="button"
-                    onClick={() => void handleSimulateSuccess()}
-                    className="w-full rounded-full bg-[#183C2C] px-5 py-3 text-sm font-semibold text-[#F1EFE8] shadow-md transition hover:bg-[#23503B]"
-                  >
-                    Simulate Successful Payment ({order.displayAmount})
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => void handleRealPayment()}
-                    className="w-full rounded-full border border-[#183C2C] bg-white px-4 py-2.5 text-xs font-semibold text-[#183C2C] hover:bg-[#E7EBDD]/60"
-                  >
-                    Open Official Razorpay Checkout Modal anyway
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setError("Simulated payment cancellation.");
-                      setStep("error");
-                    }}
-                    className="w-full rounded-full border border-stone-300 bg-white px-4 py-2 text-xs font-semibold text-stone-600 hover:bg-stone-50"
-                  >
-                    Simulate Payment Failure
-                  </button>
-                </div>
+            <div className="space-y-3">
+              <button
+                type="button"
+                disabled={step === "paying"}
+                onClick={() => void handleRealPayment()}
+                className="w-full rounded-full bg-[#183C2C] px-5 py-3.5 text-base font-semibold text-[#F1EFE8] shadow-md transition hover:bg-[#23503B] disabled:opacity-70"
+              >
+                {step === "paying" ? "Opening Razorpay…" : `Pay ${order.displayAmount} via Razorpay`}
+              </button>
+              <div className="flex items-center justify-center gap-3 text-[11px] text-stone-500">
+                <span>🔒 256-bit Encrypted</span>
+                <span>•</span>
+                <span>UPI / Cards / NetBanking</span>
               </div>
-            ) : (
-              <div className="space-y-3">
-                <button
-                  type="button"
-                  onClick={() => void handleRealPayment()}
-                  className="w-full rounded-full bg-[#183C2C] px-5 py-3.5 text-base font-semibold text-[#F1EFE8] shadow-md transition hover:bg-[#23503B]"
-                >
-                  Pay {order.displayAmount} via Razorpay
-                </button>
-                <div className="flex items-center justify-center gap-3 text-[11px] text-stone-500">
-                  <span>🔒 256-bit Encrypted</span>
-                  <span>•</span>
-                  <span>UPI / Cards / NetBanking</span>
-                </div>
-              </div>
-            )}
+            </div>
           </div>
         )}
 
