@@ -17,7 +17,12 @@ declare global {
           initialize: (config: {
             client_id: string;
             callback: (response: { credential: string }) => void;
+            context?: "signin" | "signup" | "use";
+            itp_support?: boolean;
+            use_fedcm_for_prompt?: boolean;
           }) => void;
+          prompt: () => void;
+          cancel: () => void;
           renderButton: (
             parent: HTMLElement,
             options: {
@@ -95,6 +100,8 @@ export default function AuthForm({ mode }: { mode: Mode }) {
   }
 
   onGoogleCredential.current = async (credential) => {
+    setFormError("");
+    setSubmitting(true);
     try {
       const result = await fetch(`${API_URL}/api/auth/google`, {
         method: "POST",
@@ -115,6 +122,7 @@ export default function AuthForm({ mode }: { mode: Mode }) {
       afterAuth(data.user?.role);
     } catch (error) {
       setFormError(error instanceof Error ? error.message : "Could not continue");
+      setSubmitting(false);
     }
   };
 
@@ -138,6 +146,9 @@ export default function AuthForm({ mode }: { mode: Mode }) {
           callback: (response) => {
             void onGoogleCredential.current(response.credential);
           },
+          context: "use",
+          itp_support: true,
+          use_fedcm_for_prompt: true,
         });
         googleInitialized = true;
       }
@@ -152,12 +163,14 @@ export default function AuthForm({ mode }: { mode: Mode }) {
         width: Math.min(Math.max(host.offsetWidth || host.parentElement?.clientWidth || 280, 240), 400),
         logo_alignment: "center",
       });
+      window.google.accounts.id.prompt();
     }
 
     if (window.google?.accounts?.id) {
       ready();
       return () => {
         cancelled = true;
+        window.google?.accounts?.id?.cancel();
       };
     }
 
@@ -176,6 +189,7 @@ export default function AuthForm({ mode }: { mode: Mode }) {
     return () => {
       cancelled = true;
       script?.removeEventListener("load", ready);
+      window.google?.accounts?.id?.cancel();
     };
   }, []);
 
