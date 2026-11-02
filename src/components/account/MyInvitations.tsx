@@ -7,7 +7,6 @@ import {
   imageUrl,
   invitationEditHref,
   invitationLiveHref,
-  invitationPreviewHref,
   type InvitationTemplate,
 } from "@/lib/api";
 import { cormorant } from "@/lib/fonts";
@@ -23,15 +22,6 @@ function PlusIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
       <path d="M12 5v14M5 12h14" />
-    </svg>
-  );
-}
-
-function EyeIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true">
-      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" />
-      <circle cx="12" cy="12" r="3" />
     </svg>
   );
 }
@@ -226,15 +216,6 @@ export default function MyInvitations() {
 
         {open ? (
           <div className="mi-menu" role="menu">
-            <Link
-              href={invitationPreviewHref(work, "customer")}
-              role="menuitem"
-              className="mi-menu-item mi-menu-item--compact"
-              onClick={() => setMenuSlug("")}
-            >
-              <EyeIcon />
-              Preview
-            </Link>
             <button
               type="button"
               role="menuitem"
@@ -348,7 +329,7 @@ export default function MyInvitations() {
 
             return (
               <li key={work.id} className={`mi-row${menuSlug === work.slug ? " is-menu-open" : ""}`}>
-                <Link href={invitationPreviewHref(work, "customer")} className="mi-thumb" tabIndex={-1} aria-hidden="true">
+                <Link href={invitationLiveHref(work)} className="mi-thumb" tabIndex={-1} aria-hidden="true">
                   {thumb ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={thumb} alt="" loading="lazy" />
@@ -357,7 +338,7 @@ export default function MyInvitations() {
 
                 <div className="mi-main">
                   <h2 className={`mi-name ${cormorant.className}`}>
-                    <Link href={invitationPreviewHref(work, "customer")}>{work.name}</Link>
+                    <Link href={invitationLiveHref(work)}>{work.name}</Link>
                   </h2>
                   {work.description ? <p className="mi-desc">{work.description}</p> : null}
                   {date ? <p className="mi-date-inline">{date}</p> : null}
@@ -374,14 +355,6 @@ export default function MyInvitations() {
                 <span className="mi-date">{date}</span>
 
                 <div className="mi-actions">
-                  <Link
-                    href={invitationPreviewHref(work, "customer")}
-                    className="mi-icon"
-                    aria-label={`Preview ${work.name}`}
-                    title="Preview"
-                  >
-                    <EyeIcon />
-                  </Link>
                   <button
                     type="button"
                     className={`mi-icon${copied ? " is-done" : ""}`}

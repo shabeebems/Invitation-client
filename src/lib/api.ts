@@ -262,6 +262,10 @@ export type InvitationTemplate = {
   name: string;
   description: string;
   isActive: boolean;
+  /** Template list price in rupees. */
+  actualPrice?: number;
+  /** Template offer price in rupees. */
+  offerPrice?: number;
   isPublished?: boolean;
   publishedAt?: string | null;
   createdAt?: string;
@@ -310,6 +314,29 @@ export async function saveInvitationTheme(
   return { selectedThemeId: saved?.selectedThemeId || selectedThemeId, themes: saved?.themes };
 }
 
+export async function saveTemplatePricing(
+  slug: string,
+  pricing: { actualPrice: number; offerPrice: number }
+): Promise<Pick<InvitationTemplate, "actualPrice" | "offerPrice">> {
+  const response = await fetch(`${API_URL}/api/templates/${slug}/pricing`, {
+    method: "PUT",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(pricing),
+  });
+  const data = (await response.json()) as {
+    success?: boolean;
+    message?: string;
+    template?: Pick<InvitationTemplate, "actualPrice" | "offerPrice">;
+  };
+
+  if (!response.ok || !data.success || !data.template) {
+    throw new Error(data.message || "Could not save pricing");
+  }
+
+  return { actualPrice: data.template.actualPrice, offerPrice: data.template.offerPrice };
+}
+
 export function invitationDoneHref(
   template: Pick<InvitationTemplate, "source">,
   role?: AdminUser["role"]
@@ -325,14 +352,12 @@ export function invitationPreviewHref(
   template: Pick<InvitationTemplate, "slug" | "source">,
   role?: AdminUser["role"]
 ) {
-  if (role === "admin") {
-    return template.source === "work"
-      ? `/admin/works/${template.slug}`
-      : `/admin/templates/${template.slug}`;
+  if (template.source === "work") {
+    return `/${template.slug}`;
   }
 
-  if (template.source === "work") {
-    return role === "customer" ? `/user/works/${template.slug}` : `/preview/work/${template.slug}`;
+  if (role === "admin") {
+    return `/admin/templates/${template.slug}`;
   }
 
   return `/preview/${template.slug}`;
@@ -342,8 +367,8 @@ export function invitationEditHref(
   template: Pick<InvitationTemplate, "slug" | "source">,
   role?: AdminUser["role"]
 ) {
-  if (role === "customer" && template.source === "work") {
-    return `/user/works/${template.slug}/edit`;
+  if (template.source === "work") {
+    return role === "admin" ? `/admin/works/${template.slug}/edit` : `/user/works/${template.slug}/edit`;
   }
 
   return `${invitationPreviewHref(template, role)}/edit`;
@@ -537,6 +562,7 @@ export interface PaymentOrder {
   gatewayOrderId: string;
   amount: number;
   displayAmount: string;
+  actualDisplayAmount?: string;
   currency: string;
   keyId: string;
   isMock: boolean;
