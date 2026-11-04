@@ -4,6 +4,7 @@ import { useMemo, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import { imageUrl, type Category, type InvitationTemplate } from "@/lib/api";
 import { allura, cormorant } from "@/lib/fonts";
+import { loginHref } from "@/lib/session";
 import "./template-gallery.css";
 
 /** Requests a cropped, compressed rendition from Cloudinary; other hosts pass through untouched. */
@@ -358,7 +359,7 @@ export default function TemplateGallery({
                     </div>
 
                       <Link
-                        href={`/user/use/${template.slug}`}
+                        href={loginHref(`/user/use/${template.slug}`)}
                       className="tg-use"
                       aria-label={`Use ${template.name}`}
                       title="Use this template"

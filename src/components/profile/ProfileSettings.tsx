@@ -3,7 +3,7 @@
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { API_URL, type AdminUser } from "@/lib/api";
-import { loadSession } from "@/lib/session";
+import { loadSession, markSignedOut } from "@/lib/session";
 import { cormorant } from "@/lib/fonts";
 import "./profile.css";
 
@@ -69,29 +69,21 @@ export default function ProfileSettings() {
   const fetchSessions = useCallback(async (): Promise<SessionRow[] | null> => {
     const response = await fetch(`${API_URL}/api/auth/sessions`, { credentials: "include" });
 
-    if (response.status === 401) {
-      router.replace("/login");
+    if (!response.ok) {
       return null;
     }
 
     const data = (await response.json()) as { sessions?: SessionRow[] };
     return data.sessions || [];
-  }, [router]);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
 
     void loadSession().then((next) => {
-      if (cancelled) {
-        return;
+      if (!cancelled && next) {
+        setUser(next);
       }
-
-      if (!next) {
-        router.replace("/login");
-        return;
-      }
-
-      setUser(next);
     });
 
     void fetchSessions().then((list) => {
@@ -103,7 +95,7 @@ export default function ProfileSettings() {
     return () => {
       cancelled = true;
     };
-  }, [fetchSessions, router]);
+  }, [fetchSessions]);
 
   const hasPassword = user?.hasPassword !== false;
 
@@ -133,6 +125,7 @@ export default function ProfileSettings() {
       }
 
       if (data.signedOut) {
+        markSignedOut();
         router.replace("/login");
         return;
       }
@@ -150,6 +143,7 @@ export default function ProfileSettings() {
     await fetch(`${API_URL}/api/auth/sessions/${session.id}`, { method: "DELETE", credentials: "include" });
 
     if (session.current) {
+      markSignedOut();
       router.replace("/login");
       return;
     }
@@ -162,6 +156,7 @@ export default function ProfileSettings() {
 
   async function revokeAll() {
     await fetch(`${API_URL}/api/auth/sessions`, { method: "DELETE", credentials: "include" });
+    markSignedOut();
     router.replace("/login");
   }
 

@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { fetchTemplate } from "@/lib/api";
-import { RequireAdmin } from "@/components/auth/GuestOnly";
 import InvitationView from "@/components/templates/InvitationView";
 
 export async function generateMetadata({
@@ -30,9 +29,5 @@ export default async function TemplateEditPage({
     notFound();
   }
 
-  return (
-    <RequireAdmin>
-      <InvitationView template={template} editable />
-    </RequireAdmin>
-  );
+  return <InvitationView template={template} editable />;
 }

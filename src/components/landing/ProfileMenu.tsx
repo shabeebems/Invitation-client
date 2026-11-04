@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { API_URL, type AdminUser } from "@/lib/api";
+import { markSignedOut } from "@/lib/session";
 
 function ProfileIcon() {
   return (
@@ -60,6 +61,7 @@ export default function ProfileMenu({
         throw new Error("Could not log out");
       }
 
+      markSignedOut();
       setOpen(false);
       router.replace("/login");
     } catch {

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { loadSession } from "@/lib/session";
+import { loadSession, loginHref } from "@/lib/session";
 import "./landing.css";
 
 function BackIcon() {
@@ -51,7 +51,7 @@ export default function UseTemplateBar({ slug }: { slug: string }) {
           <BackIcon />
         </Link>
 
-        <Link href={`/user/use/${slug}`} className="pv-use">
+        <Link href={loginHref(`/user/use/${slug}`)} className="pv-use">
           Use this
           <ArrowIcon />
         </Link>

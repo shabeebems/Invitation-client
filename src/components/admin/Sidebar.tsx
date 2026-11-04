@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { API_URL } from "@/lib/api";
+import { markSignedOut } from "@/lib/session";
 import { useAdmin } from "./AdminContext";
 import BrandMark from "@/components/brand/BrandMark";
 import BrandWordmark from "@/components/brand/BrandWordmark";
@@ -69,6 +70,7 @@ export default function Sidebar() {
         throw new Error("Could not log out");
       }
 
+      markSignedOut();
       router.replace("/login");
     } catch {
       setLogoutError("Could not log out");

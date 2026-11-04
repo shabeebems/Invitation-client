@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { API_URL } from "@/lib/api";
 import { cormorant } from "@/lib/fonts";
-import { loginHref, safeNextPath, signupHref } from "@/lib/session";
+import { parseRole, safeNextPath } from "@/lib/auth-routes";
+import { loginHref, markSignedIn, signupHref } from "@/lib/session";
 import AuthField from "./AuthField";
 import { ArrowIcon, EyeIcon, GoogleMark, LockIcon, MailIcon, UserIcon } from "./auth-icons";
 
@@ -18,11 +19,7 @@ declare global {
             client_id: string;
             callback: (response: { credential: string }) => void;
             context?: "signin" | "signup" | "use";
-            itp_support?: boolean;
-            use_fedcm_for_prompt?: boolean;
           }) => void;
-          prompt: () => void;
-          cancel: () => void;
           renderButton: (
             parent: HTMLElement,
             options: {
@@ -56,6 +53,9 @@ const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 
 let googleInitialized = false;
 
+/** Google keeps the callback from the first `initialize`, so it must reach whichever form is mounted now. */
+const mountedGoogleHandler: { current: (credential: string) => void } = { current: () => {} };
+
 export default function AuthForm({ mode }: { mode: Mode }) {
   const isSignup = mode === "signup";
   const router = useRouter();
@@ -82,6 +82,7 @@ export default function AuthForm({ mode }: { mode: Mode }) {
   }, []);
 
   function afterAuth(role?: string) {
+    markSignedIn(parseRole(role) || "customer");
     const next = nextPathRef.current;
     if (next) {
       if (role === "admin" && (next === "/user" || next.startsWith("/user/"))) {
@@ -132,6 +133,7 @@ export default function AuthForm({ mode }: { mode: Mode }) {
     }
 
     let cancelled = false;
+    mountedGoogleHandler.current = (credential) => onGoogleCredential.current(credential);
 
     function ready() {
       const host = googleButtonRef.current;
@@ -144,11 +146,9 @@ export default function AuthForm({ mode }: { mode: Mode }) {
         window.google.accounts.id.initialize({
           client_id: GOOGLE_CLIENT_ID!,
           callback: (response) => {
-            void onGoogleCredential.current(response.credential);
+            mountedGoogleHandler.current(response.credential);
           },
           context: "use",
-          itp_support: true,
-          use_fedcm_for_prompt: true,
         });
         googleInitialized = true;
       }
@@ -163,14 +163,12 @@ export default function AuthForm({ mode }: { mode: Mode }) {
         width: Math.min(Math.max(host.offsetWidth || host.parentElement?.clientWidth || 280, 240), 400),
         logo_alignment: "center",
       });
-      window.google.accounts.id.prompt();
     }
 
     if (window.google?.accounts?.id) {
       ready();
       return () => {
         cancelled = true;
-        window.google?.accounts?.id?.cancel();
       };
     }
 
@@ -189,7 +187,6 @@ export default function AuthForm({ mode }: { mode: Mode }) {
     return () => {
       cancelled = true;
       script?.removeEventListener("load", ready);
-      window.google?.accounts?.id?.cancel();
     };
   }, []);
 
