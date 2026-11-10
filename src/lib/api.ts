@@ -226,7 +226,11 @@ export type ImageSlot =
   | "story"
   | "venue"
   | "parentsLeft"
-  | "parentsRight";
+  | "parentsRight"
+  | ListingImageSlot;
+
+/** Catalog card photos (5:4) — set by admins, never copied into invitations. */
+export type ListingImageSlot = "listingFront" | "listingBack";
 
 export type PendingImage = {
   file: File;
@@ -335,6 +339,33 @@ export async function saveTemplatePricing(
   }
 
   return { actualPrice: data.template.actualPrice, offerPrice: data.template.offerPrice };
+}
+
+export async function uploadTemplateListingImage(
+  slug: string,
+  slot: ListingImageSlot,
+  file: File
+): Promise<TemplateImage[]> {
+  const body = new FormData();
+  body.append("image", file);
+  body.append("imageSlot", slot);
+
+  const response = await fetch(`${API_URL}/api/templates/${slug}`, {
+    method: "PUT",
+    credentials: "include",
+    body,
+  });
+  const data = (await response.json()) as {
+    success?: boolean;
+    message?: string;
+    template?: Pick<InvitationTemplate, "images">;
+  };
+
+  if (!response.ok || !data.success || !data.template) {
+    throw new Error(data.message || "Could not upload listing photo");
+  }
+
+  return data.template.images || [];
 }
 
 export function invitationDoneHref(

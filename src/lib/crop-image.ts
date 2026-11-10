@@ -20,7 +20,8 @@ export async function getCroppedImageFile(
   crop: CropArea,
   fileName = "cropped.jpg",
   mimeType = "image/jpeg",
-  quality = 0.92
+  quality = 0.92,
+  output?: { width: number; height: number }
 ): Promise<File> {
   const image = await loadImage(imageSrc);
   const canvas = document.createElement("canvas");
@@ -30,8 +31,9 @@ export async function getCroppedImageFile(
     throw new Error("Could not crop image");
   }
 
-  const width = Math.max(1, Math.round(crop.width));
-  const height = Math.max(1, Math.round(crop.height));
+  const width = Math.max(1, Math.round(output?.width ?? crop.width));
+  const height = Math.max(1, Math.round(output?.height ?? crop.height));
+  context.imageSmoothingQuality = "high";
   canvas.width = width;
   canvas.height = height;
 

@@ -2,8 +2,9 @@
 
 import { useMemo, useState, type CSSProperties } from "react";
 import Link from "next/link";
-import { imageUrl, type Category, type InvitationTemplate } from "@/lib/api";
+import { type Category, type InvitationTemplate } from "@/lib/api";
 import { allura, cormorant } from "@/lib/fonts";
+import { listingPhotos } from "@/lib/listing-photos";
 import { loginHref } from "@/lib/session";
 import "./template-gallery.css";
 
@@ -18,19 +19,6 @@ function circleThumb(url: string) {
   return url.includes("/image/upload/")
     ? url.replace("/image/upload/", "/image/upload/c_fill,g_auto,w_160,h_160,q_auto,f_auto/")
     : url;
-}
-
-const BACK_SLOTS = ["heroAlt", "couple", "story", "storyFeature", "bride", "groom", "envelope"];
-
-function photosFor(template: InvitationTemplate) {
-  const images = template.images || [];
-  const front = imageUrl(images, "hero") || images[0]?.url || "";
-  const back =
-    BACK_SLOTS.map((slot) => imageUrl(images, slot)).find((url) => url && url !== front) ||
-    images.find((image) => image.url && image.url !== front)?.url ||
-    "";
-
-  return { front, back };
 }
 
 /** First clause of the description, so every card reads as a short two-line tagline. */
@@ -319,7 +307,7 @@ export default function TemplateGallery({
         ) : (
           <ul className="tg-grid" key={selectedId}>
             {visible.map((template, index) => {
-              const { front, back } = photosFor(template);
+              const { front, back } = listingPhotos(template.images);
               const href = `/preview/${template.slug}`;
 
               return (

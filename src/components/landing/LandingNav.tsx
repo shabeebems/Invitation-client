@@ -37,7 +37,11 @@ function MenuIcon({ open }: { open: boolean }) {
 }
 
 function thumbnailFor(template: InvitationTemplate) {
-  const url = imageUrl(template.images, "hero") || template.images?.[0]?.url || "";
+  const url =
+    imageUrl(template.images, "listingFront") ||
+    imageUrl(template.images, "hero") ||
+    template.images?.[0]?.url ||
+    "";
 
   return url.includes("/image/upload/")
     ? url.replace("/image/upload/", "/image/upload/c_fill,g_auto,w_96,h_96,q_auto,f_auto/")
