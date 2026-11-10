@@ -5404,17 +5404,22 @@ body:has(.cream-editorial) {
 
 @media (max-width: 699px) {
   .ce-ct-rg-list {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    max-width: 380px;
-    row-gap: clamp(1.4rem, 5vw, 2rem);
-  }
-
-  .ce-ct-rg-list li:nth-child(2n)::after {
-    display: none;
+    --gap: clamp(0.45rem, 2.4vw, 1rem);
+    max-width: 560px;
   }
 
   .ce-ct-ring {
-    width: min(100%, 160px);
+    width: min(100%, 140px);
+  }
+
+  .ce-ct-ring-copy b {
+    font-size: clamp(1.1rem, 5.8vw, 2.1rem);
+  }
+
+  .ce-ct-ring-copy span {
+    margin-top: 0.25rem;
+    font-size: clamp(0.44rem, 1.9vw, 0.58rem);
+    letter-spacing: 0.1em;
   }
 }
 
@@ -5436,8 +5441,43 @@ body:has(.cream-editorial) {
   }
 
   .ce-ct-cal-tiles {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    max-width: 300px;
+    gap: clamp(0.35rem, 2vw, 0.6rem);
+  }
+
+  .ce-ct-tile {
+    padding: clamp(0.7rem, 3vw, 1rem) 0.15rem;
+  }
+
+  .ce-ct-tile b {
+    font-size: clamp(1.25rem, 6.4vw, 1.8rem);
+  }
+
+  .ce-ct-tile span {
+    margin-top: 0.3rem;
+    font-size: clamp(0.44rem, 1.9vw, 0.56rem);
+    letter-spacing: 0.1em;
+  }
+
+  .ce-cd {
+    flex-wrap: nowrap;
+    gap: 0 clamp(0.6rem, 3.4vw, 1rem);
+  }
+
+  .ce-cd div {
+    min-width: 0;
+  }
+
+  .ce-cd div + div {
+    padding-left: clamp(0.6rem, 3.4vw, 1rem);
+  }
+
+  .ce-cd b {
+    font-size: clamp(2rem, 10.5vw, 3.4rem);
+  }
+
+  .ce-cd span {
+    font-size: clamp(0.48rem, 2.1vw, 0.62rem);
+    letter-spacing: 0.12em;
   }
 
   .ce-ct-cal-ring {

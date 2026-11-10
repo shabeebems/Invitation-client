@@ -3462,16 +3462,28 @@ body:has(.royal-ruby) {
 @media (max-width: 760px) {
   .rb-cd-halos {
     display: grid;
-    grid-template-columns: repeat(2, auto);
-    gap: 14px;
+    flex: 1;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: clamp(5px, 1.8vw, 12px);
+    min-width: 0;
+    max-width: 520px;
   }
 
   .rb-cd-sprig.is-between {
     display: none;
   }
 
+  .rb-cd-sprig.is-left,
+  .rb-cd-sprig.is-right {
+    width: clamp(14px, 4.4vw, 34px);
+  }
+
   .rb-cd-halo {
-    width: clamp(112px, 33vw, 150px);
+    width: 100%;
+  }
+
+  .rb-cd-halos b {
+    font-size: clamp(18px, 6.2vw, 34px);
   }
 
   .rb-cd-sparkles .is-s5,
@@ -3481,9 +3493,50 @@ body:has(.royal-ruby) {
 }
 
 @media (max-width: 640px) {
+  .rb-rings {
+    flex-wrap: nowrap;
+    gap: clamp(5px, 1.8vw, 12px);
+  }
+
+  .rb-rg {
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: 120px;
+  }
+
+  .rb-rg b {
+    font-size: clamp(18px, 6.4vw, 32px);
+  }
+
+  .rb-rg span {
+    font-size: clamp(7px, 2.2vw, 10px);
+    letter-spacing: 0.1em;
+  }
+
   .rb-cd-arches {
-    grid-template-columns: repeat(2, clamp(104px, 31vw, 140px));
-    gap: 22px 14px;
+    flex: 1;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: clamp(5px, 1.8vw, 12px);
+    min-width: 0;
+    max-width: 480px;
+  }
+
+  .rb-cd-laurel {
+    width: clamp(14px, 4.4vw, 30px);
+  }
+
+  .rb-cd-crown {
+    top: -10px;
+    width: clamp(18px, 6vw, 26px);
+  }
+
+  .rb-cd-arches b {
+    font-size: clamp(18px, 6.2vw, 30px);
+  }
+
+  .rb-cd-stage span:not([class]) {
+    margin-top: 4px;
+    font-size: clamp(7px, 2.2vw, 10px);
   }
 
   .rb-cd-plaque {
@@ -3496,10 +3549,13 @@ body:has(.royal-ruby) {
     font-size: clamp(22px, 7vw, 32px);
   }
 
-  .rb-cd-plaque span:not([class]),
+  .rb-cd-plaque span:not([class]) {
+    letter-spacing: 0.14em;
+  }
+
   .rb-cd-arches span:not([class]),
   .rb-cd-halos span:not([class]) {
-    letter-spacing: 0.14em;
+    letter-spacing: 0.06em;
   }
 
   .rb-cd-hang {

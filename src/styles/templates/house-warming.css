@@ -621,16 +621,6 @@ body:has(.house-warming.palette-sage.is-sealed) {
 }
 
 /* Countdown + rail: keep horizontal rhythm with scroll on narrow viewports */
-.house-warming .hw-countdown-scroll {
-  scrollbar-width: none;
-  touch-action: pan-x;
-}
-
-.house-warming .hw-countdown-scroll::-webkit-scrollbar {
-  display: none;
-  height: 0;
-}
-
 /* Rail schedule: fixed-width horizontal track on every breakpoint */
 .house-warming .hw-rail-scroll {
   scrollbar-width: thin;

@@ -57,8 +57,8 @@ function pad(value: number) {
   return String(value).padStart(2, "0");
 }
 
-/** Keeps a single horizontal row; scrolls on every viewport when needed. */
-function HScroll({
+/** Centered row that wraps onto a second line instead of overflowing narrow screens. */
+function MetaRow({
   children,
   className = "",
   contentClassName = "",
@@ -68,15 +68,23 @@ function HScroll({
   contentClassName?: string;
 }) {
   return (
-    <div
-      className={`hw-countdown-scroll w-full overflow-x-auto overscroll-x-contain [-webkit-overflow-scrolling:touch] ${className}`.trim()}
-    >
-      <div className={`mx-auto flex w-max max-w-none flex-nowrap items-center justify-center ${contentClassName}`.trim()}>
+    <div className={`w-full ${className}`.trim()}>
+      <div className={`mx-auto flex max-w-full flex-wrap items-center justify-center ${contentClassName}`.trim()}>
         {children}
       </div>
     </div>
   );
 }
+
+const UNIT_NUMBER = "text-[clamp(1.1rem,5.6vw,2.15rem)] font-bold leading-none";
+const UNIT_LABEL =
+  "text-[clamp(0.46rem,2vw,0.64rem)] font-semibold tracking-[0.06em] uppercase min-[400px]:tracking-[0.14em]";
+
+/** Text inside a circle is sized from the circle (it is a size container), so it never touches the ring. */
+const CIRCLE = "@container";
+const CIRCLE_NUMBER = "text-[clamp(0.95rem,33cqi,2.15rem)] font-bold leading-none";
+const CIRCLE_LABEL =
+  "text-[clamp(0.42rem,10.5cqi,0.64rem)] leading-none font-semibold tracking-[0.04em] whitespace-nowrap uppercase min-[400px]:tracking-[0.14em]";
 
 function MetaChip({
   icon,
@@ -169,7 +177,7 @@ function MetaPills({
   isEditable?: boolean;
 }) {
   return (
-    <HScroll className="mb-7 sm:mb-8" contentClassName="gap-2.5 px-1 sm:gap-3.5 items-center">
+    <MetaRow className="mb-7 sm:mb-8" contentClassName="gap-2.5 px-1 sm:gap-3.5">
       <MetaChip
         icon={<CalendarIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}
         onClick={onChipClick}
@@ -185,7 +193,7 @@ function MetaPills({
         {timeNode}
       </MetaChip>
       {editTrigger}
-    </HScroll>
+    </MetaRow>
   );
 }
 
@@ -209,13 +217,14 @@ function MetaBare({
     { icon: <ClockIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />, node: timeNode },
   ];
 
+  const divider =
+    "hidden h-5 w-px shrink-0 bg-[color-mix(in_srgb,var(--color-terracotta)_35%,transparent)] sm:mx-3.5 sm:block";
+
   const row = (
-    <HScroll contentClassName="gap-0 items-center">
+    <MetaRow contentClassName="gap-x-4 gap-y-2 sm:gap-x-0">
       {items.map((item, index) => (
         <span key={index} className="inline-flex items-center">
-          {index > 0 ? (
-            <span className="mx-2.5 h-4 w-px shrink-0 bg-[color-mix(in_srgb,var(--color-terracotta)_35%,transparent)] sm:mx-3.5 sm:h-5" />
-          ) : null}
+          {index > 0 ? <span className={divider} /> : null}
           <span
             onClick={onChipClick}
             className={`inline-flex shrink-0 items-center gap-2 px-1 text-[0.8rem] font-medium text-[var(--color-terracotta-dark)] sm:text-[0.9rem] ${
@@ -230,17 +239,17 @@ function MetaBare({
       ))}
       {editTrigger ? (
         <span className="inline-flex items-center">
-          <span className="mx-2.5 h-4 w-px shrink-0 bg-[color-mix(in_srgb,var(--color-terracotta)_35%,transparent)] sm:mx-3.5 sm:h-5" />
+          <span className={divider} />
           <span className="px-1">{editTrigger}</span>
         </span>
       ) : null}
-    </HScroll>
+    </MetaRow>
   );
 
   if (framed) {
     return (
       <div className="mb-7 flex justify-center px-1 sm:mb-8">
-        <div className="inline-flex max-w-full items-center rounded-full border border-[color-mix(in_srgb,var(--color-terracotta)_28%,transparent)] bg-[color-mix(in_srgb,var(--color-linen-surface)_90%,white)] px-3 py-2.5 sm:px-5 sm:py-3">
+        <div className="inline-flex max-w-full items-center rounded-[1.75rem] border sm:rounded-full border-[color-mix(in_srgb,var(--color-terracotta)_28%,transparent)] bg-[color-mix(in_srgb,var(--color-linen-surface)_90%,white)] px-3 py-2.5 sm:px-5 sm:py-3">
           {row}
         </div>
       </div>
@@ -322,13 +331,13 @@ function OutlineTimer({ units }: { units: Unit[] }) {
   const arc = c * 0.72;
 
   return (
-    <HScroll contentClassName="gap-3 px-1 sm:gap-5 md:gap-6">
+    <div className="mx-auto grid w-full max-w-[31rem] grid-cols-4 gap-[clamp(0.35rem,2vw,1.5rem)] px-1">
       {units.map((unit, index) => {
         const rotate = -90 + index * 18;
         return (
           <div
             key={unit.label}
-            className="relative flex h-[5.4rem] w-[5.4rem] shrink-0 flex-col items-center justify-center sm:h-[6.5rem] sm:w-[6.5rem]"
+            className={`${CIRCLE} relative mx-auto flex aspect-square w-full max-w-[6.5rem] min-w-0 flex-col items-center justify-center`}
           >
             <svg
               viewBox={`0 0 ${size} ${size}`}
@@ -355,42 +364,36 @@ function OutlineTimer({ units }: { units: Unit[] }) {
                 transform={`rotate(${rotate} ${size / 2} ${size / 2})`}
               />
             </svg>
-            <span className="relative z-[1] text-[clamp(1.55rem,4vw,2.15rem)] font-bold leading-none text-[var(--color-terracotta-dark)]">
+            <span className={`relative z-[1] ${CIRCLE_NUMBER} text-[var(--color-terracotta-dark)]`}>
               {pad(unit.value)}
             </span>
-            <p className="relative z-[1] mt-1 text-[0.58rem] font-semibold tracking-[0.16em] text-[var(--color-terracotta)] uppercase sm:text-[0.62rem]">
+            <p className={`relative z-[1] mt-[6cqi] ${CIRCLE_LABEL} text-[var(--color-terracotta)]`}>
               {unit.label}
             </p>
           </div>
         );
       })}
-    </HScroll>
+    </div>
   );
 }
 
 /** Layout 2 — single cream capsule with internal dividers. */
 function CapsuleTimer({ units }: { units: Unit[] }) {
   return (
-    <div className="mx-auto w-full max-w-[720px] px-1">
-      <HScroll>
-        <div className="flex min-w-0 flex-nowrap items-stretch overflow-hidden rounded-full border border-[color-mix(in_srgb,var(--color-terracotta)_18%,transparent)] bg-[color-mix(in_srgb,var(--color-linen-surface)_92%,white)] px-1 py-3 shadow-[0_2px_10px_#87361b12] sm:px-2 sm:py-4">
-          {units.map((unit, index) => (
-            <div
-              key={unit.label}
-              className={`flex w-[4.75rem] shrink-0 flex-col items-center justify-center px-2 py-1 sm:w-[7.5rem] sm:px-4 ${
-                index > 0 ? "border-l border-[color-mix(in_srgb,var(--color-terracotta)_22%,transparent)]" : ""
-              }`}
-            >
-              <span className="text-[clamp(1.45rem,3.8vw,2.1rem)] font-bold leading-none text-[var(--color-terracotta-dark)]">
-                {pad(unit.value)}
-              </span>
-              <p className="mt-1.5 text-[0.58rem] font-semibold tracking-[0.14em] text-[var(--color-terracotta)] uppercase sm:mt-2 sm:text-[0.64rem]">
-                {unit.label}
-              </p>
-            </div>
-          ))}
-        </div>
-      </HScroll>
+    <div className="mx-auto w-full max-w-[32rem] px-1">
+      <div className="flex w-full items-stretch overflow-hidden rounded-full border border-[color-mix(in_srgb,var(--color-terracotta)_18%,transparent)] bg-[color-mix(in_srgb,var(--color-linen-surface)_92%,white)] px-[clamp(0.5rem,3vw,1rem)] py-3 shadow-[0_2px_10px_#87361b12] sm:py-4">
+        {units.map((unit, index) => (
+          <div
+            key={unit.label}
+            className={`flex min-w-0 flex-1 flex-col items-center justify-center px-1 py-1 sm:px-4 ${
+              index > 0 ? "border-l border-[color-mix(in_srgb,var(--color-terracotta)_22%,transparent)]" : ""
+            }`}
+          >
+            <span className={`${UNIT_NUMBER} text-[var(--color-terracotta-dark)]`}>{pad(unit.value)}</span>
+            <p className={`mt-1.5 ${UNIT_LABEL} text-[var(--color-terracotta)] sm:mt-2`}>{unit.label}</p>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -398,23 +401,19 @@ function CapsuleTimer({ units }: { units: Unit[] }) {
 /** Layout 3 — soft cards with folded bottom tab + notch. */
 function TabsTimer({ units }: { units: Unit[] }) {
   return (
-    <HScroll contentClassName="gap-3.5 px-1 pb-2 sm:gap-4 md:gap-5">
+    <div className="mx-auto grid w-full max-w-[28rem] grid-cols-4 gap-[clamp(0.4rem,2.2vw,1.25rem)] px-1 pb-2">
       {units.map((unit) => (
-        <div key={unit.label} className="relative w-[4.7rem] shrink-0 sm:w-[5.9rem]">
-          <div className="overflow-hidden rounded-[1.2rem] border border-[color-mix(in_srgb,var(--color-terracotta)_16%,transparent)] bg-[color-mix(in_srgb,var(--color-linen-surface)_96%,white)] shadow-[0_6px_18px_#87361b14]">
-            <div className="flex items-center justify-center px-2 pt-4 pb-3 sm:pt-5 sm:pb-3.5">
-              <span className="text-[clamp(1.45rem,3.8vw,2.05rem)] font-bold leading-none text-[var(--color-terracotta-dark)]">
-                {pad(unit.value)}
-              </span>
+        <div key={unit.label} className="relative mx-auto w-full max-w-[5.9rem] min-w-0">
+          <div className="overflow-hidden rounded-[clamp(0.8rem,3vw,1.2rem)] border border-[color-mix(in_srgb,var(--color-terracotta)_16%,transparent)] bg-[color-mix(in_srgb,var(--color-linen-surface)_96%,white)] shadow-[0_6px_18px_#87361b14]">
+            <div className="flex items-center justify-center px-1 pt-4 pb-3 sm:px-2 sm:pt-5 sm:pb-3.5">
+              <span className={`${UNIT_NUMBER} text-[var(--color-terracotta-dark)]`}>{pad(unit.value)}</span>
             </div>
-            <div className="relative bg-[color-mix(in_srgb,var(--color-terracotta)_12%,var(--color-linen-surface))] px-2 pt-2.5 pb-3">
+            <div className="relative bg-[color-mix(in_srgb,var(--color-terracotta)_12%,var(--color-linen-surface))] px-1 pt-2.5 pb-3 sm:px-2">
               <span
                 className="absolute top-0 left-1/2 h-0 w-0 -translate-x-1/2 -translate-y-full border-x-[7px] border-b-[7px] border-x-transparent border-b-[color-mix(in_srgb,var(--color-terracotta)_12%,var(--color-linen-surface))]"
                 aria-hidden="true"
               />
-              <p className="text-[0.58rem] font-semibold tracking-[0.14em] text-[var(--color-terracotta-dark)] uppercase sm:text-[0.64rem]">
-                {unit.label}
-              </p>
+              <p className={`${UNIT_LABEL} text-[var(--color-terracotta-dark)]`}>{unit.label}</p>
             </div>
           </div>
           <span
@@ -423,30 +422,26 @@ function TabsTimer({ units }: { units: Unit[] }) {
           />
         </div>
       ))}
-    </HScroll>
+    </div>
   );
 }
 
 /** Layout 4 — open typography with tall vertical rules. */
 function DividersTimer({ units }: { units: Unit[] }) {
   return (
-    <HScroll contentClassName="gap-0 px-1">
+    <div className="mx-auto flex w-full max-w-[34rem] items-stretch px-1">
       {units.map((unit, index) => (
-        <div key={unit.label} className="flex items-stretch">
+        <div key={unit.label} className="flex min-w-0 flex-1 items-stretch">
           {index > 0 ? (
-            <span className="mx-3 w-px self-stretch bg-[color-mix(in_srgb,var(--color-terracotta)_40%,transparent)] sm:mx-6 md:mx-8" />
+            <span className="w-px shrink-0 self-stretch bg-[color-mix(in_srgb,var(--color-terracotta)_40%,transparent)]" />
           ) : null}
-          <div className="flex w-[4.25rem] shrink-0 flex-col items-center justify-center py-1 sm:w-[5.5rem]">
-            <span className="text-[clamp(1.55rem,4vw,2.25rem)] font-bold leading-none text-[var(--color-terracotta-dark)]">
-              {pad(unit.value)}
-            </span>
-            <p className="mt-2 text-[0.58rem] font-semibold tracking-[0.14em] text-[var(--color-terracotta)] uppercase sm:text-[0.64rem]">
-              {unit.label}
-            </p>
+          <div className="flex min-w-0 flex-1 flex-col items-center justify-center px-1 py-1">
+            <span className={`${UNIT_NUMBER} text-[var(--color-terracotta-dark)]`}>{pad(unit.value)}</span>
+            <p className={`mt-2 ${UNIT_LABEL} text-[var(--color-terracotta)]`}>{unit.label}</p>
           </div>
         </div>
       ))}
-    </HScroll>
+    </div>
   );
 }
 
@@ -455,21 +450,19 @@ function FloraTimer({ units }: { units: Unit[] }) {
   return (
     <div className="relative flex items-center justify-center gap-2 sm:gap-3">
       <TripleLeaf className="hidden h-5 w-5 shrink-0 text-[var(--color-terracotta)] opacity-70 sm:block md:h-6 md:w-6" />
-      <HScroll contentClassName="gap-2.5 sm:gap-4 md:gap-5">
+      <div className="grid w-full max-w-[29rem] min-w-0 flex-1 grid-cols-4 gap-[clamp(0.35rem,2vw,1.25rem)]">
         {units.map((unit) => (
           <div
             key={unit.label}
-            className="flex h-[5.1rem] w-[5.1rem] shrink-0 flex-col items-center justify-center rounded-full bg-[var(--color-terracotta-dark)] text-[var(--color-linen-card)] shadow-[0_8px_20px_#87361b33] sm:h-[6.25rem] sm:w-[6.25rem]"
+            className={`${CIRCLE} mx-auto flex aspect-square w-full max-w-[6.25rem] min-w-0 flex-col items-center justify-center rounded-full bg-[var(--color-terracotta-dark)] text-[var(--color-linen-card)] shadow-[0_8px_20px_#87361b33]`}
           >
-            <span className="text-[clamp(1.4rem,3.8vw,2rem)] font-bold leading-none">
-              {pad(unit.value)}
-            </span>
-            <p className="mt-1.5 text-[0.56rem] font-semibold tracking-[0.14em] text-[color-mix(in_srgb,var(--color-linen-card)_88%,transparent)] uppercase sm:text-[0.62rem]">
+            <span className={CIRCLE_NUMBER}>{pad(unit.value)}</span>
+            <p className={`mt-[7cqi] ${CIRCLE_LABEL} text-[color-mix(in_srgb,var(--color-linen-card)_88%,transparent)]`}>
               {unit.label}
             </p>
           </div>
         ))}
-      </HScroll>
+      </div>
       <TripleLeaf className="hidden h-5 w-5 shrink-0 text-[var(--color-terracotta)] opacity-70 sm:block md:h-6 md:w-6" />
     </div>
   );
@@ -640,7 +633,7 @@ export default function HouseCountdown({
               className="pointer-events-none absolute right-[-4px] bottom-0 h-24 w-24 text-[color-mix(in_srgb,var(--color-terracotta)_55%,#c4b5a4)] opacity-80 sm:right-0 sm:h-36 sm:w-36 md:h-44 md:w-44"
               flip
             />
-            <div className="relative z-[1] px-6 py-3 sm:px-12 sm:py-5 md:px-16">{timer}</div>
+            <div className="relative z-[1] px-1 py-3 min-[400px]:px-6 sm:px-12 sm:py-5 md:px-16">{timer}</div>
           </div>
         ) : (
           timer
