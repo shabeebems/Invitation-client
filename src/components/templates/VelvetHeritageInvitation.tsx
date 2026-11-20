@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
+import "@/styles/templates/velvet-heritage.css";
 import { useInvitationEditor } from "@/components/templates/useInvitationEditor";
 import VelvetOpening from "@/components/templates/velvet/VelvetOpening";
 import VelvetHero from "@/components/templates/velvet/VelvetHero";

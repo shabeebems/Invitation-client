@@ -6,6 +6,7 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 import { API_URL } from "@/lib/api";
 import { cormorant } from "@/lib/fonts";
 import { parseRole, safeNextPath } from "@/lib/auth-routes";
+import { markNavigationStart } from "@/lib/navigation-busy";
 import { loginHref, markSignedIn, signupHref } from "@/lib/session";
 import AuthField from "./AuthField";
 import { ArrowIcon, EyeIcon, GoogleMark, LockIcon, MailIcon, UserIcon } from "./auth-icons";
@@ -83,6 +84,7 @@ export default function AuthForm({ mode }: { mode: Mode }) {
 
   function afterAuth(role?: string) {
     markSignedIn(parseRole(role) || "customer");
+    markNavigationStart();
     const next = nextPathRef.current;
     if (next) {
       if (role === "admin" && (next === "/user" || next.startsWith("/user/"))) {

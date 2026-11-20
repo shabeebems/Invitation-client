@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
+import "@/styles/templates/aurelia-nocturne.css";
 import { useInvitationEditor } from "@/components/templates/useInvitationEditor";
 import AureliaOpening from "@/components/templates/aurelia/AureliaOpening";
 import AureliaNav from "@/components/templates/aurelia/AureliaNav";

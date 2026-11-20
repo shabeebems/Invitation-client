@@ -9,7 +9,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const work = await fetchWork(slug);
+  const work = await fetchWork(slug, { fresh: true });
 
   return {
     title: work ? `Edit · ${work.name}` : "Work not found",
@@ -23,7 +23,7 @@ export default async function AdminWorkEditPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const work = await fetchWork(slug);
+  const work = await fetchWork(slug, { fresh: true });
 
   if (!work) {
     notFound();

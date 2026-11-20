@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import "@/styles/templates/house-warming.css";
 import HouseHero from "@/components/templates/house/HouseHero";
 import HouseCountdown from "@/components/templates/house/HouseCountdown";
 import HouseFooter from "@/components/templates/house/HouseFooter";

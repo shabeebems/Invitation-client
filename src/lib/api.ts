@@ -417,9 +417,34 @@ export function invitationTitle(template: InvitationTemplate) {
   );
 }
 
-async function readInvitation(url: string, key: "template" | "work"): Promise<InvitationTemplate | null> {
+/** Public catalog/preview reads; keep short so admin edits show up soon. */
+const PUBLIC_REVALIDATE_SECONDS = 60;
+
+type FetchFreshness = {
+  /** Skip the Data Cache (admin / editor reads that must be current). */
+  fresh?: boolean;
+  revalidate?: number;
+};
+
+type ListFetchOptions = FetchFreshness & {
+  credentials?: RequestCredentials;
+};
+
+function fetchCacheInit(options: FetchFreshness = {}) {
+  if (options.fresh) {
+    return { cache: "no-store" as const };
+  }
+
+  return { next: { revalidate: options.revalidate ?? PUBLIC_REVALIDATE_SECONDS } };
+}
+
+async function readInvitation(
+  url: string,
+  key: "template" | "work",
+  options: FetchFreshness = {}
+): Promise<InvitationTemplate | null> {
   try {
-    const response = await fetch(url, { cache: "no-store" });
+    const response = await fetch(url, fetchCacheInit(options));
 
     if (!response.ok) {
       return null;
@@ -442,10 +467,6 @@ export function resolveTemplateSlug(slug: string) {
   return slug;
 }
 
-type ListFetchOptions = {
-  credentials?: RequestCredentials;
-};
-
 async function readList<T>(
   url: string,
   key: "templates" | "categories" | "works",
@@ -453,7 +474,10 @@ async function readList<T>(
 ): Promise<T[]> {
   try {
     const response = await fetch(url, {
-      cache: "no-store",
+      ...fetchCacheInit({
+        fresh: options.fresh || Boolean(options.credentials),
+        revalidate: options.revalidate,
+      }),
       credentials: options.credentials,
     });
     const data = (await response.json()) as {
@@ -477,8 +501,8 @@ async function readList<T>(
   }
 }
 
-export function fetchTemplate(slug: string) {
-  return readInvitation(`${API_URL}/api/templates/${resolveTemplateSlug(slug)}`, "template");
+export function fetchTemplate(slug: string, options: FetchFreshness = {}) {
+  return readInvitation(`${API_URL}/api/templates/${resolveTemplateSlug(slug)}`, "template", options);
 }
 
 export function fetchTemplates(options: ListFetchOptions = {}) {
@@ -492,6 +516,7 @@ export function fetchCategories(options: ListFetchOptions = {}) {
 export function fetchWorks(options: ListFetchOptions = {}) {
   return readList<InvitationTemplate>(`${API_URL}/api/works`, "works", {
     credentials: options.credentials || "include",
+    fresh: true,
   });
 }
 
@@ -523,8 +548,8 @@ export async function fetchUsers(): Promise<StudioUser[]> {
   return data.users || [];
 }
 
-export function fetchWork(slug: string) {
-  return readInvitation(`${API_URL}/api/works/${slug}`, "work");
+export function fetchWork(slug: string, options: FetchFreshness = {}) {
+  return readInvitation(`${API_URL}/api/works/${slug}`, "work", options);
 }
 
 export async function createWork(body: Record<string, unknown>) {

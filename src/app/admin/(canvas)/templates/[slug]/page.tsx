@@ -10,7 +10,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const template = await fetchTemplate(slug);
+  const template = await fetchTemplate(slug, { fresh: true });
 
   if (!template) {
     return { title: "Template not found" };
@@ -28,7 +28,7 @@ export default async function AdminTemplatePreviewPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const template = await fetchTemplate(slug);
+  const template = await fetchTemplate(slug, { fresh: true });
 
   if (!template) {
     notFound();

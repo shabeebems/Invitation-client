@@ -17,6 +17,8 @@ export const config = {
     "/reset-password",
     "/user/:path*",
     "/admin/:path*",
-    "/preview/:path*",
+    // Only gated preview edit routes — public `/preview/[slug]` skips this middleware.
+    "/preview/:slug/edit",
+    "/preview/work/:slug/edit",
   ],
 };

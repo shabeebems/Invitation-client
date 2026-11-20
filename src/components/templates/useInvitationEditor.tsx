@@ -19,6 +19,7 @@ import {
   type ProgramItem,
   type TemplateContent,
 } from "@/lib/api";
+import { markNavigationStart } from "@/lib/navigation-busy";
 import {
   GALLERY_ITEM_MAX,
   LOCATION_ITEM_MAX,
@@ -346,6 +347,7 @@ export function useInvitationEditor({
     }
     setStatus("saved");
     setStatusMessage("");
+    markNavigationStart();
     router.push(invitationDoneHref(draftRef.current, role));
     router.refresh();
   }

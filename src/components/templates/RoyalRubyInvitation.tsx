@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import "@/styles/templates/royal-ruby.css";
 import { useInvitationEditor } from "@/components/templates/useInvitationEditor";
 import RubyOpening from "@/components/templates/ruby/RubyOpening";
 import RubyHero from "@/components/templates/ruby/RubyHero";

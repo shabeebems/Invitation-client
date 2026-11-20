@@ -11,6 +11,7 @@ import {
   minDatetimeLocal,
   partsFromEventDate,
 } from "@/lib/event-date";
+import { markNavigationStart } from "@/lib/navigation-busy";
 import { saveUseDraft } from "@/lib/use-draft";
 
 type DetailField = {
@@ -180,6 +181,7 @@ export default function UseTemplateForm({ template }: { template: InvitationTemp
       name: name.trim(),
       content: payload as Partial<TemplateContent>,
     });
+    markNavigationStart();
     router.push(`/user/use/${template.slug}/edit`);
   }
 

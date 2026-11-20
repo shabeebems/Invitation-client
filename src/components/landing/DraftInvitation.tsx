@@ -2,6 +2,7 @@
 
 import { useSyncExternalStore, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import BrandLoader from "@/components/brand/BrandLoader";
 import InvitationView from "@/components/templates/InvitationView";
 import {
   createWork,
@@ -10,6 +11,7 @@ import {
   type PendingImage,
   type TemplateContent,
 } from "@/lib/api";
+import { markNavigationStart } from "@/lib/navigation-busy";
 import { clearUseDraft, readUseDraft } from "@/lib/use-draft";
 
 const emptySubscribe = () => () => {};
@@ -36,6 +38,7 @@ export default function DraftInvitation({ template }: { template: InvitationTemp
 
   useEffect(() => {
     if (mounted && !stored) {
+      markNavigationStart();
       router.replace(`/user/use/${template.slug}`);
     }
   }, [mounted, stored, router, template.slug]);
@@ -68,12 +71,13 @@ export default function DraftInvitation({ template }: { template: InvitationTemp
     }
 
     clearUseDraft(template.slug);
+    markNavigationStart();
     router.push(`/user/published/${slug}`);
     return slug;
   }
 
   if (!stored) {
-    return <p className="p-8 text-sm text-zinc-500">Opening invitation…</p>;
+    return <BrandLoader label="Opening invitation" />;
   }
 
   const preview: InvitationTemplate = {

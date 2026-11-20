@@ -28,7 +28,7 @@ export default function AdminDashboard() {
       try {
         const [nextCategories, nextTemplates, nextWorks] = await Promise.all([
           fetchCategories({ credentials: "include" }),
-          fetchTemplates(),
+          fetchTemplates({ fresh: true }),
           fetchWorks(),
         ]);
 
