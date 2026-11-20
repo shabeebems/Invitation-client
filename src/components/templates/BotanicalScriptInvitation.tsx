@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
+import "@/styles/templates/botanical-script.css";
 import { useInvitationEditor } from "@/components/templates/useInvitationEditor";
 import BotanicalHero from "@/components/templates/botanical/BotanicalHero";
 import BotanicalStory from "@/components/templates/botanical/BotanicalStory";

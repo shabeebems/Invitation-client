@@ -41,7 +41,7 @@ export default function WorksPage() {
   async function loadLookups() {
     const [nextCategories, nextTemplates] = await Promise.all([
       fetchCategories({ credentials: "include" }),
-      fetchTemplates(),
+      fetchTemplates({ fresh: true }),
     ]);
 
     setCategories(nextCategories);

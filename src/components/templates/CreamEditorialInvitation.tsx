@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
+import "@/styles/templates/cream-editorial.css";
 import { useInvitationEditor } from "@/components/templates/useInvitationEditor";
 import CreamOpening from "@/components/templates/cream/CreamOpening";
 import CreamNav from "@/components/templates/cream/CreamNav";

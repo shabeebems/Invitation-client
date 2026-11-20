@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import AppProviders from "@/components/brand/AppProviders";
 import "./globals.css";
 
 const plusJakarta = localFont({
@@ -27,7 +28,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${plusJakarta.variable} h-full antialiased`}
       data-scroll-behavior="smooth"
     >
-      <body className="h-full font-sans">{children}</body>
+      <body className="h-full font-sans">
+        <AppProviders>{children}</AppProviders>
+      </body>
     </html>
   );
 }

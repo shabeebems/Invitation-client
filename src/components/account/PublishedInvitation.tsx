@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import BrandLoader from "@/components/brand/BrandLoader";
 import { API_URL, invitationLiveHref, type InvitationTemplate } from "@/lib/api";
 import { cormorant } from "@/lib/fonts";
 import "./published.css";
@@ -79,11 +80,7 @@ export default function PublishedInvitation({ slug }: { slug: string }) {
   }
 
   if (!work) {
-    return (
-      <div className="pb">
-        <p className="pb-state">Loading your invitation…</p>
-      </div>
-    );
+    return <BrandLoader variant="inline" label="Loading invitation" />;
   }
 
   return (

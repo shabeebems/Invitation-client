@@ -41,3 +41,12 @@ body {
   color: var(--text);
   font-family: var(--font-plus-jakarta), Arial, Helvetica, sans-serif;
 }
+
+/* While a soft navigation is in flight, discourage repeat taps. */
+html[data-nav-busy="1"] {
+  cursor: wait;
+}
+
+html[data-nav-busy="1"] a[href] {
+  pointer-events: none;
+}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
+import "@/styles/templates/royal-reception.css";
 import { useInvitationEditor } from "@/components/templates/useInvitationEditor";
 import RoyalReceptionOpening from "@/components/templates/royal/RoyalReceptionOpening";
 import RoyalNav from "@/components/templates/royal/RoyalNav";
