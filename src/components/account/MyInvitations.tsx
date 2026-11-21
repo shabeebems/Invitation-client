@@ -7,6 +7,7 @@ import {
   imageUrl,
   invitationEditHref,
   invitationLiveHref,
+  isInvitationLive,
   type InvitationTemplate,
 } from "@/lib/api";
 import { cormorant } from "@/lib/fonts";
@@ -200,6 +201,7 @@ export default function MyInvitations() {
 
   function renderMenu(work: InvitationTemplate) {
     const open = menuSlug === work.slug;
+    const live = isInvitationLive(work);
 
     return (
       <div className="mi-more" ref={open ? menuRef : undefined}>
@@ -216,18 +218,20 @@ export default function MyInvitations() {
 
         {open ? (
           <div className="mi-menu" role="menu">
-            <button
-              type="button"
-              role="menuitem"
-              className="mi-menu-item mi-menu-item--compact"
-              onClick={() => {
-                void copyLink(work);
-                setMenuSlug("");
-              }}
-            >
-              <LinkIcon />
-              Copy guest link
-            </button>
+            {live ? (
+              <button
+                type="button"
+                role="menuitem"
+                className="mi-menu-item mi-menu-item--compact"
+                onClick={() => {
+                  void copyLink(work);
+                  setMenuSlug("");
+                }}
+              >
+                <LinkIcon />
+                Copy guest link
+              </button>
+            ) : null}
             <Link
               href={invitationEditHref(work, "customer")}
               role="menuitem"
@@ -237,28 +241,32 @@ export default function MyInvitations() {
               <PenIcon />
               Edit
             </Link>
-            <a
-              href={invitationLiveHref(work)}
-              target="_blank"
-              rel="noreferrer"
-              role="menuitem"
-              className="mi-menu-item"
-              onClick={() => setMenuSlug("")}
-            >
-              <ExternalIcon />
-              Open guest page
-            </a>
-            <a
-              href={`https://wa.me/?text=${encodeURIComponent(liveUrl(work))}`}
-              target="_blank"
-              rel="noreferrer"
-              role="menuitem"
-              className="mi-menu-item"
-              onClick={() => setMenuSlug("")}
-            >
-              <ShareIcon />
-              Share on WhatsApp
-            </a>
+            {live ? (
+              <>
+                <a
+                  href={invitationLiveHref(work)}
+                  target="_blank"
+                  rel="noreferrer"
+                  role="menuitem"
+                  className="mi-menu-item"
+                  onClick={() => setMenuSlug("")}
+                >
+                  <ExternalIcon />
+                  Open guest page
+                </a>
+                <a
+                  href={`https://wa.me/?text=${encodeURIComponent(liveUrl(work))}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  role="menuitem"
+                  className="mi-menu-item"
+                  onClick={() => setMenuSlug("")}
+                >
+                  <ShareIcon />
+                  Share on WhatsApp
+                </a>
+              </>
+            ) : null}
             {work.templateSlug ? (
               <Link
                 href={`/preview/${work.templateSlug}`}
@@ -324,12 +332,13 @@ export default function MyInvitations() {
           {works.map((work) => {
             const thumb = thumbFor(work);
             const date = dateFor(work);
-            const live = work.isPublished !== false;
+            const live = isInvitationLive(work);
+            const primaryHref = live ? invitationLiveHref(work) : invitationEditHref(work, "customer");
             const copied = copiedSlug === work.slug;
 
             return (
               <li key={work.id} className={`mi-row${menuSlug === work.slug ? " is-menu-open" : ""}`}>
-                <Link href={invitationLiveHref(work)} className="mi-thumb" tabIndex={-1} aria-hidden="true">
+                <Link href={primaryHref} className="mi-thumb" tabIndex={-1} aria-hidden="true">
                   {thumb ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={thumb} alt="" loading="lazy" />
@@ -338,7 +347,7 @@ export default function MyInvitations() {
 
                 <div className="mi-main">
                   <h2 className={`mi-name ${cormorant.className}`}>
-                    <Link href={invitationLiveHref(work)}>{work.name}</Link>
+                    <Link href={primaryHref}>{work.name}</Link>
                   </h2>
                   {work.description ? <p className="mi-desc">{work.description}</p> : null}
                   {date ? <p className="mi-date-inline">{date}</p> : null}
@@ -355,15 +364,17 @@ export default function MyInvitations() {
                 <span className="mi-date">{date}</span>
 
                 <div className="mi-actions">
-                  <button
-                    type="button"
-                    className={`mi-icon${copied ? " is-done" : ""}`}
-                    aria-label={copied ? "Link copied" : `Copy guest link for ${work.name}`}
-                    title={copied ? "Copied" : "Copy guest link"}
-                    onClick={() => void copyLink(work)}
-                  >
-                    {copied ? <CheckIcon /> : <LinkIcon />}
-                  </button>
+                  {live ? (
+                    <button
+                      type="button"
+                      className={`mi-icon${copied ? " is-done" : ""}`}
+                      aria-label={copied ? "Link copied" : `Copy guest link for ${work.name}`}
+                      title={copied ? "Copied" : "Copy guest link"}
+                      onClick={() => void copyLink(work)}
+                    >
+                      {copied ? <CheckIcon /> : <LinkIcon />}
+                    </button>
+                  ) : null}
                   <Link
                     href={invitationEditHref(work, "customer")}
                     className="mi-icon"

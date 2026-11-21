@@ -235,6 +235,7 @@ export default function HouseWarmingInvitation({
             </svg>
           </a>
           {share.modal}
+          {share.blockedNote}
         </>
       ) : null}
     </main>

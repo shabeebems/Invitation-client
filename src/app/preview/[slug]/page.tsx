@@ -19,6 +19,7 @@ export async function generateMetadata({
   return {
     title: `${invitationTitle(template)} — ${template.name}`,
     description: template.description,
+    robots: { index: false, follow: true },
   };
 }
 

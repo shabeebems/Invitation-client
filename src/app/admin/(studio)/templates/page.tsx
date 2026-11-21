@@ -6,7 +6,7 @@ import TemplateListingImagesForm from "@/components/admin/TemplateListingImagesF
 import { EmptyState, PageHeader, Panel } from "@/components/admin/ui";
 
 export default async function TemplatesPage() {
-  const templates = await fetchTemplates({ fresh: true });
+  const templates = await fetchTemplates({ fresh: true, credentials: "include" });
 
   return (
     <section>

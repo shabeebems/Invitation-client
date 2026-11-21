@@ -2,15 +2,25 @@
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
+import Link from "next/link";
 import {
   createPaymentOrder,
   verifyPayment,
   type PaymentOrder,
+  type PaymentVerifyResult,
 } from "@/lib/api";
 import { loadRazorpayScript } from "@/lib/useRazorpay";
 import { BRAND_MARK_SRC } from "@/lib/brand";
 
-type ModalStep = "loading" | "ready" | "paying" | "verifying" | "publishing" | "success" | "error";
+type ModalStep =
+  | "loading"
+  | "ready"
+  | "paying"
+  | "verifying"
+  | "publishing"
+  | "fulfill"
+  | "success"
+  | "error";
 
 interface PublishPaymentModalProps {
   open: boolean;
@@ -18,10 +28,13 @@ interface PublishPaymentModalProps {
   workSlug?: string;
   invitationName: string;
   onClose: () => void;
-  onSuccess: (orderId?: string) => Promise<void> | void;
+  /** Create/link the invitation after payment. Return the live work slug when known. */
+  onSuccess: (orderId?: string) => Promise<string | undefined | void> | string | undefined | void;
 }
 
 const emptySubscribe = () => () => {};
+
+const BUSY_STEPS: ModalStep[] = ["loading", "paying", "verifying", "publishing"];
 
 function razorpayLogoUrl(): string | undefined {
   if (typeof window === "undefined") {
@@ -58,8 +71,11 @@ export default function PublishPaymentModal({
   );
   const [step, setStep] = useState<ModalStep>("loading");
   const [order, setOrder] = useState<PaymentOrder | null>(null);
-  const [error, setError] = useState<string>("");
+  const [error, setError] = useState("");
   const [retryCount, setRetryCount] = useState(0);
+  const [paymentConfirmed, setPaymentConfirmed] = useState(false);
+  const [liveSlug, setLiveSlug] = useState("");
+  const [copied, setCopied] = useState(false);
   const onSuccessRef = useRef(onSuccess);
   useEffect(() => {
     onSuccessRef.current = onSuccess;
@@ -70,6 +86,13 @@ export default function PublishPaymentModal({
       return;
     }
 
+    setPaymentConfirmed(false);
+    setLiveSlug("");
+    setCopied(false);
+    setError("");
+    setStep("loading");
+    setOrder(null);
+
     let isCancelled = false;
     void createPaymentOrder({
       templateId,
@@ -77,22 +100,19 @@ export default function PublishPaymentModal({
       draftName: invitationName,
     })
       .then(async (newOrder) => {
-        if (!isCancelled) {
-          setOrder(newOrder);
-          if (newOrder.alreadyPaid) {
-            setStep("publishing");
-            try {
-              await onSuccessRef.current(newOrder.orderId);
-              setStep("success");
-            } catch (publishErr) {
-              setError(publishErr instanceof Error ? publishErr.message : "Failed to publish updates");
-              setStep("error");
-            }
-          } else {
-            setStep("ready");
-            setError("");
-          }
+        if (isCancelled) {
+          return;
         }
+
+        setOrder(newOrder);
+
+        if (newOrder.alreadyPaid) {
+          setPaymentConfirmed(true);
+          await fulfillInvitation(newOrder.orderId);
+          return;
+        }
+
+        setStep("ready");
       })
       .catch((err) => {
         if (!isCancelled) {
@@ -104,6 +124,8 @@ export default function PublishPaymentModal({
     return () => {
       isCancelled = true;
     };
+    // fulfillInvitation is stable enough via refs; retryCount restarts order creation.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, templateId, workSlug, invitationName, retryCount]);
 
   useEffect(() => {
@@ -115,8 +137,26 @@ export default function PublishPaymentModal({
     };
   }, [open]);
 
-  if (!open || !mounted) {
-    return null;
+  async function fulfillInvitation(orderId: string, verified?: PaymentVerifyResult) {
+    setStep("publishing");
+    setError("");
+
+    try {
+      const publishedSlug = (await onSuccessRef.current(orderId)) || verified?.workSlug || "";
+      if (publishedSlug) {
+        setLiveSlug(publishedSlug);
+      } else if (verified?.publishedUrl?.startsWith("/")) {
+        setLiveSlug(verified.publishedUrl.slice(1));
+      }
+      setStep("success");
+    } catch (publishErr) {
+      setError(
+        publishErr instanceof Error
+          ? publishErr.message
+          : "Payment went through, but we could not finish publishing."
+      );
+      setStep("fulfill");
+    }
   }
 
   async function handleRealPayment() {
@@ -153,20 +193,17 @@ export default function PublishPaymentModal({
         handler: async (res) => {
           setStep("verifying");
           try {
-            await verifyPayment({
+            const verified = await verifyPayment({
               orderId: order.orderId,
               razorpayOrderId: res.razorpay_order_id || order.gatewayOrderId,
               razorpayPaymentId: res.razorpay_payment_id || `pay_mock_${Date.now()}`,
               razorpaySignature: order.isMock ? "mock_signature" : res.razorpay_signature,
             });
 
-            setStep("publishing");
-            await onSuccess(order.orderId);
-            setStep("success");
+            setPaymentConfirmed(true);
+            await fulfillInvitation(order.orderId, verified);
           } catch (verifyErr) {
-            setError(
-              verifyErr instanceof Error ? verifyErr.message : "Payment verification failed"
-            );
+            setError(verifyErr instanceof Error ? verifyErr.message : "Payment verification failed");
             setStep("error");
           }
         },
@@ -193,10 +230,35 @@ export default function PublishPaymentModal({
     }
   }
 
+  function requestClose() {
+    if (BUSY_STEPS.includes(step)) {
+      return;
+    }
+    onClose();
+  }
+
+  const livePath = liveSlug ? `/${liveSlug}` : "";
+  const liveUrl = livePath && typeof window !== "undefined" ? `${window.location.origin}${livePath}` : livePath;
+
+  async function copyLiveLink() {
+    if (!liveUrl) return;
+    try {
+      await navigator.clipboard.writeText(liveUrl);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setCopied(false);
+    }
+  }
+
+  if (!open || !mounted) {
+    return null;
+  }
+
   return createPortal(
     <div
       className="fixed inset-0 z-[100200] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
-      onClick={onClose}
+      onClick={requestClose}
     >
       <div
         role="dialog"
@@ -205,20 +267,24 @@ export default function PublishPaymentModal({
         className="w-full max-w-lg overflow-hidden rounded-[28px] border border-stone-200/60 bg-[#FAF8F5] p-6 text-stone-900 shadow-[0_24px_70px_rgba(0,0,0,0.35)] sm:p-8"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
         <div className="flex items-start justify-between">
           <div>
             <span className="inline-block rounded-full bg-[#E7EBDD] px-3 py-1 text-[11px] font-semibold tracking-wider text-[#183C2C] uppercase">
               Publish & Host
             </span>
             <h2 id="payment-modal-title" className="mt-2 text-2xl font-bold tracking-tight text-stone-900">
-              Complete Payment
+              {step === "fulfill"
+                ? "Payment received"
+                : step === "success"
+                  ? "You're live"
+                  : "Complete Payment"}
             </h2>
           </div>
           <button
             type="button"
-            onClick={onClose}
-            className="rounded-full p-1.5 text-stone-400 hover:bg-stone-200/50 hover:text-stone-700"
+            onClick={requestClose}
+            disabled={BUSY_STEPS.includes(step)}
+            className="rounded-full p-1.5 text-stone-400 hover:bg-stone-200/50 hover:text-stone-700 disabled:opacity-40"
             aria-label="Close"
           >
             <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -231,7 +297,6 @@ export default function PublishPaymentModal({
           </button>
         </div>
 
-        {/* Loading state */}
         {step === "loading" && (
           <div className="my-10 flex flex-col items-center justify-center gap-3">
             <div className="h-9 w-9 animate-spin rounded-full border-3 border-[#183C2C] border-t-transparent" />
@@ -239,7 +304,6 @@ export default function PublishPaymentModal({
           </div>
         )}
 
-        {/* Verifying / Publishing state */}
         {(step === "verifying" || step === "publishing") && (
           <div className="my-10 flex flex-col items-center justify-center gap-3">
             <div className="h-9 w-9 animate-spin rounded-full border-3 border-[#183C2C] border-t-transparent" />
@@ -250,10 +314,8 @@ export default function PublishPaymentModal({
           </div>
         )}
 
-        {/* Ready State */}
         {(step === "ready" || step === "paying") && order && (
           <div className="mt-5 space-y-5">
-            {/* Invitation Details Card */}
             <div className="rounded-2xl border border-stone-200/80 bg-white p-4 shadow-sm">
               <div className="flex items-center justify-between border-b border-stone-100 pb-3">
                 <span className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Invitation</span>
@@ -274,7 +336,6 @@ export default function PublishPaymentModal({
               </ul>
             </div>
 
-            {/* Price Box */}
             <div className="flex items-center justify-between rounded-2xl bg-[#E7EBDD]/60 p-4">
               <div>
                 <p className="text-xs font-medium text-[#183C2C]/80">Total Amount</p>
@@ -317,44 +378,99 @@ export default function PublishPaymentModal({
           </div>
         )}
 
-        {/* Error State */}
         {step === "error" && (
           <div className="mt-5 space-y-4">
             <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
-              <p className="font-semibold">Payment Could Not Complete</p>
+              <p className="font-semibold">
+                {paymentConfirmed ? "Could not finish publishing" : "Payment Could Not Complete"}
+              </p>
               <p className="mt-1 text-xs text-red-700">{error || "An unexpected error occurred."}</p>
             </div>
             <div className="flex gap-3">
               <button
                 type="button"
                 onClick={() => {
+                  if (paymentConfirmed && order) {
+                    void fulfillInvitation(order.orderId);
+                    return;
+                  }
                   setStep("loading");
                   setError("");
                   setRetryCount((c) => c + 1);
                 }}
                 className="flex-1 rounded-full bg-[#183C2C] px-4 py-2.5 text-xs font-semibold text-white hover:bg-[#23503B]"
               >
-                Try Again
+                {paymentConfirmed ? "Finish setup" : "Try Again"}
               </button>
               <button
                 type="button"
-                onClick={onClose}
+                onClick={requestClose}
                 className="rounded-full border border-stone-300 px-5 py-2.5 text-xs font-semibold text-stone-700 hover:bg-stone-100"
               >
-                Cancel
+                Close
               </button>
             </div>
           </div>
         )}
 
-        {/* Success State */}
+        {step === "fulfill" && order && (
+          <div className="mt-5 space-y-4">
+            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
+              <p className="font-semibold">Your payment went through</p>
+              <p className="mt-1 text-xs text-amber-900/80">
+                We could not finish creating your live invitation. Tap finish setup — you will not be charged
+                again.
+              </p>
+              {error ? <p className="mt-2 text-xs text-amber-900/70">{error}</p> : null}
+            </div>
+            <button
+              type="button"
+              onClick={() => void fulfillInvitation(order.orderId)}
+              className="w-full rounded-full bg-[#183C2C] px-5 py-3 text-sm font-semibold text-white hover:bg-[#23503B]"
+            >
+              Finish setup
+            </button>
+            <button
+              type="button"
+              onClick={requestClose}
+              className="w-full rounded-full border border-stone-300 px-5 py-2.5 text-xs font-semibold text-stone-700 hover:bg-stone-100"
+            >
+              Close for now
+            </button>
+          </div>
+        )}
+
         {step === "success" && (
-          <div className="my-8 flex flex-col items-center justify-center gap-2 text-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 text-xl font-bold">
+          <div className="my-6 flex flex-col items-center justify-center gap-3 text-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-xl font-bold text-emerald-600">
               ✓
             </div>
             <h3 className="text-xl font-bold text-stone-900">Payment Confirmed!</h3>
-            <p className="text-xs text-stone-600">Your invitation is now live and published.</p>
+            <p className="text-xs text-stone-600">Your invitation is live and ready to share.</p>
+            {livePath ? (
+              <div className="mt-2 flex w-full flex-col gap-2 sm:flex-row">
+                <Link
+                  href={`/user/published/${liveSlug}`}
+                  className="flex-1 rounded-full bg-[#183C2C] px-4 py-2.5 text-center text-xs font-semibold text-white hover:bg-[#23503B]"
+                >
+                  View invitation
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => void copyLiveLink()}
+                  className="flex-1 rounded-full border border-stone-300 px-4 py-2.5 text-xs font-semibold text-stone-700 hover:bg-stone-100"
+                >
+                  {copied ? "Copied" : "Copy guest link"}
+                </button>
+              </div>
+            ) : (
+              <Link
+                href="/user/invitations"
+                className="mt-2 rounded-full bg-[#183C2C] px-5 py-2.5 text-xs font-semibold text-white hover:bg-[#23503B]"
+              >
+                Go to My invitations
+              </Link>
+            )}
           </div>
         )}
       </div>

@@ -198,6 +198,7 @@ export default function VelvetHeritageInvitation({
           Share
         </a>
         {share.modal}
+        {share.blockedNote}
       </div>
     </main>
   );
