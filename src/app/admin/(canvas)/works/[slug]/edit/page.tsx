@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import { fetchWork } from "@/lib/api";
-import InvitationView from "@/components/templates/InvitationView";
+import UserWorkEditor from "@/components/account/UserWorkEditor";
 
 export async function generateMetadata({
   params,
@@ -9,11 +7,8 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const work = await fetchWork(slug, { fresh: true });
-
   return {
-    title: work ? `Edit · ${work.name}` : "Work not found",
-    description: work?.description,
+    title: `Edit · ${slug}`,
   };
 }
 
@@ -23,11 +18,5 @@ export default async function AdminWorkEditPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const work = await fetchWork(slug, { fresh: true });
-
-  if (!work) {
-    notFound();
-  }
-
-  return <InvitationView template={work} editable />;
+  return <UserWorkEditor slug={slug} mode="admin" />;
 }

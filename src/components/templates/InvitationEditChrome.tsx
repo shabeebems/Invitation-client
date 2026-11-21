@@ -167,7 +167,7 @@ export default function InvitationEditChrome({
   onBackToEdit: () => void;
   onOpenPay: () => void;
   onClosePay: () => void;
-  onConfirmPay: (orderId?: string) => Promise<void> | void;
+  onConfirmPay: (orderId?: string) => Promise<string | undefined | void> | string | undefined | void;
   onThemeChange: (selectedThemeId: string, themes: InvitationTheme[]) => void;
   ambianceEffect?: string;
   onAmbianceEffectChange?: (effect: AmbianceEffect) => void;
@@ -223,7 +223,8 @@ export default function InvitationEditChrome({
       return;
     }
 
-    if (canPublish) {
+    // Pre-pay draft flow keeps themes local until publish. Existing works still hit the API.
+    if (canPublish && source !== "work") {
       onThemeChange(themeId, themes);
       return;
     }

@@ -7,7 +7,9 @@ import {
   fetchTemplates,
   fetchWorks,
   imageUrl,
+  invitationEditHref,
   invitationLiveHref,
+  isInvitationLive,
   type Category,
   type InvitationTemplate,
 } from "@/lib/api";
@@ -28,7 +30,7 @@ export default function AdminDashboard() {
       try {
         const [nextCategories, nextTemplates, nextWorks] = await Promise.all([
           fetchCategories({ credentials: "include" }),
-          fetchTemplates({ fresh: true }),
+          fetchTemplates({ fresh: true, credentials: "include" }),
           fetchWorks(),
         ]);
 
@@ -96,12 +98,23 @@ export default function AdminDashboard() {
               ) : (
                 <div className="flex flex-col gap-3">
                   {works.slice(0, 4).map((work) => (
-                    <Link key={work.id} href={invitationLiveHref(work)}>
+                    <Link
+                      key={work.id}
+                      href={
+                        isInvitationLive(work)
+                          ? invitationLiveHref(work)
+                          : invitationEditHref(work, "admin")
+                      }
+                    >
                       <Panel className="flex items-center gap-4 p-3 transition hover:border-[#cfd3d8]">
                         <Thumb src={imageUrl(work.images, "hero")} alt={work.name} />
                         <div className="min-w-0">
                           <p className="truncate font-semibold text-[#111827]">{work.name}</p>
-                          <p className="truncate text-sm text-zinc-500">{work.categoryName || "Uncategorized"}</p>
+                          <p className="truncate text-sm text-zinc-500">
+                            {work.categoryName || "Uncategorized"}
+                            {" · "}
+                            {isInvitationLive(work) ? "Live" : "Draft"}
+                          </p>
                         </div>
                       </Panel>
                     </Link>

@@ -10,6 +10,7 @@ import {
   imageUrl,
   invitationEditHref,
   invitationLiveHref,
+  isInvitationLive,
   type Category,
   type InvitationTemplate,
 } from "@/lib/api";
@@ -41,7 +42,7 @@ export default function WorksPage() {
   async function loadLookups() {
     const [nextCategories, nextTemplates] = await Promise.all([
       fetchCategories({ credentials: "include" }),
-      fetchTemplates({ fresh: true }),
+      fetchTemplates({ fresh: true, credentials: "include" }),
     ]);
 
     setCategories(nextCategories);
@@ -133,6 +134,7 @@ export default function WorksPage() {
         <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
           {works.map((work) => {
             const hero = imageUrl(work.images, "hero");
+            const live = isInvitationLive(work);
             return (
               <Panel key={work.id} className="overflow-hidden">
                 <div className="relative h-44 bg-[#1c1f24]">
@@ -141,6 +143,13 @@ export default function WorksPage() {
                   ) : null}
                   <span className="absolute top-3 left-3 rounded-full bg-[#111827]/80 px-3 py-1 text-[10px] font-semibold tracking-[0.16em] text-white uppercase backdrop-blur">
                     {work.categoryName || "Uncategorized"}
+                  </span>
+                  <span
+                    className={`absolute top-3 right-3 rounded-full px-3 py-1 text-[10px] font-semibold tracking-[0.16em] uppercase backdrop-blur ${
+                      live ? "bg-emerald-700/90 text-white" : "bg-amber-700/90 text-white"
+                    }`}
+                  >
+                    {live ? "Live" : "Draft"}
                   </span>
                 </div>
                 <div className="p-5">
@@ -157,12 +166,14 @@ export default function WorksPage() {
                     >
                       Edit
                     </Link>
-                    <Link
-                      href={invitationLiveHref(work)}
-                      className="inline-flex rounded-full border border-[#e6e8ec] px-4 py-2 text-sm font-semibold text-zinc-600 hover:border-[#111827] hover:text-[#111827]"
-                    >
-                      Live
-                    </Link>
+                    {live ? (
+                      <Link
+                        href={invitationLiveHref(work)}
+                        className="inline-flex rounded-full border border-[#e6e8ec] px-4 py-2 text-sm font-semibold text-zinc-600 hover:border-[#111827] hover:text-[#111827]"
+                      >
+                        Open live
+                      </Link>
+                    ) : null}
                   </div>
                   <ThemePicker
                     slug={work.slug}

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { fetchWork, invitationTitle } from "@/lib/api";
+import { fetchWork, imageUrl, invitationTitle } from "@/lib/api";
+import { listingPhotos } from "@/lib/listing-photos";
 import InvitationView from "@/components/templates/InvitationView";
 
 export async function generateMetadata({
@@ -12,12 +13,41 @@ export async function generateMetadata({
   const template = await fetchWork(slug);
 
   if (!template) {
-    return { title: "Invitation not found" };
+    return { title: "Invitation not found", robots: { index: false, follow: false } };
   }
 
+  const title = `${invitationTitle(template)} — ${template.name}`;
+  const description =
+    template.description?.trim() ||
+    `You're invited. Open this link for ${invitationTitle(template)}.`;
+  const { front } = listingPhotos(template.images);
+  const ogImage = front || imageUrl(template.images, "hero") || template.images?.[0]?.url || "";
+
   return {
-    title: `${invitationTitle(template)} — ${template.name}`,
-    description: template.description,
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "website",
+      url: `/${template.slug}`,
+      ...(ogImage
+        ? {
+            images: [
+              {
+                url: ogImage,
+                alt: invitationTitle(template),
+              },
+            ],
+          }
+        : {}),
+    },
+    twitter: {
+      card: ogImage ? "summary_large_image" : "summary",
+      title,
+      description,
+      ...(ogImage ? { images: [ogImage] } : {}),
+    },
   };
 }
 

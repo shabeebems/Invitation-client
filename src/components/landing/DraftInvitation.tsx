@@ -1,6 +1,6 @@
 "use client";
 
-import { useSyncExternalStore, useRef, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import BrandLoader from "@/components/brand/BrandLoader";
 import InvitationView from "@/components/templates/InvitationView";
@@ -12,9 +12,7 @@ import {
   type TemplateContent,
 } from "@/lib/api";
 import { markNavigationStart } from "@/lib/navigation-busy";
-import { clearUseDraft, readUseDraft } from "@/lib/use-draft";
-
-const emptySubscribe = () => () => {};
+import { clearUseDraft, readUseDraft, type UseDraft } from "@/lib/use-draft";
 
 function contentForSave(content: TemplateContent): TemplateContent {
   return {
@@ -29,25 +27,26 @@ function contentForSave(content: TemplateContent): TemplateContent {
 export default function DraftInvitation({ template }: { template: InvitationTemplate }) {
   const router = useRouter();
   const createdSlug = useRef("");
-  const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
-  const stored = useSyncExternalStore(
-    emptySubscribe,
-    () => readUseDraft(template.slug),
-    () => null
-  );
+  const [stored, setStored] = useState<UseDraft | null>(null);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    if (mounted && !stored) {
+    const draft = readUseDraft(template.slug);
+    setStored(draft);
+    setReady(true);
+
+    if (!draft) {
       markNavigationStart();
       router.replace(`/user/use/${template.slug}`);
     }
-  }, [mounted, stored, router, template.slug]);
+  }, [router, template.slug]);
 
   async function publish(draft: InvitationTemplate, images: PendingImage[], orderId?: string) {
     const details = contentForSave(draft.content);
-    const existing = createdSlug.current;
-    let slug = existing;
+    let slug = createdSlug.current;
 
+    // First attempt creates + claims the paid order. Retries reuse createdSlug, or
+    // createWork(orderId) returns the already-linked work if the tab was refreshed.
     if (!slug) {
       const work = await createWork({
         name: draft.name,
@@ -57,7 +56,6 @@ export default function DraftInvitation({ template }: { template: InvitationTemp
         orderId,
         details,
       });
-
       slug = work.slug;
       createdSlug.current = slug;
     }
@@ -66,8 +64,6 @@ export default function DraftInvitation({ template }: { template: InvitationTemp
       for (const image of images) {
         await updateWork(slug, details, image);
       }
-    } else if (existing) {
-      await updateWork(slug, details);
     }
 
     clearUseDraft(template.slug);
@@ -76,7 +72,7 @@ export default function DraftInvitation({ template }: { template: InvitationTemp
     return slug;
   }
 
-  if (!stored) {
+  if (!ready || !stored) {
     return <BrandLoader label="Opening invitation" />;
   }
 
@@ -84,6 +80,10 @@ export default function DraftInvitation({ template }: { template: InvitationTemp
     ...template,
     name: stored.name,
     content: { ...template.content, ...stored.content },
+    selectedThemeId: stored.selectedThemeId || template.selectedThemeId,
+    selectedThemeTitle:
+      template.themes?.find((theme) => theme.id === (stored.selectedThemeId || template.selectedThemeId))
+        ?.title || template.selectedThemeTitle,
   };
 
   return <InvitationView template={preview} editable onPublish={publish} />;

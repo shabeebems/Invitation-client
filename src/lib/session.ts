@@ -4,14 +4,19 @@ import { ROLE_COOKIE, redirectFor, safeNextPath, type Role } from "@/lib/auth-ro
 const ROLE_MAX_AGE = 7 * 24 * 60 * 60;
 
 async function readMe(): Promise<AdminUser | null> {
-  const response = await fetch(`${API_URL}/api/auth/me`, { credentials: "include" });
+  try {
+    const response = await fetch(`${API_URL}/api/auth/me`, { credentials: "include" });
 
-  if (!response.ok) {
+    if (!response.ok) {
+      return null;
+    }
+
+    const data = (await response.json()) as { user?: AdminUser };
+    return data.user || null;
+  } catch {
+    // API offline / network blip — treat as signed out without crashing the page.
     return null;
   }
-
-  const data = (await response.json()) as { user?: AdminUser };
-  return data.user || null;
 }
 
 async function resolveSession(): Promise<AdminUser | null> {
@@ -21,22 +26,26 @@ async function resolveSession(): Promise<AdminUser | null> {
     return current;
   }
 
-  const refreshed = await fetch(`${API_URL}/api/auth/refresh`, {
-    method: "POST",
-    credentials: "include",
-  });
+  try {
+    const refreshed = await fetch(`${API_URL}/api/auth/refresh`, {
+      method: "POST",
+      credentials: "include",
+    });
 
-  if (!refreshed.ok) {
+    if (!refreshed.ok) {
+      return null;
+    }
+
+    const data = (await refreshed.json()) as { success?: boolean };
+
+    if (!data.success) {
+      return null;
+    }
+
+    return readMe();
+  } catch {
     return null;
   }
-
-  const data = (await refreshed.json()) as { success?: boolean };
-
-  if (!data.success) {
-    return null;
-  }
-
-  return readMe();
 }
 
 function writeRoleCookie(value: string, maxAge: number) {
@@ -77,6 +86,10 @@ export function loadSession(): Promise<AdminUser | null> {
   if (!pendingSession) {
     pendingSession = resolveSession()
       .then(settle)
+      .catch(() => {
+        markSignedOut();
+        return null;
+      })
       .finally(() => {
         pendingSession = null;
       });

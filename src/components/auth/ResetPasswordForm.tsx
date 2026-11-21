@@ -4,6 +4,7 @@ import { FormEvent, Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { API_URL } from "@/lib/api";
 import { cormorant } from "@/lib/fonts";
+import { markSignedOut } from "@/lib/session";
 import AuthField from "./AuthField";
 import { ArrowIcon, EyeIcon, LockIcon } from "./auth-icons";
 
@@ -18,6 +19,7 @@ function ResetForm() {
     event.preventDefault();
     const response = await fetch(`${API_URL}/api/auth/reset-password`, {
       method: "POST",
+      credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ token, password }),
     });
@@ -28,6 +30,8 @@ function ResetForm() {
       return;
     }
 
+    // Server cleared httpOnly cookies; drop the client role cookie too.
+    markSignedOut();
     router.replace("/login");
   }
 

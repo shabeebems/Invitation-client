@@ -7,31 +7,31 @@ import { cormorant } from "@/lib/fonts";
 import AuthField from "./AuthField";
 import { ArrowIcon, MailIcon } from "./auth-icons";
 
+const SUCCESS_MESSAGE =
+  "If an account exists for that email, we sent a reset link. It expires in 1 hour.";
+
 export default function ForgotPasswordForm() {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-  const [missingAccount, setMissingAccount] = useState(false);
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
     setError("");
     setMessage("");
-    setMissingAccount(false);
     const response = await fetch(`${API_URL}/api/auth/forgot-password`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email }),
     });
-    const data = (await response.json()) as { success?: boolean; message?: string; code?: string };
+    const data = (await response.json()) as { success?: boolean; message?: string };
 
     if (!response.ok || !data.success) {
-      setMissingAccount(data.code === "NOT_FOUND");
       setError(data.message || "Could not send reset email");
       return;
     }
 
-    setMessage(data.message || "We sent a reset link to this email. It expires in 1 hour.");
+    setMessage(data.message || SUCCESS_MESSAGE);
   }
 
   return (
@@ -52,16 +52,7 @@ export default function ForgotPasswordForm() {
         />
 
         {message ? <p className="auth-success">{message}</p> : null}
-        {error ? (
-          <p className="auth-error">
-            {error}{" "}
-            {missingAccount ? (
-              <Link href="/signup" className="auth-link">
-                Sign Up
-              </Link>
-            ) : null}
-          </p>
-        ) : null}
+        {error ? <p className="auth-error">{error}</p> : null}
 
         <button type="submit" className="auth-submit">
           <span>Send reset link</span>

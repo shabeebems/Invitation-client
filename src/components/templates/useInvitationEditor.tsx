@@ -5,8 +5,10 @@ import { useRouter } from "next/navigation";
 import EditableField from "@/components/templates/EditableField";
 import InvitationEditChrome from "@/components/templates/InvitationEditChrome";
 import {
+  canEditWork,
   invitationApiBase,
   invitationDoneHref,
+  isInvitationLive,
   rememberPendingImage,
   withImageUrl,
   type AdminUser,
@@ -34,6 +36,7 @@ import {
 } from "@/lib/content-limits";
 import { isEventDateAllowed, partsFromEventDate, toEventDateIso } from "@/lib/event-date";
 import { loadSession } from "@/lib/session";
+import { saveUseDraft } from "@/lib/use-draft";
 import {
   resolveEnabledSections,
   sectionsForFamily,
@@ -183,15 +186,36 @@ export function useInvitationEditor({
     let cancelled = false;
 
     void loadSession().then((user) => {
-      if (!cancelled) {
-        setRole(user?.role);
+      if (cancelled) {
+        return;
+      }
+
+      setRole(user?.role);
+
+      // Client backup: block non-owners from the work editor UI (API already forbids saves).
+      if (editable && template.source === "work" && !canEditWork(template, user)) {
+        router.replace(user?.role === "admin" ? "/admin/works" : "/user/invitations");
       }
     });
 
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [editable, router, template.source, template.userId]);
+
+  function autosaveDraft(nextContent: TemplateContent) {
+    if (!onPublish) {
+      return;
+    }
+
+    // Pre-pay draft flow: keep editor progress across refresh (text/theme; blob photos still pending).
+    const templateSlug = template.slug;
+    saveUseDraft(templateSlug, {
+      name: draftRef.current.name || template.name,
+      content: clampContent(nextContent),
+      selectedThemeId: draftRef.current.selectedThemeId,
+    });
+  }
 
   async function persist(nextContent: TemplateContent, image?: SaveImage): Promise<boolean> {
     const safeContent = clampContent(nextContent);
@@ -206,6 +230,10 @@ export function useInvitationEditor({
           programIndex: image.programIndex,
         });
       }
+      autosaveDraft(safeContent);
+      lastSaveOk.current = true;
+      setStatus("saved");
+      setStatusMessage("");
       return true;
     }
 
@@ -681,25 +709,56 @@ export function useInvitationEditor({
   }
 
   async function publish(orderId?: string) {
-    if (!onPublish || publishing) {
+    if (publishing) {
       return;
+    }
+
+    // Unpaid existing work: payment modal already linked/published via workSlug.
+    if (!onPublish) {
+      if (draft.source !== "work" || isInvitationLive(draft)) {
+        return;
+      }
+
+      setPublishing(true);
+      setStatus("saving");
+
+      try {
+        const ok = await flushSaves();
+        if (!ok) {
+          throw new Error("Could not save before publishing");
+        }
+
+        markNavigationStart();
+        router.push(
+          role === "admin" ? `/${draft.slug}` : `/user/published/${draft.slug}`
+        );
+        return draft.slug;
+      } catch (err) {
+        setStatus("error");
+        setPublishing(false);
+        throw err;
+      }
     }
 
     setPublishing(true);
     setStatus("saving");
 
     try {
-      await onPublish(
+      const slug = await onPublish(
         { ...draft, content: clampContent(draft.content) },
         pendingImages.current,
         orderId
       );
+      return typeof slug === "string" ? slug : undefined;
     } catch (err) {
       setStatus("error");
       setPublishing(false);
       throw err;
     }
   }
+
+  const canPublish =
+    Boolean(onPublish) || (draft.source === "work" && !isInvitationLive(draft));
 
   function field(key: ContentTextKey, className = "", multiline = false) {
     const raw = draft.content[key];
@@ -735,7 +794,7 @@ export function useInvitationEditor({
       status={status}
       statusMessage={statusMessage}
       publishing={publishing}
-      canPublish={Boolean(onPublish)}
+      canPublish={canPublish}
       doneHref={invitationDoneHref(draft, role)}
       onDone={finishEditing}
       invitationName={draft.name}
@@ -794,12 +853,23 @@ export function useInvitationEditor({
       enabledSections={enabledSections}
       onSectionToggle={sectionFamily ? setSectionEnabled : undefined}
       onThemeChange={(selectedThemeId, themes) => {
-        setDraft((prev) => ({
-          ...prev,
-          selectedThemeId,
-          selectedThemeTitle: themes.find((theme) => theme.id === selectedThemeId)?.title || prev.selectedThemeTitle,
-          themes,
-        }));
+        setDraft((prev) => {
+          const next = {
+            ...prev,
+            selectedThemeId,
+            selectedThemeTitle: themes.find((theme) => theme.id === selectedThemeId)?.title || prev.selectedThemeTitle,
+            themes,
+          };
+          draftRef.current = next;
+          if (onPublish) {
+            saveUseDraft(template.slug, {
+              name: next.name || template.name,
+              content: clampContent(next.content),
+              selectedThemeId,
+            });
+          }
+          return next;
+        });
         setStatus("saved");
       }}
     />

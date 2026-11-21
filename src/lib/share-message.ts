@@ -1,17 +1,30 @@
-import { invitationLiveHref, type InvitationTemplate, type TemplateContent } from "@/lib/api";
+import {
+  invitationLiveHref,
+  isInvitationLive,
+  type InvitationTemplate,
+  type TemplateContent,
+} from "@/lib/api";
 
 function clean(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
 }
 
-/** Guest-facing link: the live page for a saved invitation, the preview for a template. */
-export function invitationShareUrl(invitation: Pick<InvitationTemplate, "slug" | "source">) {
+/**
+ * Guest-facing share URL — only for paid/live works.
+ * Never returns a template preview URL (that looked like a guest link before publish).
+ */
+export function invitationShareUrl(
+  invitation: Pick<InvitationTemplate, "slug" | "source" | "paymentStatus" | "isPublished">
+) {
   if (typeof window === "undefined" || !invitation.slug) {
     return "";
   }
 
-  const path = invitation.source === "work" ? invitationLiveHref(invitation) : `/preview/${invitation.slug}`;
-  return `${window.location.origin}${path}`;
+  if (!isInvitationLive(invitation)) {
+    return "";
+  }
+
+  return `${window.location.origin}${invitationLiveHref(invitation)}`;
 }
 
 function dateLine(content: TemplateContent) {

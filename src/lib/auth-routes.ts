@@ -3,7 +3,8 @@ export type Role = "customer" | "admin";
 /** Readable copy of the signed-in role, kept on the site's own domain so `proxy.ts` can see it. */
 export const ROLE_COOKIE = "stk_role";
 
-const GUEST_PAGES = ["/login", "/signup", "/forgot-password", "/reset-password"];
+/** Signed-in users are redirected away from these. Reset-password stays open (email token links). */
+const GUEST_PAGES = ["/login", "/signup", "/forgot-password"];
 
 type Audience = "guest" | "member" | Role;
 
@@ -50,6 +51,10 @@ export function safeNextPath(value: string | null | undefined): string {
   return audience(pathname) === "guest" ? "" : value;
 }
 
+function homeForRole(role: Role) {
+  return role === "admin" ? "/admin/dashboard" : "/user/invitations";
+}
+
 /** Where a visitor on `pathname` must be sent instead, or null when they may stay. */
 export function redirectFor(pathname: string, role: Role | null, next?: string | null): string | null {
   const area = audience(pathname);
@@ -59,12 +64,12 @@ export function redirectFor(pathname: string, role: Role | null, next?: string |
   }
 
   if (area === "guest") {
-    return role ? safeNextPath(next) || "/" : null;
+    return role ? safeNextPath(next) || homeForRole(role) : null;
   }
 
   if (!role) {
-    return "/";
+    return `/login?next=${encodeURIComponent(pathname)}`;
   }
 
-  return area === "member" || area === role ? null : "/";
+  return area === "member" || area === role ? null : homeForRole(role);
 }

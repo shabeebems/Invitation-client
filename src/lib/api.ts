@@ -1,6 +1,7 @@
 export const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 export type AdminUser = {
+  id: string;
   name: string;
   email: string;
   phone: string;
@@ -270,6 +271,8 @@ export type InvitationTemplate = {
   actualPrice?: number;
   /** Template offer price in rupees. */
   offerPrice?: number;
+  /** Work payment state — source of truth for Live vs Draft. */
+  paymentStatus?: "unpaid" | "paid";
   isPublished?: boolean;
   publishedAt?: string | null;
   createdAt?: string;
@@ -287,6 +290,22 @@ export type InvitationTemplate = {
   themes: InvitationTheme[];
   content: TemplateContent;
 };
+
+/** Owner or admin may open the work editor; everyone else should get a not-found experience. */
+export function canEditWork(
+  work: Pick<InvitationTemplate, "userId">,
+  user: Pick<AdminUser, "id" | "role" | "isAdmin"> | null | undefined
+) {
+  if (!user) {
+    return false;
+  }
+
+  if (user.role === "admin" || user.isAdmin) {
+    return true;
+  }
+
+  return Boolean(work.userId && work.userId === user.id);
+}
 
 export function invitationApiBase(template: Pick<InvitationTemplate, "slug" | "source">) {
   const kind = template.source === "work" ? "works" : "templates";
@@ -409,6 +428,26 @@ export function invitationLiveHref(template: Pick<InvitationTemplate, "slug">) {
   return `/${template.slug}`;
 }
 
+/** Guest-facing live link is valid only after payment. */
+export function isInvitationLive(
+  work: Pick<InvitationTemplate, "paymentStatus" | "isPublished" | "source">
+) {
+  if (work.source === "template") {
+    return false;
+  }
+
+  if (work.paymentStatus === "paid") {
+    return true;
+  }
+
+  if (work.paymentStatus === "unpaid") {
+    return false;
+  }
+
+  // Legacy rows before paymentStatus was exposed.
+  return work.isPublished === true;
+}
+
 export function invitationTitle(template: InvitationTemplate) {
   return (
     template.content.hostNames ||
@@ -424,6 +463,8 @@ type FetchFreshness = {
   /** Skip the Data Cache (admin / editor reads that must be current). */
   fresh?: boolean;
   revalidate?: number;
+  /** Send auth cookies (needed for unpaid draft works). */
+  credentials?: RequestCredentials;
 };
 
 type ListFetchOptions = FetchFreshness & {
@@ -431,11 +472,30 @@ type ListFetchOptions = FetchFreshness & {
 };
 
 function fetchCacheInit(options: FetchFreshness = {}) {
-  if (options.fresh) {
+  if (options.fresh || options.credentials) {
     return { cache: "no-store" as const };
   }
 
   return { next: { revalidate: options.revalidate ?? PUBLIC_REVALIDATE_SECONDS } };
+}
+
+/** Forward auth cookies on the server; browsers use credentials: include. */
+async function authCookieHeader(): Promise<HeadersInit> {
+  if (typeof window !== "undefined") {
+    return {};
+  }
+
+  try {
+    const { cookies } = await import("next/headers");
+    const store = await cookies();
+    const header = store
+      .getAll()
+      .map((cookie) => `${cookie.name}=${cookie.value}`)
+      .join("; ");
+    return header ? { Cookie: header } : {};
+  } catch {
+    return {};
+  }
 }
 
 async function readInvitation(
@@ -444,7 +504,11 @@ async function readInvitation(
   options: FetchFreshness = {}
 ): Promise<InvitationTemplate | null> {
   try {
-    const response = await fetch(url, fetchCacheInit(options));
+    const headers = options.credentials ? await authCookieHeader() : {};
+    const response = await fetch(url, {
+      ...fetchCacheInit(options),
+      ...(options.credentials ? { credentials: options.credentials, headers } : {}),
+    });
 
     if (!response.ok) {
       return null;
@@ -473,12 +537,13 @@ async function readList<T>(
   options: ListFetchOptions = {}
 ): Promise<T[]> {
   try {
+    const headers = options.credentials ? await authCookieHeader() : {};
     const response = await fetch(url, {
       ...fetchCacheInit({
         fresh: options.fresh || Boolean(options.credentials),
         revalidate: options.revalidate,
       }),
-      credentials: options.credentials,
+      ...(options.credentials ? { credentials: options.credentials, headers } : {}),
     });
     const data = (await response.json()) as {
       success?: boolean;
@@ -530,6 +595,26 @@ export type StudioUser = {
   createdAt?: string;
 };
 
+export async function fetchCurrentUser(): Promise<AdminUser | null> {
+  try {
+    const headers = await authCookieHeader();
+    const response = await fetch(`${API_URL}/api/auth/me`, {
+      cache: "no-store",
+      credentials: "include",
+      headers,
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const data = (await response.json()) as { user?: AdminUser | null };
+    return data.user || null;
+  } catch {
+    return null;
+  }
+}
+
 export async function fetchUsers(): Promise<StudioUser[]> {
   const response = await fetch(`${API_URL}/api/users`, {
     cache: "no-store",
@@ -549,6 +634,8 @@ export async function fetchUsers(): Promise<StudioUser[]> {
 }
 
 export function fetchWork(slug: string, options: FetchFreshness = {}) {
+  // Pass credentials: "include" for unpaid draft access (owner/admin editors).
+  // Public live pages omit it so anonymous guests only receive paid works.
   return readInvitation(`${API_URL}/api/works/${slug}`, "work", options);
 }
 

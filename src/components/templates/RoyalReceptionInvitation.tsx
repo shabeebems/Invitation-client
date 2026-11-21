@@ -227,6 +227,7 @@ export default function RoyalReceptionInvitation({
         <span className="max-sm:sr-only">Share</span>
       </a>
       {share.modal}
+      {share.blockedNote}
       </div>
     </main>
   );

@@ -1,8 +1,5 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import { fetchWork } from "@/lib/api";
-import RequireVerifiedEmail from "@/components/auth/RequireVerifiedEmail";
-import InvitationView from "@/components/templates/InvitationView";
+import UserWorkEditor from "@/components/account/UserWorkEditor";
 
 export async function generateMetadata({
   params,
@@ -10,11 +7,8 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const work = await fetchWork(slug, { fresh: true });
-
   return {
-    title: work ? `Edit · ${work.name}` : "Work not found",
-    description: work?.description,
+    title: `Edit · ${slug}`,
   };
 }
 
@@ -24,15 +18,5 @@ export default async function UserWorkEditPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const work = await fetchWork(slug, { fresh: true });
-
-  if (!work) {
-    notFound();
-  }
-
-  return (
-    <RequireVerifiedEmail>
-      <InvitationView template={work} editable />
-    </RequireVerifiedEmail>
-  );
+  return <UserWorkEditor slug={slug} mode="user" />;
 }

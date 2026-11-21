@@ -196,27 +196,34 @@ export default function TemplateGallery({
   const [selectedId, setSelectedId] = useState("all");
 
   const chips = useMemo(() => {
-    if (categories.length > 0) {
-      return categories;
-    }
+    const list =
+      categories.length > 0
+        ? categories
+        : (() => {
+            const seen = new Map<string, Category>();
 
-    const seen = new Map<string, Category>();
+            for (const template of templates) {
+              if (!template.categoryId || seen.has(template.categoryId)) {
+                continue;
+              }
 
-    for (const template of templates) {
-      if (!template.categoryId || seen.has(template.categoryId)) {
-        continue;
-      }
+              seen.set(template.categoryId, {
+                id: template.categoryId,
+                name: template.categoryName || "Invitation",
+                description: "",
+                isActive: true,
+                imageUrl: "",
+              });
+            }
 
-      seen.set(template.categoryId, {
-        id: template.categoryId,
-        name: template.categoryName || "Invitation",
-        description: "",
-        isActive: true,
-        imageUrl: "",
-      });
-    }
+            return [...seen.values()];
+          })();
 
-    return [...seen.values()];
+    // All stays first in the UI; pin Wedding next for highest traffic, then the rest.
+    return [...list].sort((a, b) => {
+      const rank = (name: string) => (/wedding/i.test(name) ? 0 : 1);
+      return rank(a.name) - rank(b.name);
+    });
   }, [categories, templates]);
 
   const visible = useMemo(

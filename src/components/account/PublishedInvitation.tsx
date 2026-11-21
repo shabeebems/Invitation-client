@@ -3,7 +3,13 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import BrandLoader from "@/components/brand/BrandLoader";
-import { API_URL, invitationLiveHref, type InvitationTemplate } from "@/lib/api";
+import {
+  API_URL,
+  invitationEditHref,
+  invitationLiveHref,
+  isInvitationLive,
+  type InvitationTemplate,
+} from "@/lib/api";
 import { cormorant } from "@/lib/fonts";
 import "./published.css";
 
@@ -54,6 +60,8 @@ export default function PublishedInvitation({ slug }: { slug: string }) {
 
   const livePath = work ? invitationLiveHref(work) : `/${slug}`;
   const liveUrl = origin ? `${origin}${livePath}` : livePath;
+  const live = work ? isInvitationLive(work) : false;
+  const editHref = work ? invitationEditHref(work, "customer") : `/user/works/${slug}/edit`;
 
   async function copyLink() {
     try {
@@ -81,6 +89,35 @@ export default function PublishedInvitation({ slug }: { slug: string }) {
 
   if (!work) {
     return <BrandLoader variant="inline" label="Loading invitation" />;
+  }
+
+  if (!live) {
+    return (
+      <div className="pb">
+        <h1 className={`pb-title ${cormorant.className}`}>Almost ready</h1>
+        <p className="pb-note">This invitation is still a draft. Publish it so guests can open the link.</p>
+
+        <dl className="pb-details">
+          <div>
+            <dt>Title</dt>
+            <dd>{work.name}</dd>
+          </div>
+          <div>
+            <dt>Occasion</dt>
+            <dd>{work.categoryName || "Invitation"}</dd>
+          </div>
+        </dl>
+
+        <div className="pb-actions">
+          <Link href={editHref} className="pb-btn pb-btn--primary">
+            Continue editing
+          </Link>
+          <Link href="/user/invitations" className="pb-btn">
+            My invitations
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   return (

@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { invitationEditHref } from "@/lib/api";
-import { loadSession } from "@/lib/session";
+import { loadSession, loginHref } from "@/lib/session";
 
 export default function WorkEditRedirectPage() {
   const params = useParams<{ slug: string }>();
@@ -13,7 +13,12 @@ export default function WorkEditRedirectPage() {
     let cancelled = false;
 
     void loadSession().then((user) => {
-      if (cancelled || !user) {
+      if (cancelled) {
+        return;
+      }
+
+      if (!user) {
+        router.replace(loginHref(`/preview/work/${params.slug}/edit`));
         return;
       }
 
