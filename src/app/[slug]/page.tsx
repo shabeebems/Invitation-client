@@ -10,7 +10,8 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const template = await fetchWork(slug);
+  // No Data Cache — unpaid drafts must 404 as soon as the API does.
+  const template = await fetchWork(slug, { fresh: true });
 
   if (!template) {
     return { title: "Invitation not found", robots: { index: false, follow: false } };
@@ -57,7 +58,8 @@ export default async function WorkLivePage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const template = await fetchWork(slug);
+  // No Data Cache — unpaid drafts must 404 as soon as the API does.
+  const template = await fetchWork(slug, { fresh: true });
 
   if (!template) {
     notFound();
