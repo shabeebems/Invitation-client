@@ -48,7 +48,7 @@ function initials(name: string) {
     .join("");
 }
 
-export default function Sidebar() {
+export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const router = useRouter();
   const { user, loading } = useAdmin();
@@ -71,6 +71,7 @@ export default function Sidebar() {
       }
 
       markSignedOut();
+      onNavigate?.();
       router.replace("/login");
     } catch {
       setLogoutError("Could not log out");
@@ -79,8 +80,11 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="flex h-full w-[248px] shrink-0 flex-col border-r border-[#e6e8ec] bg-white px-4 py-6 text-[#1c1f24]">
-      <Link href="/admin/dashboard" className="flex items-center gap-3 px-2">
+    <aside
+      id="admin-sidebar"
+      className="flex h-full w-[min(248px,85vw)] shrink-0 flex-col border-r border-[#e6e8ec] bg-white px-4 py-6 text-[#1c1f24] shadow-[8px_0_24px_-18px_rgb(0_0_0_/_0.35)] lg:w-[248px] lg:shadow-none"
+    >
+      <Link href="/admin/dashboard" onClick={onNavigate} className="flex items-center gap-3 px-2">
         <BrandMark priority className="h-9 w-auto shrink-0" />
         <span className="min-w-0" aria-label={`${BRAND_NAME} admin`}>
           <BrandWordmark className="text-[1.45rem]" />
@@ -120,6 +124,7 @@ export default function Sidebar() {
                   <Link
                     key={item.href}
                     href={item.href}
+                    onClick={onNavigate}
                     className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition ${
                       active
                         ? "bg-[#111827] text-white"
@@ -140,6 +145,7 @@ export default function Sidebar() {
         {logoutError ? <p className="mb-2 px-3 text-xs text-[#f3b4b4]">{logoutError}</p> : null}
         <Link
           href="/"
+          onClick={onNavigate}
           className="mb-1 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-zinc-500 hover:bg-[#f4f5f7] hover:text-[#111827]"
         >
           View site

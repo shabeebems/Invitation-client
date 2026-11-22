@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { loadSession, loginHref } from "@/lib/session";
 import "./landing.css";
@@ -23,8 +23,17 @@ function ArrowIcon() {
   );
 }
 
+function syncPreviewChrome(inner: HTMLElement | null) {
+  const root = document.documentElement;
+  const fallback = window.matchMedia("(min-width: 640px)").matches ? 64 : 56;
+  const height = Math.ceil(inner?.getBoundingClientRect().height || fallback);
+  root.style.setProperty("--pv-chrome", `${height}px`);
+  root.classList.add("has-pv-chrome");
+}
+
 export default function UseTemplateBar({ slug }: { slug: string }) {
   const [isAdmin, setIsAdmin] = useState(false);
+  const innerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -40,13 +49,25 @@ export default function UseTemplateBar({ slug }: { slug: string }) {
     };
   }, []);
 
+  useEffect(() => {
+    const sync = () => syncPreviewChrome(innerRef.current);
+    sync();
+    window.addEventListener("resize", sync);
+    return () => {
+      window.removeEventListener("resize", sync);
+      document.documentElement.style.removeProperty("--pv-chrome");
+      document.documentElement.classList.remove("has-pv-chrome");
+    };
+  }, []);
+
   return (
     <header className="pv-bar">
-      <div className="pv-bar-inner">
+      <div ref={innerRef} className="pv-bar-inner">
         <Link
           href={isAdmin ? "/admin/templates" : "/#templates"}
           className="pv-back"
           aria-label="Back to templates"
+          suppressHydrationWarning
         >
           <BackIcon />
         </Link>

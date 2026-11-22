@@ -458,6 +458,8 @@ export function invitationTitle(template: InvitationTemplate) {
 
 /** Public catalog/preview reads; keep short so admin edits show up soon. */
 const PUBLIC_REVALIDATE_SECONDS = 60;
+/** Cap SSR waits so a down API cannot hold Suspense streams open until abort. */
+const SERVER_FETCH_TIMEOUT_MS = 8_000;
 
 type FetchFreshness = {
   /** Skip the Data Cache (admin / editor reads that must be current). */
@@ -477,6 +479,14 @@ function fetchCacheInit(options: FetchFreshness = {}) {
   }
 
   return { next: { revalidate: options.revalidate ?? PUBLIC_REVALIDATE_SECONDS } };
+}
+
+function serverFetchSignal(): AbortSignal | undefined {
+  if (typeof window !== "undefined") {
+    return undefined;
+  }
+
+  return AbortSignal.timeout(SERVER_FETCH_TIMEOUT_MS);
 }
 
 /** Forward auth cookies on the server; browsers use credentials: include. */
@@ -507,6 +517,7 @@ async function readInvitation(
     const headers = options.credentials ? await authCookieHeader() : {};
     const response = await fetch(url, {
       ...fetchCacheInit(options),
+      signal: serverFetchSignal(),
       ...(options.credentials ? { credentials: options.credentials, headers } : {}),
     });
 
@@ -543,6 +554,7 @@ async function readList<T>(
         fresh: options.fresh || Boolean(options.credentials),
         revalidate: options.revalidate,
       }),
+      signal: serverFetchSignal(),
       ...(options.credentials ? { credentials: options.credentials, headers } : {}),
     });
     const data = (await response.json()) as {

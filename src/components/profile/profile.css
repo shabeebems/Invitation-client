@@ -53,10 +53,17 @@
 
 .pf-details > div {
   display: grid;
-  grid-template-columns: 88px minmax(0, 1fr);
-  gap: 12px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 4px 12px;
   padding: 11px 0;
   border-bottom: 1px solid var(--pf-line);
+}
+
+@media (min-width: 420px) {
+  .pf-details > div {
+    grid-template-columns: 88px minmax(0, 1fr);
+    gap: 12px;
+  }
 }
 
 .pf-details > div:first-child {
@@ -198,9 +205,10 @@
 
 .pf-devices li {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: 16px;
+  gap: 10px 16px;
   padding: 11px 0;
   border-bottom: 1px solid var(--pf-line);
 }

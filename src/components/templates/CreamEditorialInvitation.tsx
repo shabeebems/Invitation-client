@@ -105,7 +105,9 @@ export default function CreamEditorialInvitation({
   const groomInitial = (content.groomName || "").trim().charAt(0) || "J";
 
   const dateLine =
-    [content.weekday, content.day, content.monthYear].filter(Boolean).join(", ") ||
+    [content.weekday, [content.day, content.monthYear].filter(Boolean).join(" ")]
+      .filter(Boolean)
+      .join(", ") ||
     content.monthYear ||
     "";
 

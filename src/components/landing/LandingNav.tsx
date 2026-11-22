@@ -139,7 +139,7 @@ export default function LandingNav({ templates = [] }: { templates?: InvitationT
         )
       : templates;
 
-    return matches.slice(0, 6);
+    return matches.slice(0, 12);
   }, [query, templates]);
 
   const authLinks =

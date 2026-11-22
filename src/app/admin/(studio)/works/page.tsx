@@ -131,7 +131,7 @@ export default function WorksPage() {
       ) : works.length === 0 ? (
         <EmptyState title="No works yet" body="Create one from a category and template, or wait for a customer to publish." />
       ) : (
-        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
           {works.map((work) => {
             const hero = imageUrl(work.images, "hero");
             const live = isInvitationLive(work);
@@ -189,9 +189,9 @@ export default function WorksPage() {
       )}
 
       {adding ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-[2px]">
+        <div className="fixed inset-0 z-50 flex items-end justify-center overflow-y-auto bg-black/40 p-4 sm:items-center backdrop-blur-[2px]">
           <form
-            className="w-full max-w-md rounded-[28px] border border-[#e6e8ec] bg-white p-6 shadow-xl"
+            className="my-auto w-full max-w-md max-h-[min(92svh,40rem)] overflow-y-auto rounded-[28px] border border-[#e6e8ec] bg-white p-5 shadow-xl sm:p-6"
             onSubmit={(event) => {
               event.preventDefault();
               void handleCreateWork();

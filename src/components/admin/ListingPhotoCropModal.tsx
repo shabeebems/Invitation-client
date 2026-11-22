@@ -95,10 +95,12 @@ export default function ListingPhotoCropModal({
         aria-label={`Crop ${label.toLowerCase()}`}
         className="flex max-h-[calc(100svh-2rem)] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
       >
-        <div className="flex items-center justify-between border-b border-zinc-100 px-5 py-3.5">
-          <div>
+        <div className="flex items-start justify-between gap-3 border-b border-zinc-100 px-4 py-3.5 sm:px-5">
+          <div className="min-w-0">
             <h2 className="text-sm font-semibold text-[#111827]">Crop {label.toLowerCase()}</h2>
-            <p className="text-xs text-zinc-500">Zoom 1 takes the largest 5:4 area of the photo. Zoom in and drag to tighten.</p>
+            <p className="mt-0.5 text-xs leading-5 text-zinc-500">
+              Zoom 1 takes the largest 5:4 area. Zoom in and drag to tighten.
+            </p>
           </div>
           <button
             type="button"

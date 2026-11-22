@@ -462,6 +462,10 @@ body:has(.botanical-script.palette-twilight) {
     min-width: 0;
     padding: 0.5rem 0.55rem;
   }
+
+  .botanical-script .rr-layout-picker-btn:last-child:nth-child(odd) {
+    flex-basis: 100%;
+  }
 }
 
 .bs-add-btn {

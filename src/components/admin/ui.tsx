@@ -14,20 +14,22 @@ export function PageHeader({
   action?: ReactNode;
 }) {
   return (
-    <div className="mb-8 flex flex-col gap-5 border-b border-[#e6e8ec] pb-7 sm:flex-row sm:items-end sm:justify-between">
+    <div className="mb-8 flex flex-col gap-4 border-b border-[#e6e8ec] pb-7 lg:flex-row lg:items-end lg:justify-between lg:gap-5">
       <div className="min-w-0">
         <p className="text-[11px] font-semibold tracking-[0.22em] text-zinc-400 uppercase">{eyebrow}</p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-tight text-[#111827]">{title}</h1>
+        <h1 className="mt-2 text-2xl font-semibold tracking-tight text-[#111827] sm:text-3xl">{title}</h1>
         <p className="mt-2 max-w-xl text-sm leading-6 text-zinc-500">{description}</p>
       </div>
-      <div className="flex shrink-0 items-center gap-3">
-        {meta ? (
-          <span className="rounded-full border border-[#e6e8ec] bg-white px-3 py-1.5 text-xs font-semibold text-[#111827]">
-            {meta}
-          </span>
-        ) : null}
-        {action}
-      </div>
+      {(meta || action) ? (
+        <div className="flex min-w-0 flex-wrap items-center gap-2 sm:gap-3 lg:shrink-0 lg:justify-end">
+          {meta ? (
+            <span className="max-w-full rounded-full border border-[#e6e8ec] bg-white px-3 py-1.5 text-xs font-semibold break-words text-[#111827]">
+              {meta}
+            </span>
+          ) : null}
+          {action}
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -48,7 +50,7 @@ export function PrimaryButton({
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className="rounded-full bg-[#111827] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-black disabled:opacity-60"
+      className="shrink-0 rounded-full bg-[#111827] px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-white transition hover:bg-black disabled:opacity-60"
     >
       {children}
     </button>
@@ -65,7 +67,7 @@ export function Panel({ children, className = "" }: { children: ReactNode; class
 
 export function EmptyState({ title, body }: { title: string; body: string }) {
   return (
-    <Panel className="px-8 py-16 text-center">
+    <Panel className="px-5 py-12 text-center sm:px-8 sm:py-16">
       <p className="text-lg font-semibold text-[#111827]">{title}</p>
       <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-zinc-500">{body}</p>
     </Panel>

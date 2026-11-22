@@ -323,12 +323,14 @@
   flex-direction: column;
   align-items: center;
   gap: 6px;
+  width: min(280px, calc(100vw - 24px));
   transform: translateX(-50%);
 }
 
 .ed-publish-button {
+  width: 100%;
   height: 48px;
-  min-width: 200px;
+  min-width: 0;
   padding: 0 28px;
   border: 0;
   border-radius: 999px;
@@ -399,16 +401,52 @@
   --edit-shadow: 0 18px 40px -16px rgb(0 0 0 / 0.55);
 }
 
-/* ---------- Small screens ---------- */
+/* Keep invitation feet clear of the fixed dock / publish CTA */
+html.has-ed-dock,
+html.has-ed-preview {
+  scroll-padding-bottom: 6.75rem;
+}
 
-@media (max-width: 420px) {
+html.has-ed-dock .cream-editorial,
+html.has-ed-dock .velvet-heritage,
+html.has-ed-dock .aurelia-nocturne,
+html.has-ed-dock .royal-ruby,
+html.has-ed-dock .royal-invitation,
+html.has-ed-dock .botanical-script,
+html.has-ed-dock .house-warming,
+html.has-ed-preview .cream-editorial,
+html.has-ed-preview .velvet-heritage,
+html.has-ed-preview .aurelia-nocturne,
+html.has-ed-preview .royal-ruby,
+html.has-ed-preview .royal-invitation,
+html.has-ed-preview .botanical-script,
+html.has-ed-preview .house-warming {
+  padding-bottom: 5.75rem;
+}
+
+/* ---------- Small / mid screens ---------- */
+
+@media (max-width: 767px) {
+  .ed-dock {
+    width: calc(100vw - 20px);
+    max-width: calc(100vw - 20px);
+  }
+
   .ed-bar {
+    width: 100%;
     padding: 5px;
     border-radius: 20px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .ed-bar::-webkit-scrollbar {
+    display: none;
   }
 
   .ed-item {
     min-width: 0;
+    flex: 1 1 0;
     padding: 7px 8px;
   }
 
@@ -419,6 +457,40 @@
   .ed-item-meta {
     max-width: 64px;
     font-size: 10.5px;
+  }
+
+  .ed-back {
+    max-width: calc(100vw - 24px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .ed-publish-error {
+    max-width: calc(100vw - 24px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 389px) {
+  .ed-item {
+    gap: 2px;
+    padding: 6px 4px;
+  }
+
+  .ed-item-label {
+    font-size: 10.5px;
+  }
+
+  .ed-item-meta {
+    max-width: 52px;
+    font-size: 9.5px;
+  }
+
+  .ed-panel {
+    width: calc(100vw - 16px);
   }
 }
 

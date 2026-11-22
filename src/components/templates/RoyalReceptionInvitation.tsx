@@ -39,6 +39,8 @@ export default function RoyalReceptionInvitation({
     draft,
     content,
     editing,
+    previewing,
+    payOpen,
     field,
     commitText,
     commitEventDate,
@@ -67,6 +69,7 @@ export default function RoyalReceptionInvitation({
     onPublish,
     sectionFamily: "royal",
   });
+  const hideShare = previewing || payOpen;
 
   const heroImageUrl = imageUrl(draft.images, "hero");
   const groomImageUrl = imageUrl(draft.images, "groom");
@@ -211,12 +214,14 @@ export default function RoyalReceptionInvitation({
         {isSectionEnabled(enabled, "footer") ? <RoyalFooter editable={editable} field={field} /> : null}
 
       <a
-        className={`invite-share font-caps fixed right-[max(14px,env(safe-area-inset-right,0px))] z-[10060] inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-[#f3e8cd73] px-4 py-3 text-[10px] tracking-[2px] text-[#e7d3a4] uppercase no-underline ${editable ? "bottom-[calc(max(14px,env(safe-area-inset-bottom,0px))+6.5rem)]" : "bottom-[max(18px,env(safe-area-inset-bottom,0px))]"}`}
+        className={`invite-share font-caps fixed right-[max(14px,env(safe-area-inset-right,0px))] z-[10060] inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-[#f3e8cd73] px-4 py-3 text-[10px] tracking-[2px] text-[#e7d3a4] uppercase no-underline ${editable ? "bottom-[calc(max(14px,env(safe-area-inset-bottom,0px))+6.5rem)]" : "bottom-[max(18px,env(safe-area-inset-bottom,0px))]"}${hideShare ? " pointer-events-none invisible" : ""}`}
         href={share.href}
         onClick={share.onClick}
         target="_blank"
         rel="noopener noreferrer"
         aria-label={share.label}
+        aria-hidden={hideShare}
+        tabIndex={hideShare ? -1 : undefined}
       >
         <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
           <path

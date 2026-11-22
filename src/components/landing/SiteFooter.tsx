@@ -195,14 +195,14 @@ export default function SiteFooter({ categories = [] }: { categories?: Category[
         {/* ======================================================== */}
         {/* BOTTOM COPYRIGHT AND TAGLINE STRIP                       */}
         {/* ======================================================== */}
-        <div className="mt-14 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#D2D8CE]/75">
+        <div className="mt-14 flex flex-col items-center justify-between gap-4 pt-6 text-center text-xs text-[#D2D8CE]/75 sm:flex-row sm:text-left">
           {/* Left: Copyright */}
-          <p className="whitespace-nowrap">
+          <p className="min-w-0 shrink">
             © 2026 {BRAND_NAME}. All rights reserved.
           </p>
 
           {/* Center: Thin horizontal divider with central leaf motif */}
-          <div className="hidden sm:flex flex-1 items-center gap-4 mx-6" aria-hidden="true">
+          <div className="mx-4 hidden min-w-0 flex-1 items-center gap-4 md:flex" aria-hidden="true">
             <span className="h-px flex-1 bg-[#D9C18C]/25" />
             <svg
               className="h-4 w-4 shrink-0 text-[#D9C18C]"
@@ -216,7 +216,7 @@ export default function SiteFooter({ categories = [] }: { categories?: Category[
           </div>
 
           {/* Right: Tagline */}
-          <p className="font-semibold tracking-[0.22em] text-[#D9C18C] uppercase whitespace-nowrap">
+          <p className="min-w-0 shrink font-semibold tracking-[0.14em] text-[#D9C18C] uppercase sm:tracking-[0.18em] md:tracking-[0.22em]">
             One link. Every guest.
           </p>
         </div>

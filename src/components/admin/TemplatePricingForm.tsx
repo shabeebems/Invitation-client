@@ -96,14 +96,14 @@ export default function TemplatePricingForm({
           </span>
         </label>
       </div>
-      <div className="mt-3 flex items-center justify-between gap-3">
-        <span className={`text-xs ${note?.ok ? "text-emerald-700" : "text-red-600"}`} role="status">
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+        <span className={`min-w-0 flex-1 text-xs ${note?.ok ? "text-emerald-700" : "text-red-600"}`} role="status">
           {note?.text}
         </span>
         <button
           type="submit"
           disabled={saving || !dirty}
-          className="rounded-full bg-[#111827] px-4 py-1.5 text-xs font-semibold text-white hover:bg-black disabled:opacity-40"
+          className="shrink-0 rounded-full bg-[#111827] px-4 py-1.5 text-xs font-semibold text-white hover:bg-black disabled:opacity-40"
         >
           {saving ? "Saving…" : "Save pricing"}
         </button>

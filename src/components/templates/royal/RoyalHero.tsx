@@ -109,28 +109,31 @@ export default function RoyalHero({
             {field("bismillah", "")}
           </p>
           <OrnamentWave />
-          <p className="font-caps px-1 text-[clamp(10px,0.35vw+0.55rem,12.5px)] leading-[1.75] tracking-[2.4px] text-[#f3e8cdc7] uppercase">
+          <div className="font-caps flex flex-col items-center gap-1 px-1 text-[clamp(10px,0.35vw+0.55rem,12.5px)] leading-[1.75] tracking-[2.4px] text-[#f3e8cdc7] uppercase">
             {field("hostLabel", "")}
             {field(
               "hostNames",
-              "font-invite-serif mt-1 block text-[clamp(20px,1.6vw+0.7rem,28px)] tracking-[0.4px] text-[#e7d3a4] normal-case italic"
+              "font-invite-serif block text-[clamp(20px,1.6vw+0.7rem,28px)] tracking-[0.4px] text-[#e7d3a4] normal-case italic"
             )}
-          </p>
+          </div>
           <p className="font-caps mt-2.5 px-1 text-[clamp(10px,0.35vw+0.55rem,12.5px)] leading-[1.75] tracking-[2.4px] text-[#f3e8cdd9] uppercase">
             {field("introLine", "")}
           </p>
           <h1 className="font-names my-3 mb-2 flex w-full flex-col items-center">
             {field("groomName", "text-shimmer block text-[clamp(46px,5vw+0.5rem,82px)] leading-[1.05]")}
-            <span className="font-invite-serif my-0.5 text-[clamp(22px,2vw+0.4rem,34px)] text-[#b9893e] italic">&</span>
+            <span className="font-invite-serif my-0.5 text-[clamp(22px,2vw+0.4rem,34px)] text-[#b9893e] italic">
+              {" "}
+              &{" "}
+            </span>
             {field("brideName", "text-shimmer block text-[clamp(42px,4.5vw+0.5rem,72px)] leading-[1.05]")}
           </h1>
-          <p className="font-caps mt-1 px-1 text-[clamp(9px,0.3vw+0.5rem,11px)] leading-[1.7] tracking-[2px] text-[#f3e8cdb8] uppercase">
+          <div className="font-caps mt-1 flex flex-col items-center gap-0.5 px-1 text-[clamp(9px,0.3vw+0.5rem,11px)] leading-[1.7] tracking-[2px] text-[#f3e8cdb8] uppercase">
             {field("brideParentsLabel", "")}
             {field(
               "brideParents",
-              "font-invite-serif mt-0.5 block text-[clamp(16px,1.2vw+0.55rem,22px)] tracking-[0.3px] text-[#e7d3a4] normal-case italic"
+              "font-invite-serif block text-[clamp(16px,1.2vw+0.55rem,22px)] tracking-[0.3px] text-[#e7d3a4] normal-case italic"
             )}
-          </p>
+          </div>
           <p className="font-caps mx-auto mt-2.5 max-w-[380px] text-[clamp(10px,0.3vw+0.55rem,12px)] leading-[1.7] tracking-[2px] text-[#e7d3a4c7] uppercase">
             {field("presenceLine", "", true)}
           </p>

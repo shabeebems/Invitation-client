@@ -124,3 +124,13 @@
     grid-column: 1 / -1;
   }
 }
+
+@media (max-width: 359px) {
+  .pb-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .pb-btn {
+    width: 100%;
+  }
+}

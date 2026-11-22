@@ -190,6 +190,15 @@ export default function InvitationEditChrome({
   const saveState = statusLabel(status, statusMessage);
 
   useEffect(() => {
+    const root = document.documentElement;
+    root.classList.toggle("has-ed-dock", editing);
+    root.classList.toggle("has-ed-preview", previewing);
+    return () => {
+      root.classList.remove("has-ed-dock", "has-ed-preview");
+    };
+  }, [editing, previewing]);
+
+  useEffect(() => {
     if (!panel) {
       return;
     }
