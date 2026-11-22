@@ -219,7 +219,7 @@ export default function HouseWarmingInvitation({
           ) : null}
 
           <a
-            className={`hw-wa fixed right-6 z-[10060] inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/40 text-white no-underline shadow-lg transition-transform hover:scale-105 ${editable ? "bottom-[calc(max(14px,env(safe-area-inset-bottom,0px))+6.5rem)]" : "bottom-6"} ${previewing || payOpen ? "pointer-events-none invisible" : ""}`}
+            className={`hw-wa fixed right-[max(1.5rem,env(safe-area-inset-right,0px))] z-[10060] inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/40 text-white no-underline shadow-lg transition-transform hover:scale-105 ${editable ? "bottom-[calc(max(14px,env(safe-area-inset-bottom,0px))+6.5rem)]" : "bottom-[max(1.5rem,env(safe-area-inset-bottom,0px))]"} ${previewing || payOpen ? "pointer-events-none invisible" : ""}`}
             href={share.href}
             onClick={share.onClick}
             target="_blank"

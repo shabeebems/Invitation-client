@@ -257,14 +257,14 @@ export default function PublishPaymentModal({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[100200] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-[100200] flex items-start justify-center overflow-y-auto bg-black/60 p-4 backdrop-blur-sm sm:items-center"
       onClick={requestClose}
     >
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="payment-modal-title"
-        className="w-full max-w-lg overflow-hidden rounded-[28px] border border-stone-200/60 bg-[#FAF8F5] p-6 text-stone-900 shadow-[0_24px_70px_rgba(0,0,0,0.35)] sm:p-8"
+        className="my-auto w-full max-w-lg max-h-[min(92vh,52rem)] overflow-y-auto rounded-[28px] border border-stone-200/60 bg-[#FAF8F5] p-6 text-stone-900 shadow-[0_24px_70px_rgba(0,0,0,0.35)] sm:p-8"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between">

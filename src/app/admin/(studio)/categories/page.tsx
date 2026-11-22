@@ -110,7 +110,7 @@ export default function CategoriesPage() {
       ) : (
         <div className="flex flex-col gap-3">
           {categories.map((category, index) => (
-            <Panel key={category.id} className="flex items-center gap-4 px-4 py-4 sm:px-5">
+            <Panel key={category.id} className="flex flex-wrap items-center gap-3 px-4 py-4 sm:gap-4 sm:px-5">
               {category.imageUrl ? (
                 <img
                   src={category.imageUrl}
@@ -125,32 +125,34 @@ export default function CategoriesPage() {
                   {category.name.slice(0, 1)}
                 </span>
               )}
-              <div className="min-w-0 flex-1">
+              <div className="min-w-0 flex-1 basis-[12rem]">
                 <p className="truncate text-base font-semibold text-[#111827]">{category.name}</p>
                 <p className="truncate text-sm text-zinc-500">
                   {category.description || "No description"}
                 </p>
               </div>
-              <span
-                className={`rounded-full px-3 py-1 text-[11px] font-semibold tracking-wide uppercase ${
-                  category.isActive
-                    ? "bg-[#e7f3ec] text-[#1d6b45]"
-                    : "bg-[#f0f1f3] text-zinc-500"
-                }`}
-              >
-                {category.isActive ? "Live" : "Hidden"}
-              </span>
-              <button
-                type="button"
-                onClick={() => {
-                  setEditing(category);
-                  setFormError("");
-                  setMode("edit");
-                }}
-                className="rounded-full border border-[#e6e8ec] px-3 py-1.5 text-sm font-semibold text-[#111827] hover:border-[#111827]"
-              >
-                Edit
-              </button>
+              <div className="flex w-full shrink-0 items-center justify-end gap-2 sm:ml-auto sm:w-auto">
+                <span
+                  className={`rounded-full px-3 py-1 text-[11px] font-semibold tracking-wide uppercase ${
+                    category.isActive
+                      ? "bg-[#e7f3ec] text-[#1d6b45]"
+                      : "bg-[#f0f1f3] text-zinc-500"
+                  }`}
+                >
+                  {category.isActive ? "Live" : "Hidden"}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditing(category);
+                    setFormError("");
+                    setMode("edit");
+                  }}
+                  className="rounded-full border border-[#e6e8ec] px-3 py-1.5 text-sm font-semibold text-[#111827] hover:border-[#111827]"
+                >
+                  Edit
+                </button>
+              </div>
             </Panel>
           ))}
         </div>

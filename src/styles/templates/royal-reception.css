@@ -2093,6 +2093,26 @@ body:has(.royal-invitation.palette-emerald) {
   -webkit-text-fill-color: #f3e8cd !important;
 }
 
+@media (max-width: 560px) {
+  .royal-invitation .rr-layout-picker-options {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.4rem;
+  }
+
+  .royal-invitation .rr-layout-picker-btn {
+    min-width: 0;
+    width: 100%;
+    padding: 0.55rem 0.5rem;
+    font-size: 0.58rem;
+    letter-spacing: 0.1em;
+  }
+
+  .royal-invitation .rr-layout-picker-btn:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+}
+
 /* ── Pre-wedding gallery ── */
 
 .royal-invitation .rr-gallery-inner {

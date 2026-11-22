@@ -41,7 +41,12 @@ function TemplatePrice({ template }: { template: InvitationTemplate }) {
   }
 
   const discounted = typeof actual === "number" && actual > offer;
-  const percentOff = discounted ? Math.round(((actual - offer) / actual) * 100) : 0;
+  // Keep a paid offer from claiming "100% off" (e.g. ₹1 of ₹1,499 rounds up).
+  const percentOff = discounted
+    ? offer <= 0
+      ? 100
+      : Math.min(99, Math.floor(((actual - offer) / actual) * 100))
+    : 0;
 
   return (
     <p className="tg-price">
@@ -235,7 +240,7 @@ export default function TemplateGallery({
   );
 
   return (
-    <section id="templates" className="tg scroll-mt-20">
+    <section id="templates" className="tg scroll-mt-24 sm:scroll-mt-28">
       <GardenSprig className="tg-garden tg-garden--right" />
 
       <div className="tg-inner">

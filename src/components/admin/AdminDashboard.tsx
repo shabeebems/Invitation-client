@@ -71,7 +71,7 @@ export default function AdminDashboard() {
 
       {!loading && !error ? (
         <>
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-3">
             {stats.map((stat) => (
               <Link key={stat.label} href={stat.href} className="group">
                 <Panel className="px-6 py-5 transition group-hover:border-[#cfd3d8]">

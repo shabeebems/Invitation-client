@@ -42,6 +42,8 @@ export default function VelvetHeritageInvitation({
     draft,
     content,
     editing,
+    previewing,
+    payOpen,
     field,
     commitText,
     commitEventDate,
@@ -66,6 +68,7 @@ export default function VelvetHeritageInvitation({
     onPublish,
     sectionFamily: "velvet",
   });
+  const hideShare = previewing || payOpen;
 
   const heroImageUrl = imageUrl(draft.images, "hero");
   const venueImageUrl = imageUrl(draft.images, "venue") || imageUrl(draft.images, "story");
@@ -188,12 +191,14 @@ export default function VelvetHeritageInvitation({
         ) : null}
 
         <a
-          className={`vh-share vh-cap-title${editable ? " is-editing" : ""}`}
+          className={`vh-share vh-cap-title${editable ? " is-editing" : ""}${hideShare ? " is-hidden" : ""}`}
           href={share.href}
           onClick={share.onClick}
           target="_blank"
           rel="noopener noreferrer"
           aria-label={share.label}
+          aria-hidden={hideShare}
+          tabIndex={hideShare ? -1 : undefined}
         >
           Share
         </a>

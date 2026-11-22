@@ -257,12 +257,23 @@ body:has(.aurelia-nocturne) {
   outline-offset: 2px;
 }
 
-@media (max-width: 480px) {
+@media (max-width: 560px) {
+  .au-layout-picker .rr-layout-picker-options {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.4rem;
+  }
+
   .au-layout-picker .rr-layout-picker-btn {
     min-width: 0;
-    padding: 0.5rem 0.75rem;
+    width: 100%;
+    padding: 0.5rem 0.45rem;
     font-size: 9px;
     letter-spacing: 0.1em;
+  }
+
+  .au-layout-picker .rr-layout-picker-btn:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
   }
 }
 
@@ -646,6 +657,9 @@ body:has(.aurelia-nocturne) {
 .au-hero-in {
   position: relative;
   z-index: 2;
+  max-width: 100%;
+  padding-inline: clamp(1rem, 4vw, 2rem);
+  box-sizing: border-box;
 }
 
 .au-sub {
@@ -653,14 +667,18 @@ body:has(.aurelia-nocturne) {
   letter-spacing: 0.5em;
   text-transform: uppercase;
   color: var(--au-champ);
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
 
 .au-names {
   font-family: var(--font-title);
   font-weight: 300;
-  font-size: clamp(4.2rem, 22vw, 12rem);
+  font-size: clamp(3.2rem, 14vw, 12rem);
   line-height: 0.86;
   margin: 1.4rem 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
 
 .au-amp {

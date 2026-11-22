@@ -13,9 +13,15 @@
 
 .mi-head {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 16px;
+  gap: 12px 16px;
+}
+
+.mi-head > :first-child {
+  min-width: 0;
+  flex: 1 1 12rem;
 }
 
 .mi-title {
@@ -63,7 +69,7 @@
 /* ---------- List ---------- */
 
 .mi-list {
-  margin: 24px -12px 0;
+  margin: 24px 0 0;
   padding: 0;
   border-top: 1px solid var(--mi-line);
   list-style: none;
@@ -76,10 +82,12 @@
 .mi-row {
   position: relative;
   display: grid;
-  grid-template-columns: 64px minmax(0, 1fr) auto auto;
-  grid-template-areas: "thumb main tags actions";
+  grid-template-columns: 64px minmax(0, 1fr) auto;
+  grid-template-areas:
+    "thumb main actions"
+    ". tags tags";
   align-items: center;
-  gap: 12px;
+  gap: 8px 12px;
   padding: 12px;
   border-bottom: 1px solid var(--mi-line);
   transition: background-color 0.15s;
@@ -158,14 +166,19 @@
 .mi-tags {
   grid-area: tags;
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  min-width: 0;
 }
 
 .mi-cat {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
   color: var(--mi-text);
   font-size: 12px;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
@@ -173,8 +186,12 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
   font-size: 12px;
   font-weight: 600;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
@@ -399,12 +416,14 @@
   bottom: max(20px, env(safe-area-inset-bottom));
   left: 50%;
   z-index: 60;
+  max-width: calc(100vw - 32px);
   margin: 0;
   padding: 9px 14px;
   border-radius: 6px;
   background: var(--mi-ink);
   color: #fbf6ea;
   font-size: 13px;
+  text-align: center;
   opacity: 0;
   pointer-events: none;
   transform: translate(-50%, 6px);
@@ -423,6 +442,8 @@
 @media (min-width: 640px) {
   .mi-row {
     grid-template-columns: 96px minmax(0, 1fr) auto auto;
+    grid-template-areas: "thumb main tags actions";
+    align-items: start;
     gap: 18px;
     padding: 14px 12px;
   }
@@ -432,8 +453,15 @@
     height: 56px;
   }
 
+  .mi-tags {
+    flex-direction: column;
+    align-items: flex-end;
+    padding-top: 4px;
+  }
+
   .mi-name {
     display: block;
+    overflow: hidden;
     font-size: 1.22rem;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -539,13 +567,17 @@
 
 @media (max-width: 359px) {
   .mi-head {
-    flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
+  }
+
+  .mi-create {
+    width: 100%;
+    justify-content: center;
   }
 
   .mi-row {
-    grid-template-columns: 52px minmax(0, 1fr) auto auto;
-    gap: 10px;
+    grid-template-columns: 52px minmax(0, 1fr) auto;
+    gap: 8px 10px;
   }
 
   .mi-thumb {
@@ -555,6 +587,10 @@
 
   .mi-name {
     font-size: 1rem;
+  }
+
+  .mi-menu {
+    width: min(208px, calc(100vw - 28px));
   }
 }
 

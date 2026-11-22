@@ -13,8 +13,8 @@ export const metadata: Metadata = {
 
 export default async function HomePage() {
   const [templates, categories] = await Promise.all([
-    fetchTemplates().then((items) => items.filter((template) => template.isActive)),
-    fetchCategories().then((items) => items.filter((category) => category.isActive)),
+    fetchTemplates({ fresh: true }).then((items) => items.filter((template) => template.isActive)),
+    fetchCategories({ fresh: true }).then((items) => items.filter((category) => category.isActive)),
   ]);
 
   return (

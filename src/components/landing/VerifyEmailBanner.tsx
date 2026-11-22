@@ -38,8 +38,8 @@ export default function VerifyEmailBanner({ email }: { email: string }) {
 
   return (
     <div className="border-b border-amber-200 bg-amber-50">
-      <div className="flex w-full items-center justify-between gap-3 px-6 py-2 md:px-10">
-        <p className="text-xs font-medium text-amber-950">
+      <div className="flex w-full items-center justify-between gap-3 px-4 py-2 sm:px-6 md:px-10">
+        <p className="min-w-0 text-xs font-medium text-amber-950">
           {note || "Verify your email to finish setting up your account."}
         </p>
         <button

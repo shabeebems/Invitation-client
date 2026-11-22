@@ -191,7 +191,8 @@ export default function RoyalLoveStory({
         <p className="rr-story-names font-caps" style={{ color: "#f3e8cd", WebkitTextFillColor: "#f3e8cd" }}>
           <span>{groomName}</span>
           <span className="font-names rr-story-and" style={{ color: "#b9893e", WebkitTextFillColor: "#b9893e" }}>
-            and
+            {" "}
+            and{" "}
           </span>
           <span>{brideName}</span>
         </p>

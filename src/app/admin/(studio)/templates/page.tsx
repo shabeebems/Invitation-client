@@ -20,7 +20,7 @@ export default async function TemplatesPage() {
       {templates.length === 0 ? (
         <EmptyState title="No templates yet" body="Templates imported into the database will appear here." />
       ) : (
-        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
           {templates.map((template) => {
             const hero = imageUrl(template.images, "hero");
             return (

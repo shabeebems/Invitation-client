@@ -156,7 +156,7 @@ export default function CreamCouple({
     return (
       <h2 className={`ce-cx-title ${className}`.trim()}>
         <span>{lead}</span>
-        {accent ? <em>{accent}</em> : null}
+        {accent ? <em> {accent}</em> : null}
       </h2>
     );
   }

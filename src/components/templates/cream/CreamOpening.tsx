@@ -28,17 +28,6 @@ export default function CreamOpening({
     onCoverChange?.(covering);
   }, [covering, onCoverChange]);
 
-  useEffect(() => {
-    if (!covering) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    document.body.classList.add("ce-locked");
-    return () => {
-      document.body.style.overflow = prev;
-      document.body.classList.remove("ce-locked");
-    };
-  }, [covering]);
-
   function open() {
     if (phase !== "idle") return;
     setPhase("opening");
@@ -70,10 +59,10 @@ export default function CreamOpening({
       <div className="ce-half ce-half-r" aria-hidden="true" />
       <div className="ce-cover-card">
         <div className="ce-mono">{mono}</div>
-        <p className="ce-eyebrow" style={{ marginTop: "1.2rem" }}>
+        <div className="ce-eyebrow" style={{ marginTop: "1.2rem" }}>
           {eyebrow}
-        </p>
-        <h1 className="ce-cover-title">{title}</h1>
+        </div>
+        <div className="ce-cover-title">{title}</div>
         <p className="ce-cover-date">{dateLine}</p>
         <button type="button" className="ce-btn ce-btn-fill" onClick={open}>
           {openLabel || "Open Invitation"}
