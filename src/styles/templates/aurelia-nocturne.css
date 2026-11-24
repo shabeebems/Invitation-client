@@ -460,9 +460,9 @@ body:has(.aurelia-nocturne) {
   margin: 1.4rem 0 2.6rem;
 }
 
-/* Nav */
+/* Nav — overlays hero at top, scrolls away with the page */
 .au-nav {
-  position: fixed;
+  position: absolute;
   top: 0;
   left: 0;
   right: 0;

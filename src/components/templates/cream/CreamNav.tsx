@@ -10,16 +10,6 @@ export default function CreamNav({
   links: { href: string; label: string }[];
 }) {
   const [open, setOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    function onScroll() {
-      setScrolled(window.scrollY > 40);
-    }
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
 
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
@@ -41,7 +31,7 @@ export default function CreamNav({
 
   return (
     <>
-      <nav className={`ce-nav${scrolled ? " is-solid" : ""}`}>
+      <nav className="ce-nav">
         <a href="#hero" className="ce-nav-logo" onClick={close}>
           {logo}
         </a>

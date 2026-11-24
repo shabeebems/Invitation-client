@@ -483,9 +483,9 @@ body:has(.cream-editorial) {
   transform: scale(0.94);
 }
 
-/* Nav */
+/* Nav — overlays hero at top, scrolls away with the page */
 .ce-nav {
-  position: fixed;
+  position: absolute;
   top: 0;
   left: 0;
   right: 0;
@@ -494,12 +494,6 @@ body:has(.cream-editorial) {
   justify-content: space-between;
   align-items: center;
   padding: calc(0.8rem + env(safe-area-inset-top, 0)) var(--ce-pad) 0.8rem;
-  transition: 0.4s;
-}
-
-.ce-nav.is-solid {
-  background: #fbf7f0ee;
-  box-shadow: 0 1px 0 var(--ce-van);
 }
 
 .ce-nav-logo {
